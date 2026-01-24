@@ -633,4 +633,110 @@
         });
 
         notesList.querySelectorAll(".note-textarea").forEach((ta) => {
-          ta.addEventListener(
+          ta.addEventListener("input", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            const value = e.target.value;
+            if (!currentUser || !id) return;
+            const ref = doc(db, "users", currentUser.uid, "notes", id);
+            await updateDoc(ref, { text: value, updatedAt: Date.now() });
+          });
+        });
+
+        notesList.querySelectorAll(".btn-delete-note").forEach((btn) => {
+          btn.addEventListener("click", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            if (!currentUser || !id) return;
+            const ref = doc(db, "users", currentUser.uid, "notes", id);
+            await deleteDoc(ref);
+          });
+        });
+      });
+    }
+
+    async function addNote() {
+      if (!currentUser) return;
+      await addDoc(collection(db, "users", currentUser.uid, "notes"), {
+        text: "",
+        createdAt: Date.now()
+      });
+    }
+
+    // AUTH STATE
+    setPersistence(auth, browserLocalPersistence);
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      if (user) {
+        homeUserEmail.textContent = user.email || "";
+        showSection(sectionHome);
+        await ensureTodayTasbih();
+        subscribeHistory();
+        subscribeNotes();
+      } else {
+        homeUserEmail.textContent = "";
+        if (notesUnsub) notesUnsub();
+        if (historyUnsub) historyUnsub();
+        showSection(sectionLogin);
+      }
+    });
+
+    // EVENTS
+    btnLoginGoogle.addEventListener("click", async () => {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (e) {
+        console.error(e);
+        alert("Login gagal. Cuba lagi.");
+      }
+    });
+
+    btnLogout.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+      } catch (e) {
+        console.error(e);
+      }
+    });
+
+    btnGoTasbih.addEventListener("click", async () => {
+      showSection(sectionTasbih);
+      await ensureTodayTasbih();
+    });
+
+    btnGoNotes.addEventListener("click", () => {
+      showSection(sectionNotes);
+    });
+
+    btnBackHomeFromTasbih.addEventListener("click", () => {
+      showSection(sectionHome);
+    });
+
+    btnBackTasbihFromHistory.addEventListener("click", () => {
+      showSection(sectionTasbih);
+    });
+
+    btnBackHomeFromNotes.addEventListener("click", () => {
+      showSection(sectionHome);
+    });
+
+    btnGoHistory.addEventListener("click", () => {
+      showSection(sectionHistory);
+    });
+
+    tasbihCircle.addEventListener("click", async () => {
+      await decrementTasbih();
+    });
+
+    btnAddNote.addEventListener("click", async () => {
+      await addNote();
+    });
+
+    // PWA: register service worker
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js").catch(console.error);
+      });
+    }
+  </script>
+</body>
+</html>
