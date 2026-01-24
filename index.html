@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Istigfar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#020617" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <style>
+    :root {
+      --bg: #020617;
+      --text: #e5e7eb;
+      --subtext: #9ca3af;
+      --border-soft: #1f2937;
+      --border-mid: #4b5563;
+      --grad1: #6366f1;
+      --grad2: #8b5cf6;
+      --danger: #f97373;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body {
+      background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+    .app-shell {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    .card {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 18px;
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      backdrop-filter: blur(18px);
+    }
+    .title-main {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--subtext);
+      margin-bottom: 18px;
+    }
+    .btn {
+      width: 100%;
+      border-radius: 999px;
+      padding: 12px 16px;
+      border: 1px solid transparent;
+      background-image: linear-gradient(var(--bg), var(--bg)), linear-gradient(135deg, var(--grad1), var(--grad2));
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+      box-shadow: 0 12px 30px rgba(79, 70, 229, 0.35);
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 40px rgba(79, 70, 229, 0.5);
+    }
+    .btn-secondary {
+      background-image: none;
+      background: rgba(15, 23, 42, 0.9);
+      border-color: var(--border-mid);
+      box-shadow: none;
+    }
+    .btn-secondary:hover {
+      background: rgba(15, 23, 42, 1);
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.7);
+    }
+    .btn-danger {
+      background-image: none;
+      background: rgba(127, 29, 29, 0.9);
+      border-color: rgba(248, 113, 113, 0.5);
+      box-shadow: 0 10px 26px rgba(127, 29, 29, 0.7);
+    }
+    .btn-sm {
+      width: auto;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      border-radius: 999px;
+    }
+    .btn-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .row-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-mid);
+      font-size: 0.75rem;
+      color: var(--subtext);
+      background: rgba(15, 23, 42, 0.9);
+    }
+    .badge-status {
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-done {
+      background: rgba(22, 163, 74, 0.18);
+      color: #bbf7d0;
+      border: 1px solid rgba(34, 197, 94, 0.5);
+    }
+    .badge-false {
+      background: rgba(127, 29, 29, 0.25);
+      color: #fecaca;
+      border: 1px solid rgba(248, 113, 113, 0.6);
+    }
+    .section {
+      display: none;
+    }
+    .section.active {
+      display: block;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .topbar-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .topbar-sub {
+      font-size: 0.8rem;
+      color: var(--subtext);
+    }
+    .counter-circle {
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      border: 2px solid rgba(148, 163, 184, 0.5);
+      background: radial-gradient(circle at top, rgba(79, 70, 229, 0.18), rgba(15, 23, 42, 0.95));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 18px auto;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+    .counter-circle:active {
+      transform: scale(0.97);
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.9);
+    }
+    .counter-label {
+      font-size: 0.85rem;
+      color: var(--subtext);
+      margin-bottom: 4px;
+    }
+    .counter-value {
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+    .counter-sub {
+      font-size: 0.8rem;
+      color: var(--subtext);
+      margin-top: 6px;
+    }
+    .pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border-mid);
+      font-size: 0.8rem;
+      color: var(--subtext);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .list {
+      margin-top: 10px;
+      border-radius: 14px;
+      border: 1px solid var(--border-soft);
+      background: rgba(15, 23, 42, 0.9);
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .list-item {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .list-item:last-child {
+      border-bottom: none;
+    }
+    .list-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .list-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .list-sub {
+      font-size: 0.8rem;
+      color: var(--subtext);
+    }
+    .note-card {
+      border-radius: 14px;
+      border: 1px solid var(--border-soft);
+      background: rgba(15, 23, 42, 0.9);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 80px;
+      resize: vertical;
+      border-radius: 10px;
+      border: 1px solid var(--border-mid);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text);
+      padding: 8px 10px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    textarea:focus {
+      border-color: var(--grad1);
+      box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.5);
+    }
+    .empty-state {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--subtext);
+      padding: 14px 10px;
+    }
+    .footer {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--subtext);
+    }
+    .tagline {
+      font-size: 0.8rem;
+      color: var(--subtext);
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .small {
+      font-size: 0.8rem;
+    }
+    .mt-8 { margin-top: 8px; }
+    .mt-12 { margin-top: 12px; }
+    .mt-16 { margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="card">
+      <!-- LOGIN SECTION -->
+      <section id="section-login" class="section active">
+        <div class="title-main">Istigfar</div>
+        <div class="subtitle">Tasbih harian & nota istighfar, sync dengan akaun Google anda.</div>
+        <div class="stack mt-16">
+          <button id="btn-login-google" class="btn">
+            <span>Login dengan Google</span>
+          </button>
+          <div class="tagline">
+            Satu akaun, simpanan awan Firestore, boleh buka di mana-mana.
+          </div>
+        </div>
+      </section>
+
+      <!-- HOME SECTION -->
+      <section id="section-home" class="section">
+        <div class="topbar">
+          <div>
+            <div class="topbar-title">Istigfar</div>
+            <div class="topbar-sub" id="home-user-email"></div>
+          </div>
+          <button id="btn-logout" class="btn btn-secondary btn-sm">Logout</button>
+        </div>
+        <div class="stack">
+          <button id="btn-go-tasbih" class="btn">
+            <span>Tasbih Countdown</span>
+          </button>
+          <button id="btn-go-notes" class="btn btn-secondary">
+            <span>Note For Istighfar</span>
+          </button>
+        </div>
+        <div class="footer mt-16">
+          Repo: <span class="small">Stressbetul / Istigfar</span>
+        </div>
+      </section>
+
+      <!-- TASBIH SECTION -->
+      <section id="section-tasbih" class="section">
+        <div class="topbar">
+          <button id="btn-back-home-from-tasbih" class="btn btn-secondary btn-sm">← Home</button>
+          <div style="text-align:right;">
+            <div class="topbar-title">Tasbih Countdown</div>
+            <div class="topbar-sub" id="tasbih-date-label"></div>
+          </div>
+        </div>
+
+        <div class="row-center">
+          <span class="pill">
+            <span>Target harian</span>
+            <strong>10,000</strong>
+          </span>
+          <button id="btn-go-history" class="btn btn-secondary btn-sm">History</button>
+        </div>
+
+        <div id="tasbih-circle" class="counter-circle">
+          <div class="counter-label">Baki hari ini</div>
+          <div id="tasbih-count" class="counter-value">10000</div>
+          <div id="tasbih-status" class="counter-sub">Tekan untuk -1</div>
+        </div>
+
+        <div class="row">
+          <div class="chip">
+            <span>Auto simpan ke Firestore</span>
+          </div>
+          <div class="chip">
+            <span id="tasbih-status-chip">Status: Aktif</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- HISTORY SECTION -->
+      <section id="section-history" class="section">
+        <div class="topbar">
+          <button id="btn-back-tasbih-from-history" class="btn btn-secondary btn-sm">← Tasbih</button>
+          <div style="text-align:right;">
+            <div class="topbar-title">History</div>
+            <div class="topbar-sub">Rekod tasbih harian</div>
+          </div>
+        </div>
+
+        <div class="list" id="history-list"></div>
+      </section>
+
+      <!-- NOTES SECTION -->
+      <section id="section-notes" class="section">
+        <div class="topbar">
+          <button id="btn-back-home-from-notes" class="btn btn-secondary btn-sm">← Home</button>
+          <div style="text-align:right;">
+            <div class="topbar-title">Note For Istighfar</div>
+            <div class="topbar-sub">Catatan refleksi & doa</div>
+          </div>
+        </div>
+
+        <div class="row mt-8">
+          <button id="btn-add-note" class="btn btn-sm">Tambah Nota</button>
+          <span class="chip">Auto-save ke Firestore</span>
+        </div>
+
+        <div class="list mt-8" id="notes-list"></div>
+      </section>
+    </div>
+  </div>
+
+  <script type="module">
+    // Firebase v9 modular
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged,
+      setPersistence,
+      browserLocalPersistence
+    } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDoc,
+      collection,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      onSnapshot,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+    // CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyAGLX_xxH_dQ06epX4XCXtuSHN0DwZFMjA",
+      authDomain: "stress-auti-action.firebaseapp.com",
+      projectId: "stress-auti-action",
+      storageBucket: "stress-auti-action.firebasestorage.app",
+      messagingSenderId: "792580618622",
+      appId: "1:792580618622:web:f0efb1d630e795584d5b2f",
+      measurementId: "G-JH11TRZLGF"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    // DOM
+    const sectionLogin = document.getElementById("section-login");
+    const sectionHome = document.getElementById("section-home");
+    const sectionTasbih = document.getElementById("section-tasbih");
+    const sectionHistory = document.getElementById("section-history");
+    const sectionNotes = document.getElementById("section-notes");
+
+    const btnLoginGoogle = document.getElementById("btn-login-google");
+    const btnLogout = document.getElementById("btn-logout");
+    const btnGoTasbih = document.getElementById("btn-go-tasbih");
+    const btnGoNotes = document.getElementById("btn-go-notes");
+    const btnBackHomeFromTasbih = document.getElementById("btn-back-home-from-tasbih");
+    const btnBackTasbihFromHistory = document.getElementById("btn-back-tasbih-from-history");
+    const btnBackHomeFromNotes = document.getElementById("btn-back-home-from-notes");
+    const btnGoHistory = document.getElementById("btn-go-history");
+    const btnAddNote = document.getElementById("btn-add-note");
+
+    const homeUserEmail = document.getElementById("home-user-email");
+    const tasbihCircle = document.getElementById("tasbih-circle");
+    const tasbihCountEl = document.getElementById("tasbih-count");
+    const tasbihStatusEl = document.getElementById("tasbih-status");
+    const tasbihStatusChip = document.getElementById("tasbih-status-chip");
+    const tasbihDateLabel = document.getElementById("tasbih-date-label");
+    const historyList = document.getElementById("history-list");
+    const notesList = document.getElementById("notes-list");
+
+    let currentUser = null;
+    let currentTasbihDocRef = null;
+    let currentTasbihData = null;
+    let notesUnsub = null;
+    let historyUnsub = null;
+
+    function showSection(section) {
+      [sectionLogin, sectionHome, sectionTasbih, sectionHistory, sectionNotes].forEach(s => {
+        s.classList.remove("active");
+      });
+      section.classList.add("active");
+    }
+
+    function formatDateLabel(dateObj) {
+      const days = ["Ahad", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu"];
+      const d = days[dateObj.getDay()];
+      const dd = String(dateObj.getDate()).padStart(2, "0");
+      const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const yyyy = dateObj.getFullYear();
+      return { label: `${d}, ${dd}/${mm}/${yyyy}`, day: d, date: dd, month: mm, year: yyyy };
+    }
+
+    function todayKey() {
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
+      const dd = String(now.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    async function ensureTodayTasbih() {
+      if (!currentUser) return;
+      const key = todayKey();
+      const ref = doc(db, "users", currentUser.uid, "tasbih", key);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        await setDoc(ref, {
+          dateKey: key,
+          createdAt: Date.now(),
+          remaining: 10000,
+          done: false
+        });
+      }
+      const updatedSnap = await getDoc(ref);
+      currentTasbihDocRef = ref;
+      currentTasbihData = updatedSnap.data();
+      updateTasbihUI();
+    }
+
+    function updateTasbihUI() {
+      if (!currentTasbihData) return;
+      const remaining = currentTasbihData.remaining ?? 10000;
+      const done = !!currentTasbihData.done;
+      tasbihCountEl.textContent = remaining;
+      const now = new Date();
+      const { label } = formatDateLabel(now);
+      tasbihDateLabel.textContent = label;
+      if (done) {
+        tasbihStatusEl.textContent = "Done untuk hari ini";
+        tasbihStatusChip.textContent = "Status: Done";
+      } else {
+        tasbihStatusEl.textContent = "Tekan untuk -1";
+        tasbihStatusChip.textContent = "Status: Aktif";
+      }
+    }
+
+    async function decrementTasbih() {
+      if (!currentUser || !currentTasbihDocRef || !currentTasbihData) return;
+      if (currentTasbihData.done) return;
+      let remaining = currentTasbihData.remaining ?? 10000;
+      if (remaining <= 0) return;
+      remaining -= 1;
+      const done = remaining <= 0;
+      currentTasbihData.remaining = remaining;
+      currentTasbihData.done = done;
+      await setDoc(currentTasbihDocRef, {
+        ...currentTasbihData,
+        updatedAt: Date.now()
+      });
+      updateTasbihUI();
+      if (done) {
+        showSection(sectionHistory);
+      }
+    }
+
+    function subscribeHistory() {
+      if (!currentUser) return;
+      if (historyUnsub) historyUnsub();
+      const q = query(
+        collection(db, "users", currentUser.uid, "tasbih"),
+        orderBy("dateKey", "desc")
+      );
+      historyUnsub = onSnapshot(q, (snap) => {
+        historyList.innerHTML = "";
+        if (snap.empty) {
+          historyList.innerHTML = `<div class="empty-state">Belum ada rekod tasbih.</div>`;
+          return;
+        }
+        snap.forEach(docSnap => {
+          const data = docSnap.data();
+          const key = data.dateKey || "";
+          const [y, m, d] = key.split("-");
+          const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
+          const { label, day, year } = formatDateLabel(dateObj);
+          const statusDone = !!data.done;
+          const remaining = data.remaining ?? 0;
+          const statusLabel = statusDone ? "Done" : "False";
+          const badgeClass = statusDone ? "badge-done" : "badge-false";
+          const html = `
+            <div class="list-item">
+              <div class="list-main">
+                <div class="list-title">${day} (${statusLabel})</div>
+                <div class="list-sub">${label} • Baki: ${remaining}</div>
+              </div>
+              <span class="badge-status ${badgeClass}">${statusLabel}</span>
+            </div>
+          `;
+          historyList.insertAdjacentHTML("beforeend", html);
+        });
+      });
+    }
+
+    function subscribeNotes() {
+      if (!currentUser) return;
+      if (notesUnsub) notesUnsub();
+      const q = query(
+        collection(db, "users", currentUser.uid, "notes"),
+        orderBy("createdAt", "desc")
+      );
+      notesUnsub = onSnapshot(q, (snap) => {
+        notesList.innerHTML = "";
+        if (snap.empty) {
+          notesList.innerHTML = `<div class="empty-state">Belum ada nota. Tekan "Tambah Nota".</div>`;
+          return;
+        }
+        snap.forEach(docSnap => {
+          const data = docSnap.data();
+          const id = docSnap.id;
+          const text = data.text || "";
+          const createdAt = data.createdAt ? new Date(data.createdAt) : null;
+          const timeLabel = createdAt
+            ? `${String(createdAt.getDate()).padStart(2, "0")}/${String(createdAt.getMonth() + 1).padStart(2, "0")}/${createdAt.getFullYear()}`
+            : "";
+          const wrapper = document.createElement("div");
+          wrapper.className = "list-item";
+          wrapper.innerHTML = `
+            <div class="note-card" style="width:100%;">
+              <div class="row">
+                <span class="list-sub">${timeLabel}</span>
+                <div class="row" style="gap:6px;">
+                  <button class="btn-secondary btn-sm btn-delete-note" data-id="${id}">Delete</button>
+                </div>
+              </div>
+              <textarea class="note-textarea" data-id="${id}">${text}</textarea>
+            </div>
+          `;
+          notesList.appendChild(wrapper);
+        });
+
+        notesList.querySelectorAll(".note-textarea").forEach((ta) => {
+          ta.addEventListener(
