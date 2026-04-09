@@ -359,7 +359,7 @@
         <div id="tasbih-circle" class="counter-circle">
           <div class="counter-label">Baki hari ini</div>
           <div id="tasbih-count" class="counter-value">10000</div>
-          <div id="tasbih-status" class="counter-sub">Sentuh, Swipe @ Butang Volume</div>
+          <div id="tasbih-status" class="counter-sub">Sentuh Atau Slide Sedikit Je</div>
         </div>
 
         <div class="row">
@@ -533,7 +533,7 @@
         tasbihStatusEl.textContent = "Done untuk hari ini";
         tasbihStatusChip.textContent = "Status: Done";
       } else {
-        tasbihStatusEl.textContent = "Sentuh, Swipe @ Butang Volume";
+        tasbihStatusEl.textContent = "Sentuh Atau Slide Sedikit Je";
         tasbihStatusChip.textContent = "Status: Aktif";
       }
     }
@@ -727,12 +727,14 @@
     });
 
     // ==========================================
-    // LOGIK FULL SCREEN CLICK & SWIPE SEESAW
+    // LOGIK FULL SCREEN CLICK & SWIPE SEESAW SANGAT SENSITIF
     // ==========================================
     let touchOriginY = 0;
     let expectedDirection = null; 
     let isSwiping = false;
-    const SWIPE_GAP = 25; 
+    
+    // Jarak gap dikurangkan ke tahap maksimum (5 piksel sahaja)
+    const SWIPE_GAP = 5; 
 
     document.addEventListener("touchstart", (e) => {
       if (!sectionTasbih.classList.contains('active')) return;
@@ -751,7 +753,8 @@
       const currentY = e.touches[0].clientY;
       const diff = currentY - touchOriginY;
 
-      if (Math.abs(diff) > 10) {
+      // Geseran sekecil 3 piksel dah dikira sebagai mula swipe
+      if (Math.abs(diff) > 3) {
         isSwiping = true;
       }
 
@@ -781,21 +784,6 @@
       }
 
       await decrementTasbih();
-    });
-
-    // ==========================================
-    // LOGIK BUTANG VOLUME (PHYSICAL BUTTONS)
-    // ==========================================
-    document.addEventListener("keydown", async (e) => {
-      // Pastikan hanya berfungsi bila page Tasbih aktif
-      if (!sectionTasbih.classList.contains('active')) return;
-
-      // Kesan butang volume (Nama key berbeza ikut jenis browser/OS)
-      if (e.key === "AudioVolumeUp" || e.key === "AudioVolumeDown" || e.key === "VolumeUp" || e.key === "VolumeDown") {
-        e.preventDefault(); // Cuba halang UI volume telefon dari keluar (berjaya atau tidak bergantung pada OS)
-        await decrementTasbih();
-        if (navigator.vibrate) navigator.vibrate(30);
-      }
     });
 
     // PWA: register service worker
