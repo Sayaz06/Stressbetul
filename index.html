@@ -86,7 +86,7 @@
       background: rgba(30, 41, 59, 0.8);
       border: 1px solid rgba(99, 102, 241, 0.4);
       border-radius: 14px;
-      padding: 16px;
+      padding: 16px 40px 16px 16px; /* Beri ruang ekstra belah kanan untuk butang suara */
       text-align: center;
       color: #fff;
       display: none; 
@@ -116,7 +116,6 @@
       font-size: 1.1rem;
       font-weight: 600;
       line-height: 1.4;
-      padding: 0 20px;
     }
     .fact-hint {
       font-size: 0.65rem;
@@ -125,27 +124,26 @@
       opacity: 0.8;
     }
 
-    /* Butang Suara */
+    /* Butang Suara yang lebih jelas untuk Mobile */
     .btn-speak {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
+      top: 50%;
+      transform: translateY(-50%);
+      right: 12px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
-      width: 30px;
-      height: 30px;
+      width: 36px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      font-size: 0.9rem;
-      z-index: 20;
+      font-size: 1.1rem;
+      z-index: 50; /* Pastikan tak tertindih */
     }
     .btn-speak:active {
-      transform: scale(0.9);
-      background: rgba(255,255,255,0.3);
+      background: rgba(255, 255, 255, 0.3);
     }
 
     /* Efek Animasi Flip Terjemahan */
@@ -314,11 +312,11 @@
       if (currentData.isTamat) {
         factContentEl.innerHTML = `<span style="color: #fca5a5; font-weight: bold;">${currentData.text}</span>`;
         factHintEl.style.display = 'none'; 
-        btnSpeak.style.display = 'none'; // Sembunyikan suara kalau mesej tamat
+        btnSpeak.style.display = 'none'; 
       } else {
         factContentEl.textContent = currentData.text;
         factHintEl.style.display = 'block';
-        btnSpeak.style.display = 'flex'; // Tunjuk balik suara
+        btnSpeak.style.display = 'flex'; 
       }
 
       currentFactIndex = (currentFactIndex + 1) % allFacts.length;
@@ -405,7 +403,7 @@
           factTitleEl.textContent = `[ ${allFacts[currentFactIndex].title} ]`;
           factContentEl.textContent = "Sapu/Tekan/Enter untuk mula...";
           factHintEl.style.display = 'block';
-          btnSpeak.style.display = 'flex';
+          btnSpeak.style.display = 'flex'; // Pastikan button suara ditunjukkan
         } else if (allFacts.length === 0) {
           factTitleEl.textContent = "";
           factContentEl.textContent = "Laci kosong. Sila tambah fakta.";
@@ -500,8 +498,10 @@
             factContentEl.textContent = currentData.translation;
           } else {
             factContentEl.textContent = "Menterjemah... ⏳";
-            const cleanTextForTranslate = currentData.text.replace(/^\d+[\.\)]\s*/, ''); // Buang nombor sblm translate
-            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=ms&dt=t&q=${encodeURIComponent(cleanTextForTranslate)}`;
+            
+            // PENTING: Lock sumber bahasa ke English (sl=en)
+            const cleanTextForTranslate = currentData.text.replace(/^\d+[\.\)]\s*/, ''); 
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ms&dt=t&q=${encodeURIComponent(cleanTextForTranslate)}`;
             
             fetch(url)
               .then(res => res.json())
@@ -525,28 +525,25 @@
     // LOGIK SUARA (TEXT-TO-SPEECH) BEBAS NOMBOR
     // ==========================================
     btnSpeak.addEventListener('click', (e) => {
-      e.stopPropagation(); // Halang kotak dari flip bila tekan butang audio
+      // Halang event dari bubble up supaya kotak tak flip
+      e.stopPropagation(); 
       
       let viewingIndex = currentFactIndex === 0 ? allFacts.length - 1 : currentFactIndex - 1;
       if (allFacts.length === 0 || allFacts[viewingIndex].isTamat) return;
 
       const currentData = allFacts[viewingIndex];
       
-      // Ambil teks yang nak dibaca berdasarkan muka depan/belakang
       let rawTextToRead = isFlipped ? 
           (currentData.translation ? currentData.translation : factContentEl.textContent) 
           : currentData.text;
       
-      // REGEX: Membuang nombor format seperti "1. ", "100.", "2) " di awal ayat
       const cleanText = rawTextToRead.replace(/^\d+[\.\)]\s*/, '');
 
-      // Hentikan suara yang sedang berbunyi (kalau ada)
       window.speechSynthesis.cancel();
 
       const utterance = new SpeechSynthesisUtterance(cleanText);
-      // Jika flip (Maksud), guna sebutan Melayu, jika depan (Kamus), guna English
       utterance.lang = isFlipped ? 'ms-MY' : 'en-US'; 
-      utterance.rate = 0.9; // Perlahankan sikit supaya sebutan lebih jelas
+      utterance.rate = 0.9; 
       
       window.speechSynthesis.speak(utterance);
     });
