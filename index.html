@@ -357,7 +357,7 @@
         <div id="tasbih-circle" class="counter-circle">
           <div class="counter-label">Baki hari ini</div>
           <div id="tasbih-count" class="counter-value">10000</div>
-          <div id="tasbih-status" class="counter-sub">Tekan / Swipe (Atas & Bawah)</div>
+          <div id="tasbih-status" class="counter-sub">Sentuh / Swipe Di Mana Saja</div>
         </div>
 
         <div class="row">
@@ -463,7 +463,6 @@
     const btnAddNote = document.getElementById("btn-add-note");
 
     const homeUserEmail = document.getElementById("home-user-email");
-    const tasbihCircle = document.getElementById("tasbih-circle");
     const tasbihCountEl = document.getElementById("tasbih-count");
     const tasbihStatusEl = document.getElementById("tasbih-status");
     const tasbihStatusChip = document.getElementById("tasbih-status-chip");
@@ -532,7 +531,7 @@
         tasbihStatusEl.textContent = "Done untuk hari ini";
         tasbihStatusChip.textContent = "Status: Done";
       } else {
-        tasbihStatusEl.textContent = "Tekan / Swipe (Atas & Bawah)";
+        tasbihStatusEl.textContent = "Sentuh / Swipe Di Mana Saja";
         tasbihStatusChip.textContent = "Status: Aktif";
       }
     }
@@ -713,10 +712,6 @@
       showSection(sectionHistory);
     });
 
-    tasbihCircle.addEventListener("click", async () => {
-      await decrementTasbih();
-    });
-
     btnAddNote.addEventListener("click", async () => {
       await addNote();
     });
@@ -729,37 +724,71 @@
       showSection(sectionTasbih);
     });
 
-    // LOGIK BARU SWIPE SEESAW (ATAS BAWAH)
+    // ==========================================
+    // LOGIK FULL SCREEN CLICK & SWIPE SEESAW
+    // ==========================================
     let touchOriginY = 0;
-    let expectedDirection = null; // Boleh ke 'UP' atau 'DOWN', null = mana-mana arah
-    const SWIPE_GAP = 25; // Jarak sempadan (25px) pergerakan jari untuk tolak 1
+    let expectedDirection = null; 
+    let isSwiping = false;
+    const SWIPE_GAP = 25; 
 
-    sectionTasbih.addEventListener("touchstart", (e) => {
+    // Mula sentuh skrin (di mana-mana)
+    document.addEventListener("touchstart", (e) => {
+      if (!sectionTasbih.classList.contains('active')) return;
+      
+      // ABAIKAN jika user sentuh mana-mana butang, menu atas, atau label-label tertentu
+      if (e.target.closest('button') || e.target.closest('.topbar') || e.target.closest('.chip') || e.target.closest('.pill')) return;
+      
       touchOriginY = e.touches[0].clientY;
-      expectedDirection = null; // Reset arah, sentuhan baru bebas pilih mula ke atas/bawah
+      expectedDirection = null; // Boleh tarik arah mana dulu pun
+      isSwiping = false;
     }, { passive: true });
 
-    sectionTasbih.addEventListener("touchmove", (e) => {
+    // Masa jari bergerak
+    document.addEventListener("touchmove", (e) => {
+      if (!sectionTasbih.classList.contains('active')) return;
+      if (e.target.closest('button') || e.target.closest('.topbar') || e.target.closest('.chip') || e.target.closest('.pill')) return;
       if (!currentTasbihData || currentTasbihData.done) return;
 
       const currentY = e.touches[0].clientY;
       const diff = currentY - touchOriginY;
 
-      // Swipe ke ATAS (diff negatif)
+      // Jika jari dah mula seret sikit (lebih 10px), kita set status sedang swipe supaya klik biasa tak dikira.
+      if (Math.abs(diff) > 10) {
+        isSwiping = true;
+      }
+
+      // Tarik Atas (diff negatif)
       if (diff < -SWIPE_GAP && expectedDirection !== 'DOWN') {
         decrementTasbih();
         if (navigator.vibrate) navigator.vibrate(30);
-        touchOriginY = currentY; // Set center point baru pada kedudukan jari terkini
-        expectedDirection = 'DOWN'; // Seterusnya wajib ke bawah
+        touchOriginY = currentY; 
+        expectedDirection = 'DOWN'; // Tarikan seterusnya WAJIB ke bawah
       }
-      // Swipe ke BAWAH (diff positif)
+      // Tarik Bawah (diff positif)
       else if (diff > SWIPE_GAP && expectedDirection !== 'UP') {
         decrementTasbih();
         if (navigator.vibrate) navigator.vibrate(30);
-        touchOriginY = currentY; // Set center point baru pada kedudukan jari terkini
-        expectedDirection = 'UP'; // Seterusnya wajib ke atas
+        touchOriginY = currentY; 
+        expectedDirection = 'UP'; // Tarikan seterusnya WAJIB ke atas
       }
     }, { passive: true });
+
+    // Tekan/Klik skrin (di mana-mana)
+    document.addEventListener("click", async (e) => {
+      if (!sectionTasbih.classList.contains('active')) return;
+      
+      // ABAIKAN jika user klik butang, menu atas, dll
+      if (e.target.closest('button') || e.target.closest('.topbar') || e.target.closest('.chip') || e.target.closest('.pill')) return;
+      
+      // Jika baru lepas swipe, jangan jadikan ini sebagai klik
+      if (isSwiping) {
+        isSwiping = false;
+        return;
+      }
+
+      await decrementTasbih();
+    });
 
     // PWA: register service worker
     if ("serviceWorker" in navigator) {
