@@ -80,6 +80,7 @@
     }
     .counter-value { font-size: 3rem; font-weight: 700; }
     
+    /* KOTAK FAKTA KEKAL (Flashcard) */
     #fact-display-box {
       margin-top: 15px;
       background: rgba(30, 41, 59, 0.8);
@@ -94,8 +95,8 @@
       align-items: center;
       min-height: 90px;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-      transition: all 0.3s ease;
-      white-space: pre-wrap; 
+      cursor: pointer; /* Tukar kursor jadi tangan untuk tunjuk boleh klik */
+      user-select: none;
       flex-shrink: 0;
     }
     #fact-display-box.show {
@@ -111,9 +112,25 @@
       margin-bottom: 6px;
     }
     .fact-content-text {
-      font-size: 1rem;
-      font-weight: 500;
+      font-size: 1.1rem;
+      font-weight: 600;
       line-height: 1.4;
+    }
+    .fact-hint {
+      font-size: 0.65rem;
+      color: var(--subtext);
+      margin-top: 8px;
+      opacity: 0.8;
+    }
+
+    /* Efek Animasi Flip Terjemahan */
+    .flip-animation {
+      animation: flipCard 0.3s ease-in-out;
+    }
+    @keyframes flipCard {
+      0% { transform: scaleY(1); opacity: 1; }
+      50% { transform: scaleY(0); opacity: 0.2; }
+      100% { transform: scaleY(1); opacity: 1; }
     }
 
     @keyframes fadeIn {
@@ -182,6 +199,7 @@
         <div id="fact-display-box">
           <div id="fact-title" class="fact-title-label"></div>
           <div id="fact-content" class="fact-content-text">Sedia untuk mula...</div>
+          <div id="fact-hint" class="fact-hint">(Tekan/Klik kotak ini untuk terjemahan)</div>
         </div>
 
         <div style="text-align:center; margin-top: auto;">
@@ -243,6 +261,7 @@
     const factDisplayBox = document.getElementById("fact-display-box");
     const factTitleEl = document.getElementById("fact-title");
     const factContentEl = document.getElementById("fact-content");
+    const factHintEl = document.getElementById("fact-hint");
 
     let currentUser = null;
     let currentTasbihData = null;
@@ -251,6 +270,7 @@
     // Array Fakta
     let allFacts = []; 
     let currentFactIndex = 0;
+    let isFlipped = false; // Status flip terjemahan
 
     function showSection(name) {
       Object.values(dom).forEach(s => s.classList.remove("active"));
@@ -261,13 +281,17 @@
     function cycleFact() {
       if (!factMode || allFacts.length === 0) return;
       
+      // Reset flip ke asal setiap kali fakta bertukar
+      isFlipped = false; 
       const currentData = allFacts[currentFactIndex];
       factTitleEl.textContent = currentData.title ? `[ ${currentData.title} ]` : '';
       
       if (currentData.isTamat) {
         factContentEl.innerHTML = `<span style="color: #fca5a5; font-weight: bold;">${currentData.text}</span>`;
+        factHintEl.style.display = 'none'; // Sembunyikan hint jika mesej tamat
       } else {
         factContentEl.textContent = currentData.text;
+        factHintEl.style.display = 'block';
       }
 
       // Gerak ke fakta seterusnya
@@ -291,7 +315,6 @@
       });
       
       tasbihCountEl.textContent = remaining;
-      
       cycleFact();
     }
 
@@ -300,7 +323,7 @@
       return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
     }
 
-    // Sync Laci Fakta
+    // Sync Laci Fakta & Pecahkan Terjemahan
     function subscribeDrawer() {
       const q = query(collection(db, "users", currentUser.uid, "drawer"), orderBy("createdAt", "asc"));
       onSnapshot(q, (snap) => {
@@ -315,10 +338,20 @@
             const lines = data.notes.split('\n').filter(l => l.trim() !== "");
             if (lines.length > 0) {
               lines.forEach(line => {
-                allFacts.push({ title: tajukLaci, text: line, isTamat: false });
+                // Asingkan perkataan dan terjemahan menggunakan simbol "="
+                const parts = line.split('=');
+                const frontText = parts[0].trim();
+                const backText = parts.length > 1 ? parts[1].trim() : "Tiada terjemahan diletakkan.";
+                
+                allFacts.push({ 
+                  title: tajukLaci, 
+                  text: frontText, 
+                  translation: backText,
+                  isTamat: false 
+                });
               });
               
-              allFacts.push({ title: tajukLaci, text: "✅ Laci Tamat. Sapu/tekan untuk tajuk seterusnya.", isTamat: true });
+              allFacts.push({ title: tajukLaci, text: "✅ Laci Tamat. Sapu/tekan untuk ke laci seterusnya.", isTamat: true });
             }
           }
 
@@ -326,7 +359,7 @@
           div.className = "drawer-card";
           div.innerHTML = `
             <input class="drawer-title" value="${data.title || ''}" placeholder="Tajuk (Cth: Kamus BI Level 1)">
-            <textarea class="drawer-notes" placeholder="Apple&#10;Banana&#10;Cat">${data.notes || ''}</textarea>
+            <textarea class="drawer-notes" placeholder="Guna simbol '=' untuk terjemahan. Cth:&#10;Apple = Epal&#10;Banana = Pisang">${data.notes || ''}</textarea>
             <div style="text-align: right;">
               <button class="btn btn-secondary btn-sm btn-del-laci" style="color:var(--danger); border-color:var(--danger);">Padam</button>
             </div>
@@ -345,17 +378,19 @@
         // DAPATKAN MEMORI DARI PERANTI TELEFON
         let savedIndex = parseInt(localStorage.getItem('istigfar_fact_index')) || 0;
         
-        // Pastikan index tak terlebih dari jumlah nota terkini (jika user ada padam nota)
+        // Pastikan index tak terlebih dari jumlah nota terkini
         if (savedIndex >= allFacts.length) savedIndex = 0;
         currentFactIndex = savedIndex;
         
         // Placeholder berdasarkan memori terakhir
         if (factMode && allFacts.length > 0) {
           factTitleEl.textContent = `[ ${allFacts[currentFactIndex].title} ]`;
-          factContentEl.textContent = "Sapu/Tekan skrin untuk sambung perkataan...";
+          factContentEl.textContent = "Sapu/Tekan/Enter untuk mula sambung...";
+          factHintEl.style.display = 'block';
         } else if (allFacts.length === 0) {
           factTitleEl.textContent = "";
           factContentEl.textContent = "Laci kosong. Sila tambah fakta.";
+          factHintEl.style.display = 'none';
         }
       });
     }
@@ -407,17 +442,49 @@
         factDisplayBox.classList.add("show");
         if (allFacts.length > 0) {
           factTitleEl.textContent = `[ ${allFacts[currentFactIndex].title} ]`;
-          factContentEl.textContent = "Sapu/Tekan skrin untuk sambung perkataan...";
+          factContentEl.textContent = "Sapu/Tekan/Enter untuk mula sambung...";
+          factHintEl.style.display = 'block';
         } else {
           factTitleEl.textContent = "";
           factContentEl.textContent = "Laci kosong. Sila tambah laci fakta.";
+          factHintEl.style.display = 'none';
         }
       } else {
         factDisplayBox.classList.remove("show");
       }
     };
 
-    // Full Screen Logic (Swipe Seesaw Sangat Sensitif - 5px)
+    // ==========================================
+    // LOGIK FLIP KOTAK FAKTA (TERJEMAHAN)
+    // ==========================================
+    factDisplayBox.addEventListener('click', (e) => {
+      // Halang event klik ni dari tembus ke body (supaya tasbih tak tolak)
+      e.stopPropagation(); 
+      
+      // Jika laci kosong atau mesej tamat, jangan flip
+      // Kita tolak 1 dari currentFactIndex sebab currentFactIndex sentiasa merujuk ke fakta "seterusnya"
+      let viewingIndex = currentFactIndex === 0 ? allFacts.length - 1 : currentFactIndex - 1;
+      if (allFacts.length === 0 || allFacts[viewingIndex].isTamat) return;
+
+      const currentData = allFacts[viewingIndex];
+      isFlipped = !isFlipped; // Tukar status flip
+
+      // Buat efek animasi 3D flip (CSS Reflow hack)
+      factDisplayBox.classList.remove("flip-animation");
+      void factDisplayBox.offsetWidth; 
+      factDisplayBox.classList.add("flip-animation");
+
+      // Tukar teks pada pertengahan animasi (150ms)
+      setTimeout(() => {
+        factContentEl.textContent = isFlipped ? currentData.translation : currentData.text;
+        factTitleEl.textContent = `[ ${currentData.title} ] ${isFlipped ? '(Maksud)' : ''}`;
+      }, 150);
+    });
+
+
+    // ==========================================
+    // LOGIK FULL SCREEN CLICK, SWIPE (5px) & KEYBOARD
+    // ==========================================
     let touchY = 0;
     let lastDir = null;
     let isSwiping = false;
@@ -450,6 +517,25 @@
       decrementTasbih();
     });
 
+    // LOGIK SHORTCUT KEYBOARD (Numpad Enter / Enter Biasa)
+    document.addEventListener("keydown", (e) => {
+      // Pastikan page tasbih sedang dibuka dan user tidak sedang menaip di laci (input/textarea)
+      if (!dom.tasbih.classList.contains('active')) return;
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+
+      if (e.code === "NumpadEnter" || e.key === "Enter") {
+        e.preventDefault();
+        decrementTasbih();
+        if(navigator.vibrate) navigator.vibrate(25);
+      }
+    });
+
+    // PWA: register service worker
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js").catch(console.error);
+      });
+    }
   </script>
 </body>
 </html>
