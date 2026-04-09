@@ -26,7 +26,7 @@
       align-items: stretch;
       justify-content: center;
       overscroll-behavior-y: none;
-      overflow: hidden;
+      overflow: hidden; 
     }
     .app-shell {
       width: 100%;
@@ -35,6 +35,7 @@
       padding: 16px;
       display: flex;
       flex-direction: column;
+      max-height: 100dvh;
     }
     .card {
       background: rgba(15, 23, 42, 0.9);
@@ -47,7 +48,8 @@
       display: flex;
       flex-direction: column;
       position: relative;
-      overflow: hidden;
+      overflow: hidden; 
+      min-height: 0; 
     }
     .title-main { font-size: 1.8rem; font-weight: 700; text-align: center; margin-bottom: 6px; }
     .subtitle { text-align: center; font-size: 0.9rem; color: var(--subtext); margin-bottom: 18px; }
@@ -64,22 +66,20 @@
     .btn-sm { width: auto; padding: 6px 12px; font-size: 0.8rem; }
     .btn-active { background: var(--grad1) !important; color: white; border-color: transparent; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
 
-    .section { display: none; flex-direction: column; flex: 1; }
+    .section { display: none; flex-direction: column; flex: 1; min-height: 0; }
     .section.active { display: flex; }
-    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; z-index: 10; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; z-index: 10; flex-shrink: 0; }
     
-    /* Tasbih Circle */
     .counter-circle {
       width: 210px; height: 210px; border-radius: 50%;
       border: 2px solid rgba(148, 163, 184, 0.5);
       background: radial-gradient(circle at top, rgba(79, 70, 229, 0.15), rgba(15, 23, 42, 0.95));
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       margin: 10px auto; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
-      z-index: 5;
+      z-index: 5; flex-shrink: 0;
     }
     .counter-value { font-size: 3rem; font-weight: 700; }
     
-    /* KOTAK FAKTA KEKAL (Flashcard) */
     #fact-display-box {
       margin-top: 15px;
       background: rgba(30, 41, 59, 0.8);
@@ -88,14 +88,15 @@
       padding: 16px;
       text-align: center;
       color: #fff;
-      display: none; /* Disembunyikan secara lalai */
+      display: none; 
       flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 90px;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
       transition: all 0.3s ease;
-      white-space: pre-wrap; /* Kekalkan line break jika ada */
+      white-space: pre-wrap; 
+      flex-shrink: 0;
     }
     #fact-display-box.show {
       display: flex;
@@ -120,15 +121,23 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .list { margin-top: 10px; border-radius: 14px; border: 1px solid var(--border-soft); background: rgba(15, 23, 42, 0.9); flex: 1; overflow-y: auto; }
+    .list { 
+      margin-top: 10px; 
+      border-radius: 14px; 
+      border: 1px solid var(--border-soft); 
+      background: rgba(15, 23, 42, 0.9); 
+      flex: 1; 
+      overflow-y: auto; 
+      min-height: 0; 
+      padding-bottom: 20px;
+    }
     
-    /* Drawer Editor */
     .drawer-card { background: rgba(30, 41, 59, 0.5); border-radius: 12px; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border-soft); }
     input.drawer-title { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border-mid); color: #fff; font-weight: 700; padding: 4px; margin-bottom: 8px; outline: none; }
     textarea.drawer-notes { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-soft); color: var(--subtext); border-radius: 8px; padding: 8px; font-size: 0.85rem; min-height: 80px; resize: none; outline: none; }
     
-    .footer { margin-top: auto; padding-top: 10px; text-align: center; font-size: 0.7rem; color: var(--subtext); }
-    .mt-8 { margin-top: 8px; }
+    .footer { margin-top: auto; padding-top: 10px; text-align: center; font-size: 0.7rem; color: var(--subtext); flex-shrink: 0; }
+    .mt-8 { margin-top: 8px; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -183,19 +192,19 @@
       <section id="section-drawer" class="section">
         <div class="topbar">
           <button id="btn-back-tasbih-drawer" class="btn btn-secondary btn-sm">← Tasbih</button>
-          <div class="topbar-title">Laci Fakta</div>
+          <div class="topbar-title">Laci Kamus/Fakta</div>
         </div>
         <button id="btn-add-laci" class="btn btn-sm mt-8">Tambah Laci Baru</button>
         <div class="list mt-8" id="drawer-list" style="padding: 10px;"></div>
       </section>
 
       <section id="section-history" class="section">
-        <button id="btn-back-tasbih-history" class="btn btn-secondary btn-sm" style="align-self: flex-start;">← Tasbih</button>
+        <button id="btn-back-tasbih-history" class="btn btn-secondary btn-sm" style="align-self: flex-start; margin-bottom: 10px;">← Tasbih</button>
         <div class="list" id="history-list"></div>
       </section>
 
       <section id="section-notes" class="section">
-        <button id="btn-back-tasbih-notes" class="btn btn-secondary btn-sm" style="align-self: flex-start;">← Tasbih</button>
+        <button id="btn-back-tasbih-notes" class="btn btn-secondary btn-sm" style="align-self: flex-start; margin-bottom: 10px;">← Tasbih</button>
         <button id="btn-add-note" class="btn btn-sm mt-8">Tambah Nota</button>
         <div class="list mt-8" id="notes-list"></div>
       </section>
@@ -248,16 +257,24 @@
       dom[name].classList.add("active");
     }
 
-    // Fungsi Papar Fakta Kekal
+    // Fungsi Papar Fakta Kekal (Dengan Memori)
     function cycleFact() {
       if (!factMode || allFacts.length === 0) return;
       
       const currentData = allFacts[currentFactIndex];
       factTitleEl.textContent = currentData.title ? `[ ${currentData.title} ]` : '';
-      factContentEl.textContent = currentData.text;
+      
+      if (currentData.isTamat) {
+        factContentEl.innerHTML = `<span style="color: #fca5a5; font-weight: bold;">${currentData.text}</span>`;
+      } else {
+        factContentEl.textContent = currentData.text;
+      }
 
-      // Gerak ke fakta seterusnya (loop balik ke mula kalau dah habis)
+      // Gerak ke fakta seterusnya
       currentFactIndex = (currentFactIndex + 1) % allFacts.length;
+      
+      // SIMPAN MEMORI: Simpan kedudukan index seterusnya ke dalam peranti telefon
+      localStorage.setItem('istigfar_fact_index', currentFactIndex);
     }
 
     async function decrementTasbih() {
@@ -275,7 +292,6 @@
       
       tasbihCountEl.textContent = remaining;
       
-      // Update kotak fakta setiap kali tolak tasbih
       cycleFact();
     }
 
@@ -293,23 +309,24 @@
         snap.forEach(d => {
           const data = d.data();
           const id = d.id;
+          const tajukLaci = data.title || "Tiada Tajuk";
           
-          // Pecahkan setiap baris nota sebagai satu objek fakta
           if(data.notes) {
             const lines = data.notes.split('\n').filter(l => l.trim() !== "");
-            lines.forEach(line => {
-              allFacts.push({
-                title: data.title || "Tiada Tajuk",
-                text: line
+            if (lines.length > 0) {
+              lines.forEach(line => {
+                allFacts.push({ title: tajukLaci, text: line, isTamat: false });
               });
-            });
+              
+              allFacts.push({ title: tajukLaci, text: "✅ Laci Tamat. Sapu/tekan untuk tajuk seterusnya.", isTamat: true });
+            }
           }
 
           const div = document.createElement("div");
           div.className = "drawer-card";
           div.innerHTML = `
-            <input class="drawer-title" value="${data.title || ''}" placeholder="Tajuk (Cth: Langkah Tidur)">
-            <textarea class="drawer-notes" placeholder="1. Letakkan kaki&#10;2. Ambil bantal&#10;3. Luruskan badan">${data.notes || ''}</textarea>
+            <input class="drawer-title" value="${data.title || ''}" placeholder="Tajuk (Cth: Kamus BI Level 1)">
+            <textarea class="drawer-notes" placeholder="Apple&#10;Banana&#10;Cat">${data.notes || ''}</textarea>
             <div style="text-align: right;">
               <button class="btn btn-secondary btn-sm btn-del-laci" style="color:var(--danger); border-color:var(--danger);">Padam</button>
             </div>
@@ -325,13 +342,17 @@
           drawerList.appendChild(div);
         });
 
-        // Reset index bila data bertukar
-        currentFactIndex = 0;
+        // DAPATKAN MEMORI DARI PERANTI TELEFON
+        let savedIndex = parseInt(localStorage.getItem('istigfar_fact_index')) || 0;
         
-        // Letak placeholder awal jika mode on tapi belum mula zikir
+        // Pastikan index tak terlebih dari jumlah nota terkini (jika user ada padam nota)
+        if (savedIndex >= allFacts.length) savedIndex = 0;
+        currentFactIndex = savedIndex;
+        
+        // Placeholder berdasarkan memori terakhir
         if (factMode && allFacts.length > 0) {
-          factTitleEl.textContent = `[ ${allFacts[0].title} ]`;
-          factContentEl.textContent = "Sapu/Tekan skrin untuk baca fakta seterusnya.";
+          factTitleEl.textContent = `[ ${allFacts[currentFactIndex].title} ]`;
+          factContentEl.textContent = "Sapu/Tekan skrin untuk sambung perkataan...";
         } else if (allFacts.length === 0) {
           factTitleEl.textContent = "";
           factContentEl.textContent = "Laci kosong. Sila tambah fakta.";
@@ -386,7 +407,7 @@
         factDisplayBox.classList.add("show");
         if (allFacts.length > 0) {
           factTitleEl.textContent = `[ ${allFacts[currentFactIndex].title} ]`;
-          factContentEl.textContent = "Sapu skrin untuk baca fakta seterusnya.";
+          factContentEl.textContent = "Sapu/Tekan skrin untuk sambung perkataan...";
         } else {
           factTitleEl.textContent = "";
           factContentEl.textContent = "Laci kosong. Sila tambah laci fakta.";
