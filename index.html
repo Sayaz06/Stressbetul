@@ -25,6 +25,7 @@
       display: flex;
       align-items: stretch;
       justify-content: center;
+      overscroll-behavior-y: none; /* Mengelakkan skrin tertarik (pull-to-refresh) semasa swipe tasbih */
     }
     .app-shell {
       width: 100%;
@@ -302,7 +303,6 @@
 <body>
   <div class="app-shell">
     <div class="card">
-      <!-- LOGIN SECTION -->
       <section id="section-login" class="section active">
         <div class="title-main">Istigfar</div>
         <div class="subtitle">Tasbih harian & nota istighfar, sync dengan akaun Google anda.</div>
@@ -316,21 +316,17 @@
         </div>
       </section>
 
-      <!-- HOME SECTION -->
       <section id="section-home" class="section">
         <div class="topbar">
           <div>
-            <div class="topbar-title">Istigfar</div>
+            <div class="topbar-title">Menu Utama</div>
             <div class="topbar-sub" id="home-user-email"></div>
           </div>
           <button id="btn-logout" class="btn btn-secondary btn-sm">Logout</button>
         </div>
         <div class="stack">
           <button id="btn-go-tasbih" class="btn">
-            <span>Tasbih Countdown</span>
-          </button>
-          <button id="btn-go-notes" class="btn btn-secondary">
-            <span>Note For Istighfar</span>
+            <span>Kembali ke Tasbih</span>
           </button>
         </div>
         <div class="footer mt-16">
@@ -338,12 +334,14 @@
         </div>
       </section>
 
-      <!-- TASBIH SECTION -->
       <section id="section-tasbih" class="section">
         <div class="topbar">
-          <button id="btn-back-home-from-tasbih" class="btn btn-secondary btn-sm">← Home</button>
+          <div style="display: flex; gap: 8px;">
+            <button id="btn-back-home-from-tasbih" class="btn btn-secondary btn-sm">← Menu</button>
+            <button id="btn-go-notes-from-tasbih" class="btn btn-secondary btn-sm">Nota</button>
+          </div>
           <div style="text-align:right;">
-            <div class="topbar-title">Tasbih Countdown</div>
+            <div class="topbar-title">Tasbih</div>
             <div class="topbar-sub" id="tasbih-date-label"></div>
           </div>
         </div>
@@ -359,7 +357,7 @@
         <div id="tasbih-circle" class="counter-circle">
           <div class="counter-label">Baki hari ini</div>
           <div id="tasbih-count" class="counter-value">10000</div>
-          <div id="tasbih-status" class="counter-sub">Tekan untuk -1</div>
+          <div id="tasbih-status" class="counter-sub">Tekan / Swipe (Atas & Bawah)</div>
         </div>
 
         <div class="row">
@@ -372,7 +370,6 @@
         </div>
       </section>
 
-      <!-- HISTORY SECTION -->
       <section id="section-history" class="section">
         <div class="topbar">
           <button id="btn-back-tasbih-from-history" class="btn btn-secondary btn-sm">← Tasbih</button>
@@ -385,10 +382,9 @@
         <div class="list" id="history-list"></div>
       </section>
 
-      <!-- NOTES SECTION -->
       <section id="section-notes" class="section">
         <div class="topbar">
-          <button id="btn-back-home-from-notes" class="btn btn-secondary btn-sm">← Home</button>
+          <button id="btn-back-tasbih-from-notes" class="btn btn-secondary btn-sm">← Tasbih</button>
           <div style="text-align:right;">
             <div class="topbar-title">Note For Istighfar</div>
             <div class="topbar-sub">Catatan refleksi & doa</div>
@@ -457,10 +453,12 @@
     const btnLoginGoogle = document.getElementById("btn-login-google");
     const btnLogout = document.getElementById("btn-logout");
     const btnGoTasbih = document.getElementById("btn-go-tasbih");
-    const btnGoNotes = document.getElementById("btn-go-notes");
+    
+    const btnGoNotesFromTasbih = document.getElementById("btn-go-notes-from-tasbih");
+    const btnBackTasbihFromNotes = document.getElementById("btn-back-tasbih-from-notes");
+
     const btnBackHomeFromTasbih = document.getElementById("btn-back-home-from-tasbih");
     const btnBackTasbihFromHistory = document.getElementById("btn-back-tasbih-from-history");
-    const btnBackHomeFromNotes = document.getElementById("btn-back-home-from-notes");
     const btnGoHistory = document.getElementById("btn-go-history");
     const btnAddNote = document.getElementById("btn-add-note");
 
@@ -534,7 +532,7 @@
         tasbihStatusEl.textContent = "Done untuk hari ini";
         tasbihStatusChip.textContent = "Status: Done";
       } else {
-        tasbihStatusEl.textContent = "Tekan untuk -1";
+        tasbihStatusEl.textContent = "Tekan / Swipe (Atas & Bawah)";
         tasbihStatusChip.textContent = "Status: Aktif";
       }
     }
@@ -668,7 +666,7 @@
       currentUser = user;
       if (user) {
         homeUserEmail.textContent = user.email || "";
-        showSection(sectionHome);
+        showSection(sectionTasbih);
         await ensureTodayTasbih();
         subscribeHistory();
         subscribeNotes();
@@ -703,20 +701,12 @@
       await ensureTodayTasbih();
     });
 
-    btnGoNotes.addEventListener("click", () => {
-      showSection(sectionNotes);
-    });
-
     btnBackHomeFromTasbih.addEventListener("click", () => {
       showSection(sectionHome);
     });
 
     btnBackTasbihFromHistory.addEventListener("click", () => {
       showSection(sectionTasbih);
-    });
-
-    btnBackHomeFromNotes.addEventListener("click", () => {
-      showSection(sectionHome);
     });
 
     btnGoHistory.addEventListener("click", () => {
@@ -730,6 +720,46 @@
     btnAddNote.addEventListener("click", async () => {
       await addNote();
     });
+
+    btnGoNotesFromTasbih.addEventListener("click", () => {
+      showSection(sectionNotes);
+    });
+
+    btnBackTasbihFromNotes.addEventListener("click", () => {
+      showSection(sectionTasbih);
+    });
+
+    // LOGIK BARU SWIPE SEESAW (ATAS BAWAH)
+    let touchOriginY = 0;
+    let expectedDirection = null; // Boleh ke 'UP' atau 'DOWN', null = mana-mana arah
+    const SWIPE_GAP = 25; // Jarak sempadan (25px) pergerakan jari untuk tolak 1
+
+    sectionTasbih.addEventListener("touchstart", (e) => {
+      touchOriginY = e.touches[0].clientY;
+      expectedDirection = null; // Reset arah, sentuhan baru bebas pilih mula ke atas/bawah
+    }, { passive: true });
+
+    sectionTasbih.addEventListener("touchmove", (e) => {
+      if (!currentTasbihData || currentTasbihData.done) return;
+
+      const currentY = e.touches[0].clientY;
+      const diff = currentY - touchOriginY;
+
+      // Swipe ke ATAS (diff negatif)
+      if (diff < -SWIPE_GAP && expectedDirection !== 'DOWN') {
+        decrementTasbih();
+        if (navigator.vibrate) navigator.vibrate(30);
+        touchOriginY = currentY; // Set center point baru pada kedudukan jari terkini
+        expectedDirection = 'DOWN'; // Seterusnya wajib ke bawah
+      }
+      // Swipe ke BAWAH (diff positif)
+      else if (diff > SWIPE_GAP && expectedDirection !== 'UP') {
+        decrementTasbih();
+        if (navigator.vibrate) navigator.vibrate(30);
+        touchOriginY = currentY; // Set center point baru pada kedudukan jari terkini
+        expectedDirection = 'UP'; // Seterusnya wajib ke atas
+      }
+    }, { passive: true });
 
     // PWA: register service worker
     if ("serviceWorker" in navigator) {
