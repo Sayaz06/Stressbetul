@@ -60,15 +60,30 @@
       background-origin: border-box; background-clip: padding-box, border-box;
       color: var(--text); font-weight: 600; cursor: pointer; display: inline-flex;
       align-items: center; justify-content: center; gap: 8px; transition: transform 0.12s ease;
+      box-shadow: 0 12px 30px rgba(79, 70, 229, 0.35);
     }
     .btn:active { transform: scale(0.98); }
-    .btn-secondary { background-image: none; background: rgba(15, 23, 42, 0.9); border-color: var(--border-mid); }
+    .btn-secondary { background-image: none; background: rgba(15, 23, 42, 0.9); border-color: var(--border-mid); box-shadow: none; }
+    .btn-danger { background-image: none; background: rgba(127, 29, 29, 0.9); border-color: rgba(248, 113, 113, 0.5); }
     .btn-sm { width: auto; padding: 6px 12px; font-size: 0.8rem; }
     .btn-active { background: var(--grad1) !important; color: white; border-color: transparent; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
 
     .section { display: none; flex-direction: column; flex: 1; min-height: 0; }
     .section.active { display: flex; }
+    
     .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; z-index: 10; flex-shrink: 0; }
+    .topbar-title { font-size: 1.1rem; font-weight: 600; }
+    .topbar-sub { font-size: 0.8rem; color: var(--subtext); }
+
+    .stack { display: flex; flex-direction: column; gap: 12px; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .row-center { display: flex; align-items: center; justify-content: center; gap: 10px; }
+    
+    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border-mid); font-size: 0.75rem; color: var(--subtext); background: rgba(15, 23, 42, 0.9); }
+    .pill { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border-mid); font-size: 0.8rem; color: var(--subtext); display: inline-flex; align-items: center; gap: 6px; }
+    .badge-status { padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+    .badge-done { background: rgba(22, 163, 74, 0.18); color: #bbf7d0; border: 1px solid rgba(34, 197, 94, 0.5); }
+    .badge-false { background: rgba(127, 29, 29, 0.25); color: #fecaca; border: 1px solid rgba(248, 113, 113, 0.6); }
     
     .counter-circle {
       width: 210px; height: 210px; border-radius: 50%;
@@ -79,6 +94,8 @@
       z-index: 5; flex-shrink: 0;
     }
     .counter-value { font-size: 3rem; font-weight: 700; }
+    .counter-label { font-size: 0.85rem; color: var(--subtext); margin-bottom: 4px; }
+    .counter-sub { font-size: 0.8rem; color: var(--subtext); margin-top: 6px; }
     
     /* KOTAK FAKTA KEKAL (Flashcard) */
     #fact-display-box {
@@ -100,75 +117,35 @@
       flex-shrink: 0;
       position: relative;
     }
-    #fact-display-box.show {
-      display: flex;
-      animation: fadeIn 0.3s ease-out;
-    }
-    .fact-title-label {
-      font-size: 0.75rem;
-      color: var(--grad2);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 6px;
-    }
-    .fact-content-text {
-      font-size: 1.1rem;
-      font-weight: 600;
-      line-height: 1.4;
-    }
-    .fact-hint {
-      font-size: 0.65rem;
-      color: var(--subtext);
-      margin-top: 8px;
-      opacity: 0.8;
-    }
+    #fact-display-box.show { display: flex; animation: fadeIn 0.3s ease-out; }
+    .fact-title-label { font-size: 0.75rem; color: var(--grad2); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+    .fact-content-text { font-size: 1.1rem; font-weight: 600; line-height: 1.4; padding: 0 10px; }
+    .fact-hint { font-size: 0.65rem; color: var(--subtext); margin-top: 8px; opacity: 0.8; }
 
     .btn-speak {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      right: 12px;
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 1.1rem;
-      z-index: 50; 
+      position: absolute; top: 50%; transform: translateY(-50%); right: 12px;
+      background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 1.1rem; z-index: 50; 
     }
-    .btn-speak:active {
-      background: rgba(255, 255, 255, 0.3);
-    }
+    .btn-speak:active { background: rgba(255, 255, 255, 0.3); }
 
-    .flip-animation {
-      animation: flipCard 0.3s ease-in-out;
-    }
-    @keyframes flipCard {
-      0% { transform: scaleY(1); opacity: 1; }
-      50% { transform: scaleY(0); opacity: 0.2; }
-      100% { transform: scaleY(1); opacity: 1; }
-    }
+    .flip-animation { animation: flipCard 0.3s ease-in-out; }
+    @keyframes flipCard { 0% { transform: scaleY(1); opacity: 1; } 50% { transform: scaleY(0); opacity: 0.2; } 100% { transform: scaleY(1); opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .list { 
-      margin-top: 10px; 
-      border-radius: 14px; 
-      border: 1px solid var(--border-soft); 
-      background: rgba(15, 23, 42, 0.9); 
-      flex: 1; 
-      overflow-y: auto; 
-      min-height: 0; 
-      padding-bottom: 20px;
-    }
+    /* Laci, Sejarah, Nota */
+    .list { margin-top: 10px; border-radius: 14px; border: 1px solid var(--border-soft); background: rgba(15, 23, 42, 0.9); flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 20px; }
+    .list-item { padding: 10px 12px; border-bottom: 1px solid rgba(31, 41, 55, 0.8); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .list-item:last-child { border-bottom: none; }
+    .list-main { display: flex; flex-direction: column; gap: 2px; }
+    .list-title { font-size: 0.9rem; font-weight: 500; }
+    .list-sub { font-size: 0.8rem; color: var(--subtext); }
+    
+    .note-card { border-radius: 14px; border: 1px solid var(--border-soft); background: rgba(15, 23, 42, 0.9); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+    textarea { width: 100%; min-height: 80px; resize: vertical; border-radius: 10px; border: 1px solid var(--border-mid); background: rgba(15, 23, 42, 0.9); color: var(--text); padding: 8px 10px; font-size: 0.9rem; outline: none; }
+    textarea:focus { border-color: var(--grad1); box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.5); }
+    .empty-state { text-align: center; font-size: 0.85rem; color: var(--subtext); padding: 14px 10px; }
     
     .drawer-card { background: rgba(30, 41, 59, 0.5); border-radius: 12px; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border-soft); }
     input.drawer-title { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border-mid); color: #fff; font-weight: 700; padding: 4px; margin-bottom: 8px; outline: none; }
@@ -185,36 +162,53 @@
       <section id="section-login" class="section active">
         <div style="margin: auto 0;">
           <div class="title-main">Istigfar</div>
-          <div class="subtitle">Tasbih & Laci Fakta Pintar.</div>
-          <button id="btn-login-google" class="btn">Login dengan Google</button>
+          <div class="subtitle">Tasbih harian & Laci Fakta, sync dengan akaun Google anda.</div>
+          <div class="stack mt-16">
+            <button id="btn-login-google" class="btn">Login dengan Google</button>
+            <div style="text-align: center; font-size: 0.8rem; color: var(--subtext);">Satu akaun, simpanan awan Firestore.</div>
+          </div>
         </div>
       </section>
 
       <section id="section-home" class="section">
         <div class="topbar">
-          <div class="topbar-title">Menu Utama</div>
+          <div>
+            <div class="topbar-title">Menu Utama</div>
+            <div class="topbar-sub" id="home-user-email"></div>
+          </div>
           <button id="btn-logout" class="btn btn-secondary btn-sm">Logout</button>
         </div>
-        <div class="stack" style="display:flex; flex-direction:column; gap:10px;">
-          <button id="btn-go-tasbih" class="btn">Kembali ke Tasbih</button>
-          <button id="btn-go-history" class="btn btn-secondary">Lihat Sejarah</button>
-          <button id="btn-go-notes" class="btn btn-secondary">Nota Refleksi</button>
+        <div class="stack mt-8">
+          <button id="btn-go-tasbih" class="btn">Tasbih Countdown</button>
+          <button id="btn-go-notes" class="btn btn-secondary">Note For Istighfar</button>
         </div>
-        <div class="footer">Repo: Stressbetul / Istigfar</div>
+        <div class="footer mt-16">Repo: Stressbetul / Istigfar</div>
       </section>
 
       <section id="section-tasbih" class="section">
         <div class="topbar">
           <div style="display: flex; gap: 6px;">
-            <button id="btn-back-home" class="btn btn-secondary btn-sm">Menu</button>
+            <button id="btn-back-home" class="btn btn-secondary btn-sm">← Menu</button>
             <button id="btn-toggle-fact" class="btn btn-secondary btn-sm">Mode Fakta: OFF</button>
           </div>
-          <button id="btn-go-subjects" class="btn btn-secondary btn-sm">Laci Fakta</button>
+          <div style="text-align:right;">
+            <button id="btn-go-subjects" class="btn btn-secondary btn-sm">Laci Fakta</button>
+            <div class="topbar-sub" id="tasbih-date-label" style="margin-top: 4px;"></div>
+          </div>
+        </div>
+
+        <div class="row-center" style="margin-bottom: 10px;">
+          <span class="pill">
+            <span>Target harian</span>
+            <strong>10,000</strong>
+          </span>
+          <button id="btn-go-history" class="btn btn-secondary btn-sm">History</button>
         </div>
 
         <div id="tasbih-circle" class="counter-circle">
+          <div class="counter-label">Baki hari ini</div>
           <div id="tasbih-count" class="counter-value">10000</div>
-          <div style="font-size:0.7rem; color:var(--subtext);">Baki Hari Ini</div>
+          <div id="tasbih-status" class="counter-sub">Tekan / Sapu Skrin / Enter</div>
         </div>
 
         <div id="fact-display-box">
@@ -224,8 +218,9 @@
           <div id="fact-hint" class="fact-hint">(Tekan/Klik kotak ini untuk terjemahan)</div>
         </div>
 
-        <div style="text-align:center; margin-top: auto;">
-           <div id="tasbih-date-label" style="font-size:0.8rem; opacity:0.7;"></div>
+        <div class="row" style="margin-top: auto;">
+          <div class="chip"><span>Auto simpan ke Firestore</span></div>
+          <div class="chip"><span id="tasbih-status-chip">Status: Aktif</span></div>
         </div>
       </section>
 
@@ -260,13 +255,28 @@
       </section>
 
       <section id="section-history" class="section">
-        <button id="btn-back-tasbih-history" class="btn btn-secondary btn-sm" style="align-self: flex-start; margin-bottom: 10px;">← Tasbih</button>
+        <div class="topbar">
+          <button id="btn-back-tasbih-history" class="btn btn-secondary btn-sm">← Tasbih</button>
+          <div style="text-align:right;">
+            <div class="topbar-title">History</div>
+            <div class="topbar-sub">Rekod tasbih harian</div>
+          </div>
+        </div>
         <div class="list" id="history-list"></div>
       </section>
 
       <section id="section-notes" class="section">
-        <button id="btn-back-tasbih-notes" class="btn btn-secondary btn-sm" style="align-self: flex-start; margin-bottom: 10px;">← Tasbih</button>
-        <button id="btn-add-note" class="btn btn-sm mt-8">Tambah Nota</button>
+        <div class="topbar">
+          <button id="btn-back-home-notes" class="btn btn-secondary btn-sm">← Menu</button>
+          <div style="text-align:right;">
+            <div class="topbar-title">Note For Istighfar</div>
+            <div class="topbar-sub">Catatan refleksi & doa</div>
+          </div>
+        </div>
+        <div class="row mt-8">
+          <button id="btn-add-note" class="btn btn-sm">Tambah Nota</button>
+          <span class="chip">Auto-save ke Firestore</span>
+        </div>
         <div class="list mt-8" id="notes-list"></div>
       </section>
     </div>
@@ -277,13 +287,15 @@
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
+    // KOD ASAL FIREBASE CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyAGLX_xxH_dQ06epX4XCXtuSHN0DwZFMjA",
       authDomain: "stress-auti-action.firebaseapp.com",
       projectId: "stress-auti-action",
       storageBucket: "stress-auti-action.firebasestorage.app",
       messagingSenderId: "792580618622",
-      appId: "1:792580618622:web:f0efb1d630e795584d5b2f"
+      appId: "1:792580618622:web:f0efb1d630e795584d5b2f",
+      measurementId: "G-JH11TRZLGF"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -291,47 +303,217 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    // DOM Elements
-    const sections = ['login', 'home', 'tasbih', 'subjects', 'topics', 'drawer', 'history', 'notes'];
-    const dom = {};
-    sections.forEach(s => dom[s] = document.getElementById(`section-${s}`));
+    // DOM ELEMENTS (LENGKAP)
+    const dom = {
+      login: document.getElementById("section-login"),
+      home: document.getElementById("section-home"),
+      tasbih: document.getElementById("section-tasbih"),
+      subjects: document.getElementById("section-subjects"),
+      topics: document.getElementById("section-topics"),
+      drawer: document.getElementById("section-drawer"),
+      history: document.getElementById("section-history"),
+      notes: document.getElementById("section-notes")
+    };
 
+    const homeUserEmail = document.getElementById("home-user-email");
     const tasbihCountEl = document.getElementById("tasbih-count");
+    const tasbihStatusEl = document.getElementById("tasbih-status");
+    const tasbihStatusChip = document.getElementById("tasbih-status-chip");
+    const tasbihDateLabel = document.getElementById("tasbih-date-label");
+    const historyList = document.getElementById("history-list");
+    const notesList = document.getElementById("notes-list");
+    
+    // DOM Laci & Fakta
     const subjectsList = document.getElementById("subjects-list");
     const topicsList = document.getElementById("topics-list");
     const drawerList = document.getElementById("drawer-list");
     const btnToggleFact = document.getElementById("btn-toggle-fact");
-    
-    // Flashcard Elements
     const factDisplayBox = document.getElementById("fact-display-box");
     const factTitleEl = document.getElementById("fact-title");
     const factContentEl = document.getElementById("fact-content");
     const factHintEl = document.getElementById("fact-hint");
     const btnSpeak = document.getElementById("btn-speak");
 
+    // STATE VARIABLES
     let currentUser = null;
+    let currentTasbihDocRef = null;
     let currentTasbihData = null;
-    let factMode = false;
+    let historyUnsub = null;
+    let notesUnsub = null;
     
-    // Data Arrays untuk Hierarchy
+    let factMode = false;
     let allSubjects = [];
     let allTopics = [];
     let allDrawers = [];
-    
-    // State Navigasi UI
     let currentSubjectId = null;
     let currentTopicId = null;
-
-    // State Fakta
     let allFacts = []; 
     let currentFactIndex = 0;
     let isFlipped = false; 
 
+    // ==========================================
+    // FUNGSI ASAL (KEMBALI 100%)
+    // ==========================================
     function showSection(name) {
       Object.values(dom).forEach(s => s.classList.remove("active"));
       dom[name].classList.add("active");
     }
 
+    function formatDateLabel(dateObj) {
+      const days = ["Ahad", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu"];
+      const d = days[dateObj.getDay()];
+      const dd = String(dateObj.getDate()).padStart(2, "0");
+      const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const yyyy = dateObj.getFullYear();
+      return { label: `${d}, ${dd}/${mm}/${yyyy}`, day: d, date: dd, month: mm, year: yyyy };
+    }
+
+    function todayKey() {
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
+      const dd = String(now.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    async function ensureTodayTasbih() {
+      if (!currentUser) return;
+      const key = todayKey();
+      const ref = doc(db, "users", currentUser.uid, "tasbih", key);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        await setDoc(ref, {
+          dateKey: key,
+          createdAt: Date.now(),
+          remaining: 10000,
+          done: false
+        });
+      }
+      const updatedSnap = await getDoc(ref);
+      currentTasbihDocRef = ref;
+      currentTasbihData = updatedSnap.data();
+      updateTasbihUI();
+    }
+
+    function updateTasbihUI() {
+      if (!currentTasbihData) return;
+      const remaining = currentTasbihData.remaining ?? 10000;
+      const done = !!currentTasbihData.done;
+      tasbihCountEl.textContent = remaining;
+      const now = new Date();
+      const { label } = formatDateLabel(now);
+      tasbihDateLabel.textContent = label;
+      if (done) {
+        tasbihStatusEl.textContent = "Done untuk hari ini";
+        tasbihStatusChip.textContent = "Status: Done";
+      } else {
+        tasbihStatusEl.textContent = "Tekan / Sapu Skrin / Enter";
+        tasbihStatusChip.textContent = "Status: Aktif";
+      }
+    }
+
+    // FUNGSI SUBSCRIBE HISTORY ASAL
+    function subscribeHistory() {
+      if (!currentUser) return;
+      if (historyUnsub) historyUnsub();
+      const q = query(collection(db, "users", currentUser.uid, "tasbih"), orderBy("dateKey", "desc"));
+      historyUnsub = onSnapshot(q, (snap) => {
+        historyList.innerHTML = "";
+        if (snap.empty) {
+          historyList.innerHTML = `<div class="empty-state">Belum ada rekod tasbih.</div>`;
+          return;
+        }
+        snap.forEach(docSnap => {
+          const data = docSnap.data();
+          const key = data.dateKey || "";
+          const [y, m, d] = key.split("-");
+          const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
+          const { label, day } = formatDateLabel(dateObj);
+          const statusDone = !!data.done;
+          const remaining = data.remaining ?? 0;
+          const statusLabel = statusDone ? "Done" : "False";
+          const badgeClass = statusDone ? "badge-done" : "badge-false";
+          const html = `
+            <div class="list-item">
+              <div class="list-main">
+                <div class="list-title">${day} (${statusLabel})</div>
+                <div class="list-sub">${label} • Baki: ${remaining}</div>
+              </div>
+              <span class="badge-status ${badgeClass}">${statusLabel}</span>
+            </div>
+          `;
+          historyList.insertAdjacentHTML("beforeend", html);
+        });
+      });
+    }
+
+    // FUNGSI SUBSCRIBE NOTES ASAL
+    function subscribeNotes() {
+      if (!currentUser) return;
+      if (notesUnsub) notesUnsub();
+      const q = query(collection(db, "users", currentUser.uid, "notes"), orderBy("createdAt", "desc"));
+      notesUnsub = onSnapshot(q, (snap) => {
+        notesList.innerHTML = "";
+        if (snap.empty) {
+          notesList.innerHTML = `<div class="empty-state">Belum ada nota. Tekan "Tambah Nota".</div>`;
+          return;
+        }
+        snap.forEach(docSnap => {
+          const data = docSnap.data();
+          const id = docSnap.id;
+          const text = data.text || "";
+          const createdAt = data.createdAt ? new Date(data.createdAt) : null;
+          const timeLabel = createdAt
+            ? `${String(createdAt.getDate()).padStart(2, "0")}/${String(createdAt.getMonth() + 1).padStart(2, "0")}/${createdAt.getFullYear()}`
+            : "";
+          const wrapper = document.createElement("div");
+          wrapper.className = "list-item";
+          wrapper.innerHTML = `
+            <div class="note-card" style="width:100%;">
+              <div class="row">
+                <span class="list-sub">${timeLabel}</span>
+                <div class="row" style="gap:6px;">
+                  <button class="btn-secondary btn-sm btn-delete-note" data-id="${id}">Delete</button>
+                </div>
+              </div>
+              <textarea class="note-textarea" data-id="${id}">${text}</textarea>
+            </div>
+          `;
+          notesList.appendChild(wrapper);
+        });
+
+        notesList.querySelectorAll(".note-textarea").forEach((ta) => {
+          ta.addEventListener("input", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            const value = e.target.value;
+            if (!currentUser || !id) return;
+            const ref = doc(db, "users", currentUser.uid, "notes", id);
+            await updateDoc(ref, { text: value, updatedAt: Date.now() });
+          });
+        });
+
+        notesList.querySelectorAll(".btn-delete-note").forEach((btn) => {
+          btn.addEventListener("click", async (e) => {
+            const id = e.target.getAttribute("data-id");
+            if (!currentUser || !id) return;
+            const ref = doc(db, "users", currentUser.uid, "notes", id);
+            await deleteDoc(ref);
+          });
+        });
+      });
+    }
+
+    async function addNote() {
+      if (!currentUser) return;
+      await addDoc(collection(db, "users", currentUser.uid, "notes"), {
+        text: "",
+        createdAt: Date.now()
+      });
+    }
+
+    // ==========================================
+    // FUNGSI GABUNGAN TASBIH & FAKTA
+    // ==========================================
     function cycleFact() {
       if (!factMode || allFacts.length === 0) return;
       
@@ -354,45 +536,41 @@
     }
 
     async function decrementTasbih() {
-      if (!currentUser || !currentTasbihData || currentTasbihData.done) return;
-      let remaining = currentTasbihData.remaining - 1;
-      if (remaining < 0) return;
+      if (!currentUser || !currentTasbihDocRef || !currentTasbihData) return;
+      if (currentTasbihData.done) return;
+      let remaining = currentTasbihData.remaining ?? 10000;
+      if (remaining <= 0) return;
       
+      remaining -= 1;
+      const done = remaining <= 0;
       currentTasbihData.remaining = remaining;
-      currentTasbihData.done = (remaining <= 0);
+      currentTasbihData.done = done;
       
-      const key = todayKey();
-      await setDoc(doc(db, "users", currentUser.uid, "tasbih", key), {
+      await setDoc(currentTasbihDocRef, {
         ...currentTasbihData, updatedAt: Date.now()
       });
       
-      tasbihCountEl.textContent = remaining;
+      updateTasbihUI();
       cycleFact();
-    }
 
-    function todayKey() {
-      const n = new Date();
-      return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+      if (done) {
+        showSection('history');
+      }
     }
 
     // ==========================================
     // DATA SYNC & RENDER LOGIC (3-LEVEL)
     // ==========================================
-    function subscribeAllData() {
-      // Subscribe Subjects
+    function subscribeAllHierarchyData() {
       onSnapshot(query(collection(db, "users", currentUser.uid, "subjects"), orderBy("createdAt", "asc")), snap => {
         allSubjects = snap.docs.map(d => ({id: d.id, ...d.data()}));
         if(dom.subjects.classList.contains('active')) renderSubjects();
       });
-
-      // Subscribe Topics
       onSnapshot(query(collection(db, "users", currentUser.uid, "topics"), orderBy("createdAt", "asc")), snap => {
         allTopics = snap.docs.map(d => ({id: d.id, ...d.data()}));
         if(dom.topics.classList.contains('active')) renderTopics();
         rebuildFacts();
       });
-
-      // Subscribe Drawers (Laci)
       onSnapshot(query(collection(db, "users", currentUser.uid, "drawer"), orderBy("createdAt", "asc")), snap => {
         allDrawers = snap.docs.map(d => ({id: d.id, ...d.data()}));
         if(dom.drawer.classList.contains('active')) renderDrawers();
@@ -411,11 +589,9 @@
           <button class="btn btn-secondary btn-sm btn-buka-sub" data-id="${data.id}">Buka</button>
           <button class="btn btn-secondary btn-sm btn-del-sub" data-id="${data.id}" style="color:var(--danger); border-color:var(--danger);">X</button>
         `;
-        
         div.querySelector(".subject-title").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "subjects", data.id), { name: e.target.value });
         div.querySelector(".btn-buka-sub").onclick = () => { currentSubjectId = data.id; showSection('topics'); renderTopics(); };
         div.querySelector(".btn-del-sub").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "subjects", data.id));
-        
         subjectsList.appendChild(div);
       });
     }
@@ -433,12 +609,10 @@
           <button class="btn btn-secondary btn-sm btn-buka-topik">Buka</button>
           <button class="btn btn-secondary btn-sm btn-del-topik" style="color:var(--danger); border-color:var(--danger);">X</button>
         `;
-        
         div.querySelector(".topic-active").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "topics", data.id), { isActive: e.target.checked });
         div.querySelector(".topic-title").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "topics", data.id), { name: e.target.value });
         div.querySelector(".btn-buka-topik").onclick = () => { currentTopicId = data.id; showSection('drawer'); renderDrawers(); };
         div.querySelector(".btn-del-topik").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "topics", data.id));
-        
         topicsList.appendChild(div);
       });
     }
@@ -456,10 +630,213 @@
             <button class="btn btn-secondary btn-sm btn-del-laci" style="color:var(--danger); border-color:var(--danger);">Padam</button>
           </div>
         `;
-        
         div.querySelector(".drawer-title").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { title: e.target.value });
         div.querySelector(".drawer-notes").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { notes: e.target.value });
         div.querySelector(".btn-del-laci").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "drawer", data.id));
-        
         drawerList.appendChild(div);
-  
+      });
+    }
+
+    function rebuildFacts() {
+      allFacts = [];
+      const activeTopicIds = allTopics.filter(t => t.isActive).map(t => t.id);
+      const activeDrawers = allDrawers.filter(d => activeTopicIds.includes(d.topicId));
+
+      activeDrawers.forEach(data => {
+        const tajukLaci = data.title || "Tiada Tajuk";
+        if(data.notes) {
+          const lines = data.notes.split('\n').filter(l => l.trim() !== "");
+          if (lines.length > 0) {
+            lines.forEach(line => {
+              const parts = line.split('=');
+              const frontText = parts[0].trim();
+              const backText = parts.length > 1 ? parts[1].trim() : null; 
+              allFacts.push({ title: tajukLaci, text: frontText, translation: backText, isTamat: false });
+            });
+            allFacts.push({ title: tajukLaci, text: "✅ Laci Tamat. Sapu/tekan untuk seterusnya.", isTamat: true });
+          }
+        }
+      });
+
+      let savedIndex = parseInt(localStorage.getItem('istigfar_fact_index')) || 0;
+      if (savedIndex >= allFacts.length) savedIndex = 0;
+      currentFactIndex = savedIndex;
+      
+      if (factMode && allFacts.length > 0) {
+        factTitleEl.textContent = `[ ${allFacts[currentFactIndex].title} ]`;
+        factContentEl.textContent = "Sapu/Tekan/Enter untuk mula...";
+        factHintEl.style.display = 'block';
+        btnSpeak.style.display = 'flex';
+      } else if (allFacts.length === 0) {
+        factTitleEl.textContent = "";
+        factContentEl.textContent = "Tiada topik aktif/ditanda. Sila tick topik terlebih dahulu.";
+        factHintEl.style.display = 'none';
+        btnSpeak.style.display = 'none';
+      }
+    }
+
+    // ==========================================
+    // AUTH & SETUP
+    // ==========================================
+    setPersistence(auth, browserLocalPersistence);
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      if (user) {
+        homeUserEmail.textContent = user.email || "";
+        showSection('tasbih');
+        await ensureTodayTasbih();
+        subscribeHistory();
+        subscribeNotes();
+        subscribeAllHierarchyData();
+      } else {
+        homeUserEmail.textContent = "";
+        if (notesUnsub) notesUnsub();
+        if (historyUnsub) historyUnsub();
+        showSection('login');
+      }
+    });
+
+    // ==========================================
+    // EVENT LISTENERS (Semua Dikembalikan!)
+    // ==========================================
+    document.getElementById("btn-login-google").addEventListener("click", () => signInWithPopup(auth, provider));
+    document.getElementById("btn-logout").addEventListener("click", () => signOut(auth));
+    
+    document.getElementById("btn-go-tasbih").addEventListener("click", () => { showSection('tasbih'); ensureTodayTasbih(); });
+    document.getElementById("btn-back-home").addEventListener("click", () => showSection('home'));
+    
+    // Notes
+    document.getElementById("btn-go-notes").addEventListener("click", () => showSection('notes'));
+    document.getElementById("btn-back-home-notes").addEventListener("click", () => showSection('home'));
+    document.getElementById("btn-add-note").addEventListener("click", addNote);
+
+    // History
+    document.getElementById("btn-go-history").addEventListener("click", () => showSection('history'));
+    document.getElementById("btn-back-tasbih-history").addEventListener("click", () => showSection('tasbih'));
+
+    // Hierarchy Laci Fakta
+    document.getElementById("btn-go-subjects").addEventListener("click", () => { showSection('subjects'); renderSubjects(); });
+    document.getElementById("btn-back-tasbih-subj").addEventListener("click", () => showSection('tasbih'));
+    document.getElementById("btn-back-subj-topics").addEventListener("click", () => { showSection('subjects'); renderSubjects(); });
+    document.getElementById("btn-back-topics-drawer").addEventListener("click", () => { showSection('topics'); renderTopics(); });
+
+    document.getElementById("btn-add-subject").addEventListener("click", () => addDoc(collection(db, "users", currentUser.uid, "subjects"), { name: "", createdAt: Date.now() }));
+    document.getElementById("btn-add-topic").addEventListener("click", () => { if(currentSubjectId) addDoc(collection(db, "users", currentUser.uid, "topics"), { name: "", subjectId: currentSubjectId, isActive: false, createdAt: Date.now() }); });
+    document.getElementById("btn-add-laci").addEventListener("click", () => { if(currentTopicId) addDoc(collection(db, "users", currentUser.uid, "drawer"), { title: "", notes: "", topicId: currentTopicId, createdAt: Date.now() }); });
+
+    btnToggleFact.addEventListener("click", () => {
+      factMode = !factMode;
+      btnToggleFact.textContent = `Mode Fakta: ${factMode ? 'ON' : 'OFF'}`;
+      btnToggleFact.classList.toggle("btn-active", factMode);
+      
+      if (factMode) {
+        factDisplayBox.classList.add("show");
+        rebuildFacts();
+      } else {
+        factDisplayBox.classList.remove("show");
+      }
+    });
+
+    // ==========================================
+    // LOGIK FLIP & AUTO-TRANSLATE
+    // ==========================================
+    factDisplayBox.addEventListener('click', (e) => {
+      e.stopPropagation(); 
+      let viewingIndex = currentFactIndex === 0 ? allFacts.length - 1 : currentFactIndex - 1;
+      if (allFacts.length === 0 || allFacts[viewingIndex].isTamat) return;
+
+      const currentData = allFacts[viewingIndex];
+      isFlipped = !isFlipped; 
+
+      factDisplayBox.classList.remove("flip-animation");
+      void factDisplayBox.offsetWidth; 
+      factDisplayBox.classList.add("flip-animation");
+
+      setTimeout(() => {
+        if (!isFlipped) {
+          factContentEl.textContent = currentData.text;
+          factTitleEl.textContent = `[ ${currentData.title} ]`;
+        } else {
+          factTitleEl.textContent = `[ ${currentData.title} ] (Maksud)`;
+          if (currentData.translation) {
+            factContentEl.textContent = currentData.translation;
+          } else {
+            factContentEl.textContent = "Menterjemah... ⏳";
+            const cleanTextForTranslate = currentData.text.replace(/^\d+[\.\)]\s*/, ''); 
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ms&dt=t&q=${encodeURIComponent(cleanTextForTranslate)}`;
+            fetch(url)
+              .then(res => res.json())
+              .then(data => {
+                const translatedText = data[0][0][0];
+                currentData.translation = translatedText; 
+                if (isFlipped && viewingIndex === (currentFactIndex === 0 ? allFacts.length - 1 : currentFactIndex - 1)) {
+                  factContentEl.textContent = translatedText;
+                }
+              }).catch(err => { if (isFlipped) factContentEl.textContent = "Gagal terjemah."; });
+          }
+        }
+      }, 150);
+    });
+
+    // ==========================================
+    // LOGIK SUARA
+    // ==========================================
+    btnSpeak.addEventListener('click', (e) => {
+      e.stopPropagation(); 
+      let viewingIndex = currentFactIndex === 0 ? allFacts.length - 1 : currentFactIndex - 1;
+      if (allFacts.length === 0 || allFacts[viewingIndex].isTamat) return;
+      const currentData = allFacts[viewingIndex];
+      let rawTextToRead = isFlipped ? (currentData.translation ? currentData.translation : factContentEl.textContent) : currentData.text;
+      const cleanText = rawTextToRead.replace(/^\d+[\.\)]\s*/, '');
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = isFlipped ? 'ms-MY' : 'en-US'; 
+      utterance.rate = 0.9; 
+      window.speechSynthesis.speak(utterance);
+    });
+
+    // ==========================================
+    // LOGIK FULL SCREEN CLICK, SWIPE (5px) & KEYBOARD
+    // ==========================================
+    let touchY = 0;
+    let lastDir = null;
+    let isSwiping = false;
+    const GAP = 5;
+
+    document.addEventListener("touchstart", (e) => {
+      if(!dom.tasbih.classList.contains('active')) return;
+      if(e.target.closest('button') || e.target.closest('.topbar') || e.target.closest('#fact-display-box')) return;
+      touchY = e.touches[0].clientY;
+      isSwiping = false;
+    }, {passive:true});
+
+    document.addEventListener("touchmove", (e) => {
+      if(!dom.tasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box')) return;
+      const currentY = e.touches[0].clientY;
+      const diff = currentY - touchY;
+      if(Math.abs(diff) > 3) isSwiping = true;
+      if(diff < -GAP && lastDir !== 'UP') { decrementTasbih(); lastDir = 'UP'; touchY = currentY; if(navigator.vibrate) navigator.vibrate(25); } 
+      else if(diff > GAP && lastDir !== 'DOWN') { decrementTasbih(); lastDir = 'DOWN'; touchY = currentY; if(navigator.vibrate) navigator.vibrate(25); }
+    }, {passive:true});
+
+    document.addEventListener("click", (e) => {
+      if(!dom.tasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box') || isSwiping) return;
+      decrementTasbih();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (!dom.tasbih.classList.contains('active')) return;
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+      if (e.code === "NumpadEnter" || e.key === "Enter") {
+        e.preventDefault();
+        decrementTasbih();
+        if(navigator.vibrate) navigator.vibrate(25);
+      }
+    });
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => { navigator.serviceWorker.register("./service-worker.js").catch(console.error); });
+    }
+  </script>
+</body>
+</html>
