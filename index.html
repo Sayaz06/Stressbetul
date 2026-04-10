@@ -371,7 +371,7 @@
     let allDrawers = [];
     let currentSubjectId = null;
     let currentTopicId = null;
-    let activeGlobalTopicId = 'default'; // Untuk simpan index memori berasingan
+    let activeGlobalTopicId = 'default'; 
     
     let allFacts = []; 
     let currentFactIndex = 0;
@@ -546,8 +546,6 @@
       }
 
       currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-      
-      // SIMPAN MEMORI BERDASARKAN TOPIK AKTIF
       localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
     }
 
@@ -569,6 +567,9 @@
       if (done) showSection('history');
     }
 
+    // ==========================================
+    // RENDER & SORT (ALPHANUMERIC)
+    // ==========================================
     function subscribeAllHierarchyData() {
       onSnapshot(query(collection(db, "users", currentUser.uid, "subjects")), snap => {
         allSubjects = snap.docs.map(d => ({id: d.id, ...d.data()}));
@@ -588,8 +589,11 @@
 
     function renderSubjects() {
       subjectsList.innerHTML = "";
-      // SORTING: Susun mengikut Abjad & Nombor
-      const sortedSubjects = [...allSubjects].sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
+      
+      // SORT: Susun Subjek mengikut Abjad & Nombor
+      const sortedSubjects = [...allSubjects].sort((a, b) => 
+        (a.name || "").localeCompare(b.name || "", undefined, {numeric: true})
+      );
       
       sortedSubjects.forEach(data => {
         const div = document.createElement("div");
@@ -610,8 +614,11 @@
     function renderTopics() {
       topicsList.innerHTML = "";
       const filteredTopics = allTopics.filter(t => t.subjectId === currentSubjectId);
-      // SORTING: Susun mengikut Abjad & Nombor
-      const sortedTopics = filteredTopics.sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
+      
+      // SORT: Susun Topik mengikut Abjad & Nombor
+      const sortedTopics = filteredTopics.sort((a, b) => 
+        (a.name || "").localeCompare(b.name || "", undefined, {numeric: true})
+      );
       
       sortedTopics.forEach(data => {
         const div = document.createElement("div");
@@ -624,7 +631,7 @@
           <button class="btn btn-secondary btn-sm btn-del-topik" style="color:var(--danger); border-color:var(--danger);">X</button>
         `;
         
-        // LOGIK SINGLE TICK (Untick yang lain bila tick yang baru)
+        // SINGLE TICK LOGIC
         div.querySelector(".topic-active").onchange = async (e) => { 
           const isChecked = e.target.checked;
           if (isChecked) {
@@ -646,8 +653,11 @@
     function renderDrawers() {
       drawerList.innerHTML = "";
       const filteredDrawers = allDrawers.filter(d => d.topicId === currentTopicId);
-      // Sort Drawer ikut masa cipta (supaya urutan fakta kekal)
-      const sortedDrawers = filteredDrawers.sort((a,b) => a.createdAt - b.createdAt);
+      
+      // SORT: Susun Laci mengikut Abjad & Nombor
+      const sortedDrawers = filteredDrawers.sort((a, b) => 
+        (a.title || "").localeCompare(b.title || "", undefined, {numeric: true})
+      );
       
       sortedDrawers.forEach(data => {
         const div = document.createElement("div");
@@ -668,19 +678,19 @@
 
     function rebuildFacts() {
       allFacts = [];
-      // Cari Topik yang aktif
       const activeTopic = allTopics.find(t => t.isActive);
       
       if (activeTopic) {
         activeGlobalTopicId = activeTopic.id;
         
-        // TOAST NOTIFICATION SEMASA BUKA APP
         if (!hasShownStartupToast) {
           showToast(`Topik Aktif: ${activeTopic.name || 'Tanpa Nama'}`);
           hasShownStartupToast = true;
         }
 
-        const activeDrawers = allDrawers.filter(d => d.topicId === activeTopic.id).sort((a,b) => a.createdAt - b.createdAt);
+        // Pastikan fakta ditarik mengikut urunan laci yang dah disort
+        const activeDrawers = allDrawers.filter(d => d.topicId === activeTopic.id)
+            .sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, {numeric: true}));
         
         activeDrawers.forEach(data => {
           const tajukLaci = data.title || "Tiada Tajuk";
@@ -701,7 +711,6 @@
         activeGlobalTopicId = 'default';
       }
 
-      // LOAD MEMORI BERDASARKAN TOPIK
       let savedIndex = parseInt(localStorage.getItem('istigfar_fact_index_' + activeGlobalTopicId)) || 0;
       if (savedIndex >= allFacts.length) savedIndex = 0;
       currentFactIndex = savedIndex;
@@ -767,9 +776,6 @@
       else { factDisplayBox.classList.remove("show"); }
     });
 
-    // ==========================================
-    // LOGIK FLIP & AUTO-TRANSLATE (GOOGLE API)
-    // ==========================================
     factDisplayBox.addEventListener('click', (e) => {
       e.stopPropagation(); 
       let viewingIndex = currentFactIndex === 0 ? allFacts.length - 1 : currentFactIndex - 1;
@@ -808,9 +814,6 @@
       }, 150);
     });
 
-    // ==========================================
-    // LOGIK SUARA (TEXT-TO-SPEECH) BEBAS NOMBOR
-    // ==========================================
     btnSpeak.addEventListener('click', (e) => {
       e.stopPropagation(); 
       let viewingIndex = currentFactIndex === 0 ? allFacts.length - 1 : currentFactIndex - 1;
@@ -835,9 +838,6 @@
       window.speechSynthesis.speak(utterance);
     });
 
-    // ==========================================
-    // LOGIK FULL SCREEN CLICK, SWIPE (5px) & KEYBOARD
-    // ==========================================
     let touchY = 0;
     let lastDir = null;
     let isSwiping = false;
