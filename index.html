@@ -134,6 +134,29 @@
     @keyframes flipCard { 0% { transform: scaleY(1); opacity: 1; } 50% { transform: scaleY(0); opacity: 0.2; } 100% { transform: scaleY(1); opacity: 1; } }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+    /* TOAST NOTIFICATION */
+    #toast-notification {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(99, 102, 241, 0.95);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 9999;
+      pointer-events: none;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+    #toast-notification.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
     /* Laci, Sejarah, Nota */
     .list { margin-top: 10px; border-radius: 14px; border: 1px solid var(--border-soft); background: rgba(15, 23, 42, 0.9); flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 20px; }
     .list-item { padding: 10px 12px; border-bottom: 1px solid rgba(31, 41, 55, 0.8); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -158,6 +181,8 @@
 <body>
   <div class="app-shell">
     <div class="card">
+
+      <div id="toast-notification">Topik Aktif: ...</div>
 
       <section id="section-login" class="section active">
         <div style="margin: auto 0;">
@@ -239,7 +264,7 @@
           <div class="topbar-title">Senarai Topik</div>
         </div>
         <div style="font-size: 0.75rem; color: var(--subtext); text-align: center; margin-bottom: 8px;">
-          Tanda (tick) kotak untuk aktifkan topik ini semasa bertasbih.
+          Tanda (tick) SATU kotak sahaja untuk aktifkan.
         </div>
         <button id="btn-add-topic" class="btn btn-sm">Tambah Topik</button>
         <div class="list mt-8" id="topics-list" style="padding: 10px;"></div>
@@ -287,7 +312,6 @@
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
-    // KOD ASAL FIREBASE CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyAGLX_xxH_dQ06epX4XCXtuSHN0DwZFMjA",
       authDomain: "stress-auti-action.firebaseapp.com",
@@ -303,7 +327,6 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    // Panggil getVoices lebih awal supaya OS sempat load senarai suara
     window.speechSynthesis.getVoices();
 
     const dom = {
@@ -334,6 +357,7 @@
     const factContentEl = document.getElementById("fact-content");
     const factHintEl = document.getElementById("fact-hint");
     const btnSpeak = document.getElementById("btn-speak");
+    const toastNotification = document.getElementById("toast-notification");
 
     let currentUser = null;
     let currentTasbihDocRef = null;
@@ -347,13 +371,24 @@
     let allDrawers = [];
     let currentSubjectId = null;
     let currentTopicId = null;
+    let activeGlobalTopicId = 'default'; // Untuk simpan index memori berasingan
+    
     let allFacts = []; 
     let currentFactIndex = 0;
     let isFlipped = false; 
+    let hasShownStartupToast = false;
 
     function showSection(name) {
       Object.values(dom).forEach(s => s.classList.remove("active"));
       dom[name].classList.add("active");
+    }
+
+    function showToast(message) {
+      toastNotification.textContent = message;
+      toastNotification.classList.add("show");
+      setTimeout(() => {
+        toastNotification.classList.remove("show");
+      }, 3500);
     }
 
     function formatDateLabel(dateObj) {
@@ -511,7 +546,9 @@
       }
 
       currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-      localStorage.setItem('istigfar_fact_index', currentFactIndex);
+      
+      // SIMPAN MEMORI BERDASARKAN TOPIK AKTIF
+      localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
     }
 
     async function decrementTasbih() {
@@ -533,16 +570,16 @@
     }
 
     function subscribeAllHierarchyData() {
-      onSnapshot(query(collection(db, "users", currentUser.uid, "subjects"), orderBy("createdAt", "asc")), snap => {
+      onSnapshot(query(collection(db, "users", currentUser.uid, "subjects")), snap => {
         allSubjects = snap.docs.map(d => ({id: d.id, ...d.data()}));
         if(dom.subjects.classList.contains('active')) renderSubjects();
       });
-      onSnapshot(query(collection(db, "users", currentUser.uid, "topics"), orderBy("createdAt", "asc")), snap => {
+      onSnapshot(query(collection(db, "users", currentUser.uid, "topics")), snap => {
         allTopics = snap.docs.map(d => ({id: d.id, ...d.data()}));
         if(dom.topics.classList.contains('active')) renderTopics();
         rebuildFacts();
       });
-      onSnapshot(query(collection(db, "users", currentUser.uid, "drawer"), orderBy("createdAt", "asc")), snap => {
+      onSnapshot(query(collection(db, "users", currentUser.uid, "drawer")), snap => {
         allDrawers = snap.docs.map(d => ({id: d.id, ...d.data()}));
         if(dom.drawer.classList.contains('active')) renderDrawers();
         rebuildFacts();
@@ -551,7 +588,10 @@
 
     function renderSubjects() {
       subjectsList.innerHTML = "";
-      allSubjects.forEach(data => {
+      // SORTING: Susun mengikut Abjad & Nombor
+      const sortedSubjects = [...allSubjects].sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
+      
+      sortedSubjects.forEach(data => {
         const div = document.createElement("div");
         div.className = "drawer-card";
         div.style.display = "flex"; div.style.gap = "8px"; div.style.alignItems = "center";
@@ -570,7 +610,10 @@
     function renderTopics() {
       topicsList.innerHTML = "";
       const filteredTopics = allTopics.filter(t => t.subjectId === currentSubjectId);
-      filteredTopics.forEach(data => {
+      // SORTING: Susun mengikut Abjad & Nombor
+      const sortedTopics = filteredTopics.sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
+      
+      sortedTopics.forEach(data => {
         const div = document.createElement("div");
         div.className = "drawer-card";
         div.style.display = "flex"; div.style.gap = "8px"; div.style.alignItems = "center";
@@ -580,7 +623,19 @@
           <button class="btn btn-secondary btn-sm btn-buka-topik">Buka</button>
           <button class="btn btn-secondary btn-sm btn-del-topik" style="color:var(--danger); border-color:var(--danger);">X</button>
         `;
-        div.querySelector(".topic-active").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "topics", data.id), { isActive: e.target.checked });
+        
+        // LOGIK SINGLE TICK (Untick yang lain bila tick yang baru)
+        div.querySelector(".topic-active").onchange = async (e) => { 
+          const isChecked = e.target.checked;
+          if (isChecked) {
+            const others = allTopics.filter(t => t.isActive && t.id !== data.id);
+            for (let t of others) {
+              await updateDoc(doc(db, "users", currentUser.uid, "topics", t.id), { isActive: false });
+            }
+          }
+          await updateDoc(doc(db, "users", currentUser.uid, "topics", data.id), { isActive: isChecked }); 
+        };
+        
         div.querySelector(".topic-title").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "topics", data.id), { name: e.target.value });
         div.querySelector(".btn-buka-topik").onclick = () => { currentTopicId = data.id; showSection('drawer'); renderDrawers(); };
         div.querySelector(".btn-del-topik").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "topics", data.id));
@@ -591,7 +646,10 @@
     function renderDrawers() {
       drawerList.innerHTML = "";
       const filteredDrawers = allDrawers.filter(d => d.topicId === currentTopicId);
-      filteredDrawers.forEach(data => {
+      // Sort Drawer ikut masa cipta (supaya urutan fakta kekal)
+      const sortedDrawers = filteredDrawers.sort((a,b) => a.createdAt - b.createdAt);
+      
+      sortedDrawers.forEach(data => {
         const div = document.createElement("div");
         div.className = "drawer-card";
         div.innerHTML = `
@@ -610,26 +668,41 @@
 
     function rebuildFacts() {
       allFacts = [];
-      const activeTopicIds = allTopics.filter(t => t.isActive).map(t => t.id);
-      const activeDrawers = allDrawers.filter(d => activeTopicIds.includes(d.topicId));
-
-      activeDrawers.forEach(data => {
-        const tajukLaci = data.title || "Tiada Tajuk";
-        if(data.notes) {
-          const lines = data.notes.split('\n').filter(l => l.trim() !== "");
-          if (lines.length > 0) {
-            lines.forEach(line => {
-              const parts = line.split('=');
-              const frontText = parts[0].trim();
-              const backText = parts.length > 1 ? parts[1].trim() : null; 
-              allFacts.push({ title: tajukLaci, text: frontText, translation: backText, isTamat: false });
-            });
-            allFacts.push({ title: tajukLaci, text: "✅ Laci Tamat. Sapu/tekan untuk seterusnya.", isTamat: true });
-          }
+      // Cari Topik yang aktif
+      const activeTopic = allTopics.find(t => t.isActive);
+      
+      if (activeTopic) {
+        activeGlobalTopicId = activeTopic.id;
+        
+        // TOAST NOTIFICATION SEMASA BUKA APP
+        if (!hasShownStartupToast) {
+          showToast(`Topik Aktif: ${activeTopic.name || 'Tanpa Nama'}`);
+          hasShownStartupToast = true;
         }
-      });
 
-      let savedIndex = parseInt(localStorage.getItem('istigfar_fact_index')) || 0;
+        const activeDrawers = allDrawers.filter(d => d.topicId === activeTopic.id).sort((a,b) => a.createdAt - b.createdAt);
+        
+        activeDrawers.forEach(data => {
+          const tajukLaci = data.title || "Tiada Tajuk";
+          if(data.notes) {
+            const lines = data.notes.split('\n').filter(l => l.trim() !== "");
+            if (lines.length > 0) {
+              lines.forEach(line => {
+                const parts = line.split('=');
+                const frontText = parts[0].trim();
+                const backText = parts.length > 1 ? parts[1].trim() : null; 
+                allFacts.push({ title: tajukLaci, text: frontText, translation: backText, isTamat: false });
+              });
+              allFacts.push({ title: tajukLaci, text: "✅ Laci Tamat. Sapu/tekan untuk seterusnya.", isTamat: true });
+            }
+          }
+        });
+      } else {
+        activeGlobalTopicId = 'default';
+      }
+
+      // LOAD MEMORI BERDASARKAN TOPIK
+      let savedIndex = parseInt(localStorage.getItem('istigfar_fact_index_' + activeGlobalTopicId)) || 0;
       if (savedIndex >= allFacts.length) savedIndex = 0;
       currentFactIndex = savedIndex;
       
@@ -640,7 +713,7 @@
         btnSpeak.style.display = 'flex';
       } else if (allFacts.length === 0) {
         factTitleEl.textContent = "";
-        factContentEl.textContent = "Tiada topik aktif/ditanda. Sila tick topik terlebih dahulu.";
+        factContentEl.textContent = "Tiada topik aktif/ditanda. Sila tick SATU topik.";
         factHintEl.style.display = 'none';
         btnSpeak.style.display = 'none';
       }
@@ -719,13 +792,8 @@
             factContentEl.textContent = currentData.translation;
           } else {
             factContentEl.textContent = "Menterjemah... ⏳";
-            
-            // REGEX POTONG NOMBOR (eg: "1. ", "100. ", "2) ") SEBELUM TERJEMAH
             const cleanTextForTranslate = currentData.text.replace(/^\s*\d+[\.\)]\s*/, ''); 
-            
-            // PAKSA TERJEMAH DARI ENGLISH (sl=en) KE MELAYU (tl=ms)
             const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ms&dt=t&q=${encodeURIComponent(cleanTextForTranslate)}`;
-            
             fetch(url)
               .then(res => res.json())
               .then(data => {
@@ -751,18 +819,15 @@
       const currentData = allFacts[viewingIndex];
       let rawTextToRead = isFlipped ? (currentData.translation ? currentData.translation : factContentEl.textContent) : currentData.text;
       
-      // REGEX POTONG NOMBOR SEBELUM SEBUT
       const cleanText = rawTextToRead.replace(/^\s*\d+[\.\)]\s*/, '');
       
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(cleanText);
       
-      // PAKSA BAHASA (EN untuk depan, MS untuk belakang/terjemahan)
       utterance.lang = isFlipped ? 'ms-MY' : 'en-US'; 
-      utterance.rate = 0.85; // Diperlahankan sikit
-      utterance.pitch = 1.1; // Ditinggikan sikit supaya bunyinya lebih feminine
+      utterance.rate = 0.85; 
+      utterance.pitch = 1.1; 
       
-      // CUBA CARI SUARA PEREMPUAN/GOOGLE DI DALAM PERANTI
       const voices = window.speechSynthesis.getVoices();
       const preferredVoice = voices.find(v => v.lang.includes(isFlipped ? 'ms' : 'en') && (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Zira')));
       if (preferredVoice) utterance.voice = preferredVoice;
