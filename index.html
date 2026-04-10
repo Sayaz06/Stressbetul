@@ -86,7 +86,7 @@
       background: rgba(30, 41, 59, 0.8);
       border: 1px solid rgba(99, 102, 241, 0.4);
       border-radius: 14px;
-      padding: 16px 40px 16px 16px; /* Beri ruang ekstra belah kanan untuk butang suara */
+      padding: 16px 40px 16px 16px; 
       text-align: center;
       color: #fff;
       display: none; 
@@ -124,7 +124,6 @@
       opacity: 0.8;
     }
 
-    /* Butang Suara yang lebih jelas untuk Mobile */
     .btn-speak {
       position: absolute;
       top: 50%;
@@ -140,13 +139,12 @@
       justify-content: center;
       cursor: pointer;
       font-size: 1.1rem;
-      z-index: 50; /* Pastikan tak tertindih */
+      z-index: 50; 
     }
     .btn-speak:active {
       background: rgba(255, 255, 255, 0.3);
     }
 
-    /* Efek Animasi Flip Terjemahan */
     .flip-animation {
       animation: flipCard 0.3s ease-in-out;
     }
@@ -211,7 +209,7 @@
             <button id="btn-back-home" class="btn btn-secondary btn-sm">Menu</button>
             <button id="btn-toggle-fact" class="btn btn-secondary btn-sm">Mode Fakta: OFF</button>
           </div>
-          <button id="btn-go-drawer" class="btn btn-secondary btn-sm">Laci Fakta</button>
+          <button id="btn-go-subjects" class="btn btn-secondary btn-sm">Laci Fakta</button>
         </div>
 
         <div id="tasbih-circle" class="counter-circle">
@@ -231,12 +229,33 @@
         </div>
       </section>
 
+      <section id="section-subjects" class="section">
+        <div class="topbar">
+          <button id="btn-back-tasbih-subj" class="btn btn-secondary btn-sm">← Tasbih</button>
+          <div class="topbar-title">Senarai Subjek</div>
+        </div>
+        <button id="btn-add-subject" class="btn btn-sm mt-8">Tambah Subjek</button>
+        <div class="list mt-8" id="subjects-list" style="padding: 10px;"></div>
+      </section>
+
+      <section id="section-topics" class="section">
+        <div class="topbar">
+          <button id="btn-back-subj-topics" class="btn btn-secondary btn-sm">← Subjek</button>
+          <div class="topbar-title">Senarai Topik</div>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--subtext); text-align: center; margin-bottom: 8px;">
+          Tanda (tick) kotak untuk aktifkan topik ini semasa bertasbih.
+        </div>
+        <button id="btn-add-topic" class="btn btn-sm">Tambah Topik</button>
+        <div class="list mt-8" id="topics-list" style="padding: 10px;"></div>
+      </section>
+
       <section id="section-drawer" class="section">
         <div class="topbar">
-          <button id="btn-back-tasbih-drawer" class="btn btn-secondary btn-sm">← Tasbih</button>
-          <div class="topbar-title">Laci Kamus/Fakta</div>
+          <button id="btn-back-topics-drawer" class="btn btn-secondary btn-sm">← Topik</button>
+          <div class="topbar-title">Isi Laci</div>
         </div>
-        <button id="btn-add-laci" class="btn btn-sm mt-8">Tambah Laci Baru</button>
+        <button id="btn-add-laci" class="btn btn-sm mt-8">Tambah Laci</button>
         <div class="list mt-8" id="drawer-list" style="padding: 10px;"></div>
       </section>
 
@@ -272,16 +291,18 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    // Elements
-    const sections = ['login', 'home', 'tasbih', 'drawer', 'history', 'notes'];
+    // DOM Elements
+    const sections = ['login', 'home', 'tasbih', 'subjects', 'topics', 'drawer', 'history', 'notes'];
     const dom = {};
     sections.forEach(s => dom[s] = document.getElementById(`section-${s}`));
 
     const tasbihCountEl = document.getElementById("tasbih-count");
+    const subjectsList = document.getElementById("subjects-list");
+    const topicsList = document.getElementById("topics-list");
     const drawerList = document.getElementById("drawer-list");
     const btnToggleFact = document.getElementById("btn-toggle-fact");
     
-    // Elemen Flashcard
+    // Flashcard Elements
     const factDisplayBox = document.getElementById("fact-display-box");
     const factTitleEl = document.getElementById("fact-title");
     const factContentEl = document.getElementById("fact-content");
@@ -292,7 +313,16 @@
     let currentTasbihData = null;
     let factMode = false;
     
-    // Array Fakta
+    // Data Arrays untuk Hierarchy
+    let allSubjects = [];
+    let allTopics = [];
+    let allDrawers = [];
+    
+    // State Navigasi UI
+    let currentSubjectId = null;
+    let currentTopicId = null;
+
+    // State Fakta
     let allFacts = []; 
     let currentFactIndex = 0;
     let isFlipped = false; 
@@ -345,260 +375,91 @@
       return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
     }
 
-    // Sync Laci Fakta
-    function subscribeDrawer() {
-      const q = query(collection(db, "users", currentUser.uid, "drawer"), orderBy("createdAt", "asc"));
-      onSnapshot(q, (snap) => {
-        drawerList.innerHTML = "";
-        allFacts = [];
-        snap.forEach(d => {
-          const data = d.data();
-          const id = d.id;
-          const tajukLaci = data.title || "Tiada Tajuk";
-          
-          if(data.notes) {
-            const lines = data.notes.split('\n').filter(l => l.trim() !== "");
-            if (lines.length > 0) {
-              lines.forEach(line => {
-                const parts = line.split('=');
-                const frontText = parts[0].trim();
-                const backText = parts.length > 1 ? parts[1].trim() : null; 
-                
-                allFacts.push({ 
-                  title: tajukLaci, 
-                  text: frontText, 
-                  translation: backText,
-                  isTamat: false 
-                });
-              });
-              allFacts.push({ title: tajukLaci, text: "✅ Laci Tamat. Sapu/tekan untuk ke laci seterusnya.", isTamat: true });
-            }
-          }
+    // ==========================================
+    // DATA SYNC & RENDER LOGIC (3-LEVEL)
+    // ==========================================
+    function subscribeAllData() {
+      // Subscribe Subjects
+      onSnapshot(query(collection(db, "users", currentUser.uid, "subjects"), orderBy("createdAt", "asc")), snap => {
+        allSubjects = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        if(dom.subjects.classList.contains('active')) renderSubjects();
+      });
 
-          const div = document.createElement("div");
-          div.className = "drawer-card";
-          div.innerHTML = `
-            <input class="drawer-title" value="${data.title || ''}" placeholder="Tajuk (Cth: Kamus BI)">
-            <textarea class="drawer-notes" placeholder="Taip je perkataan (Cth: 1. Apple). Auto-Translate & Auto-Number-Remove akan diuruskan! Atau guna = kalau nak custom.">${data.notes || ''}</textarea>
-            <div style="text-align: right;">
-              <button class="btn btn-secondary btn-sm btn-del-laci" style="color:var(--danger); border-color:var(--danger);">Padam</button>
-            </div>
-          `;
-          
-          const titleInp = div.querySelector(".drawer-title");
-          const notesInp = div.querySelector(".drawer-notes");
+      // Subscribe Topics
+      onSnapshot(query(collection(db, "users", currentUser.uid, "topics"), orderBy("createdAt", "asc")), snap => {
+        allTopics = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        if(dom.topics.classList.contains('active')) renderTopics();
+        rebuildFacts();
+      });
 
-          titleInp.onchange = () => updateDoc(doc(db, "users", currentUser.uid, "drawer", id), { title: titleInp.value });
-          notesInp.onchange = () => updateDoc(doc(db, "users", currentUser.uid, "drawer", id), { notes: notesInp.value });
-          div.querySelector(".btn-del-laci").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "drawer", id));
+      // Subscribe Drawers (Laci)
+      onSnapshot(query(collection(db, "users", currentUser.uid, "drawer"), orderBy("createdAt", "asc")), snap => {
+        allDrawers = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        if(dom.drawer.classList.contains('active')) renderDrawers();
+        rebuildFacts();
+      });
+    }
 
-          drawerList.appendChild(div);
-        });
-
-        let savedIndex = parseInt(localStorage.getItem('istigfar_fact_index')) || 0;
-        if (savedIndex >= allFacts.length) savedIndex = 0;
-        currentFactIndex = savedIndex;
+    function renderSubjects() {
+      subjectsList.innerHTML = "";
+      allSubjects.forEach(data => {
+        const div = document.createElement("div");
+        div.className = "drawer-card";
+        div.style.display = "flex"; div.style.gap = "8px"; div.style.alignItems = "center";
+        div.innerHTML = `
+          <input class="subject-title" value="${data.name || ''}" placeholder="Nama Subjek..." style="flex: 1; border: none; background: transparent; color: white; border-bottom: 1px solid var(--border-mid); outline: none; padding: 4px;">
+          <button class="btn btn-secondary btn-sm btn-buka-sub" data-id="${data.id}">Buka</button>
+          <button class="btn btn-secondary btn-sm btn-del-sub" data-id="${data.id}" style="color:var(--danger); border-color:var(--danger);">X</button>
+        `;
         
-        if (factMode && allFacts.length > 0) {
-          factTitleEl.textContent = `[ ${allFacts[currentFactIndex].title} ]`;
-          factContentEl.textContent = "Sapu/Tekan/Enter untuk mula...";
-          factHintEl.style.display = 'block';
-          btnSpeak.style.display = 'flex'; // Pastikan button suara ditunjukkan
-        } else if (allFacts.length === 0) {
-          factTitleEl.textContent = "";
-          factContentEl.textContent = "Laci kosong. Sila tambah fakta.";
-          factHintEl.style.display = 'none';
-          btnSpeak.style.display = 'none';
-        }
+        div.querySelector(".subject-title").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "subjects", data.id), { name: e.target.value });
+        div.querySelector(".btn-buka-sub").onclick = () => { currentSubjectId = data.id; showSection('topics'); renderTopics(); };
+        div.querySelector(".btn-del-sub").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "subjects", data.id));
+        
+        subjectsList.appendChild(div);
       });
     }
 
-    setPersistence(auth, browserLocalPersistence);
-    onAuthStateChanged(auth, async (user) => {
-      currentUser = user;
-      if (user) {
-        showSection('tasbih');
-        const key = todayKey();
-        const ref = doc(db, "users", user.uid, "tasbih", key);
-        const snap = await getDoc(ref);
-        if(!snap.exists()) {
-          currentTasbihData = { remaining: 10000, done: false, dateKey: key };
-          await setDoc(ref, currentTasbihData);
-        } else {
-          currentTasbihData = snap.data();
-        }
-        tasbihCountEl.textContent = currentTasbihData.remaining;
-        subscribeDrawer();
-      } else {
-        showSection('login');
-      }
-    });
-
-    document.getElementById("btn-login-google").onclick = () => signInWithPopup(auth, provider);
-    document.getElementById("btn-logout").onclick = () => signOut(auth);
-    document.getElementById("btn-go-tasbih").onclick = () => showSection('tasbih');
-    document.getElementById("btn-back-home").onclick = () => showSection('home');
-    document.getElementById("btn-go-drawer").onclick = () => showSection('drawer');
-    document.getElementById("btn-back-tasbih-drawer").onclick = () => showSection('tasbih');
-    document.getElementById("btn-go-history").onclick = () => showSection('history');
-    document.getElementById("btn-back-tasbih-history").onclick = () => showSection('tasbih');
-    document.getElementById("btn-go-notes").onclick = () => showSection('notes');
-    document.getElementById("btn-back-tasbih-notes").onclick = () => showSection('tasbih');
-
-    document.getElementById("btn-add-laci").onclick = () => {
-      addDoc(collection(db, "users", currentUser.uid, "drawer"), { title: "", notes: "", createdAt: Date.now() });
-    };
-
-    btnToggleFact.onclick = () => {
-      factMode = !factMode;
-      btnToggleFact.textContent = `Mode Fakta: ${factMode ? 'ON' : 'OFF'}`;
-      btnToggleFact.classList.toggle("btn-active", factMode);
-      
-      if (factMode) {
-        factDisplayBox.classList.add("show");
-        if (allFacts.length > 0) {
-          factTitleEl.textContent = `[ ${allFacts[currentFactIndex].title} ]`;
-          factContentEl.textContent = "Sapu/Tekan/Enter untuk mula...";
-          factHintEl.style.display = 'block';
-          btnSpeak.style.display = 'flex';
-        } else {
-          factTitleEl.textContent = "";
-          factContentEl.textContent = "Laci kosong. Sila tambah laci.";
-          factHintEl.style.display = 'none';
-          btnSpeak.style.display = 'none';
-        }
-      } else {
-        factDisplayBox.classList.remove("show");
-      }
-    };
-
-    // ==========================================
-    // LOGIK FLIP & AUTO-TRANSLATE (GOOGLE API)
-    // ==========================================
-    factDisplayBox.addEventListener('click', (e) => {
-      e.stopPropagation(); 
-      
-      let viewingIndex = currentFactIndex === 0 ? allFacts.length - 1 : currentFactIndex - 1;
-      if (allFacts.length === 0 || allFacts[viewingIndex].isTamat) return;
-
-      const currentData = allFacts[viewingIndex];
-      isFlipped = !isFlipped; 
-
-      factDisplayBox.classList.remove("flip-animation");
-      void factDisplayBox.offsetWidth; 
-      factDisplayBox.classList.add("flip-animation");
-
-      setTimeout(() => {
-        if (!isFlipped) {
-          factContentEl.textContent = currentData.text;
-          factTitleEl.textContent = `[ ${currentData.title} ]`;
-        } else {
-          factTitleEl.textContent = `[ ${currentData.title} ] (Maksud)`;
-          if (currentData.translation) {
-            factContentEl.textContent = currentData.translation;
-          } else {
-            factContentEl.textContent = "Menterjemah... ⏳";
-            
-            // PENTING: Lock sumber bahasa ke English (sl=en)
-            const cleanTextForTranslate = currentData.text.replace(/^\d+[\.\)]\s*/, ''); 
-            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ms&dt=t&q=${encodeURIComponent(cleanTextForTranslate)}`;
-            
-            fetch(url)
-              .then(res => res.json())
-              .then(data => {
-                const translatedText = data[0][0][0];
-                currentData.translation = translatedText; 
-                
-                if (isFlipped && viewingIndex === (currentFactIndex === 0 ? allFacts.length - 1 : currentFactIndex - 1)) {
-                  factContentEl.textContent = translatedText;
-                }
-              })
-              .catch(err => {
-                if (isFlipped) factContentEl.textContent = "Gagal terjemah. Tiada Internet.";
-              });
-          }
-        }
-      }, 150);
-    });
-
-    // ==========================================
-    // LOGIK SUARA (TEXT-TO-SPEECH) BEBAS NOMBOR
-    // ==========================================
-    btnSpeak.addEventListener('click', (e) => {
-      // Halang event dari bubble up supaya kotak tak flip
-      e.stopPropagation(); 
-      
-      let viewingIndex = currentFactIndex === 0 ? allFacts.length - 1 : currentFactIndex - 1;
-      if (allFacts.length === 0 || allFacts[viewingIndex].isTamat) return;
-
-      const currentData = allFacts[viewingIndex];
-      
-      let rawTextToRead = isFlipped ? 
-          (currentData.translation ? currentData.translation : factContentEl.textContent) 
-          : currentData.text;
-      
-      const cleanText = rawTextToRead.replace(/^\d+[\.\)]\s*/, '');
-
-      window.speechSynthesis.cancel();
-
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.lang = isFlipped ? 'ms-MY' : 'en-US'; 
-      utterance.rate = 0.9; 
-      
-      window.speechSynthesis.speak(utterance);
-    });
-
-    // ==========================================
-    // LOGIK FULL SCREEN CLICK, SWIPE (5px) & KEYBOARD
-    // ==========================================
-    let touchY = 0;
-    let lastDir = null;
-    let isSwiping = false;
-    const GAP = 5;
-
-    document.addEventListener("touchstart", (e) => {
-      if(!dom.tasbih.classList.contains('active')) return;
-      if(e.target.closest('button') || e.target.closest('.topbar') || e.target.closest('#fact-display-box')) return;
-      touchY = e.touches[0].clientY;
-      isSwiping = false;
-    }, {passive:true});
-
-    document.addEventListener("touchmove", (e) => {
-      if(!dom.tasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box')) return;
-      const currentY = e.touches[0].clientY;
-      const diff = currentY - touchY;
-      if(Math.abs(diff) > 3) isSwiping = true;
-
-      if(diff < -GAP && lastDir !== 'UP') {
-        decrementTasbih(); lastDir = 'UP'; touchY = currentY;
-        if(navigator.vibrate) navigator.vibrate(25);
-      } else if(diff > GAP && lastDir !== 'DOWN') {
-        decrementTasbih(); lastDir = 'DOWN'; touchY = currentY;
-        if(navigator.vibrate) navigator.vibrate(25);
-      }
-    }, {passive:true});
-
-    document.addEventListener("click", (e) => {
-      if(!dom.tasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box') || isSwiping) return;
-      decrementTasbih();
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (!dom.tasbih.classList.contains('active')) return;
-      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-
-      if (e.code === "NumpadEnter" || e.key === "Enter") {
-        e.preventDefault();
-        decrementTasbih();
-        if(navigator.vibrate) navigator.vibrate(25);
-      }
-    });
-
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js").catch(console.error);
+    function renderTopics() {
+      topicsList.innerHTML = "";
+      const filteredTopics = allTopics.filter(t => t.subjectId === currentSubjectId);
+      filteredTopics.forEach(data => {
+        const div = document.createElement("div");
+        div.className = "drawer-card";
+        div.style.display = "flex"; div.style.gap = "8px"; div.style.alignItems = "center";
+        div.innerHTML = `
+          <input type="checkbox" class="topic-active" ${data.isActive ? 'checked' : ''} style="width: 20px; height: 20px; accent-color: var(--grad1);">
+          <input class="topic-title" value="${data.name || ''}" placeholder="Nama Topik..." style="flex: 1; border: none; background: transparent; color: white; border-bottom: 1px solid var(--border-mid); outline: none; padding: 4px;">
+          <button class="btn btn-secondary btn-sm btn-buka-topik">Buka</button>
+          <button class="btn btn-secondary btn-sm btn-del-topik" style="color:var(--danger); border-color:var(--danger);">X</button>
+        `;
+        
+        div.querySelector(".topic-active").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "topics", data.id), { isActive: e.target.checked });
+        div.querySelector(".topic-title").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "topics", data.id), { name: e.target.value });
+        div.querySelector(".btn-buka-topik").onclick = () => { currentTopicId = data.id; showSection('drawer'); renderDrawers(); };
+        div.querySelector(".btn-del-topik").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "topics", data.id));
+        
+        topicsList.appendChild(div);
       });
     }
-  </script>
-</body>
-</html>
+
+    function renderDrawers() {
+      drawerList.innerHTML = "";
+      const filteredDrawers = allDrawers.filter(d => d.topicId === currentTopicId);
+      filteredDrawers.forEach(data => {
+        const div = document.createElement("div");
+        div.className = "drawer-card";
+        div.innerHTML = `
+          <input class="drawer-title" value="${data.title || ''}" placeholder="Tajuk Laci">
+          <textarea class="drawer-notes" placeholder="Format: Perkataan = Terjemahan">${data.notes || ''}</textarea>
+          <div style="text-align: right;">
+            <button class="btn btn-secondary btn-sm btn-del-laci" style="color:var(--danger); border-color:var(--danger);">Padam</button>
+          </div>
+        `;
+        
+        div.querySelector(".drawer-title").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { title: e.target.value });
+        div.querySelector(".drawer-notes").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { notes: e.target.value });
+        div.querySelector(".btn-del-laci").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "drawer", data.id));
+        
+        drawerList.appendChild(div);
+  
