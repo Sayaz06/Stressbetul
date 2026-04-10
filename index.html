@@ -457,6 +457,7 @@
     .small { font-size: 0.8rem; }
   </style>
 </head>
+
 <body>
   <div class="app-shell">
     <div class="card">
@@ -804,7 +805,7 @@
       }
     }
 
-    async function decrementTasbih() {
+async function decrementTasbih() {
       if (!currentUser || !currentTasbihDocRef || !currentTasbihData) return;
       if (currentTasbihData.done) return;
       let remaining = currentTasbihData.remaining ?? 10000;
@@ -970,7 +971,7 @@
       window.speechSynthesis.speak(utterance);
     }
 
-    // ==========================================
+// ==========================================
     // FUNGSI RENDER CURRENT FACT (DENGAN TRANSLATE API)
     // ==========================================
     function renderCurrentFact() {
@@ -1030,6 +1031,17 @@
     // ==========================================
     // LOGIK CYCLE FACT (NORMAL, COMBO, SUPER COMBO 2-STEP AUDIO)
     // ==========================================
+    
+    // --- KOD BARU: Fungsi untuk tembak index terus ke Firestore ---
+    function syncIndexToFirestore(newIndex) {
+      if (activeGlobalTopicId !== 'default' && currentUser) {
+        updateDoc(doc(db, "users", currentUser.uid, "topics", activeGlobalTopicId), {
+          lastIndex: newIndex
+        }).catch(err => console.log("Gagal sync index ke Firestore:", err));
+      }
+    }
+    // -------------------------------------------------------------
+
     function cycleFact() {
       if (!factMode || allFacts.length === 0) return;
       const currentData = allFacts[currentFactIndex];
@@ -1038,7 +1050,7 @@
         comboStep = 0;
         isFlipped = false;
         currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-        localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
+        syncIndexToFirestore(currentFactIndex); // <--- KOD BARU (Ganti localStorage)
         triggerFadeAnimation(renderCurrentFact);
         return;
       }
@@ -1048,7 +1060,7 @@
         comboStep = 0;
         isFlipped = false;
         currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-        localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
+        syncIndexToFirestore(currentFactIndex); // <--- KOD BARU (Ganti localStorage)
         triggerFadeAnimation(renderCurrentFact);
       } 
       else if (learningMode === 1) {
@@ -1061,7 +1073,7 @@
           isFlipped = false;
           comboStep = 0;
           currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-          localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
+          syncIndexToFirestore(currentFactIndex); // <--- KOD BARU (Ganti localStorage)
           triggerFlipAnimation(renderCurrentFact);
         }
       }
@@ -1080,7 +1092,7 @@
           isFlipped = false;
           comboStep = 0;
           currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-          localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
+          syncIndexToFirestore(currentFactIndex); // <--- KOD BARU (Ganti localStorage)
           triggerFlipAnimation(() => {
             renderCurrentFact();
             const nextData = allFacts[currentFactIndex];
@@ -1098,11 +1110,35 @@
         allSubjects = snap.docs.map(d => ({id: d.id, ...d.data()}));
         if(sectionSubjects.classList.contains('active')) renderSubjects();
       });
+      
       onSnapshot(query(collection(db, "users", currentUser.uid, "topics")), snap => {
         allTopics = snap.docs.map(d => ({id: d.id, ...d.data()}));
         if(sectionTopics.classList.contains('active')) renderTopics();
+
+        // --- KOD BARU: Dengar perubahan lastIndex dari peranti lain ---
+        const activeTopic = allTopics.find(t => t.isActive);
+        if (activeTopic) {
+          activeGlobalTopicId = activeTopic.id;
+          const dbIndex = activeTopic.lastIndex || 0;
+          
+          if (currentFactIndex !== dbIndex) {
+            currentFactIndex = dbIndex;
+            comboStep = 0;
+            isFlipped = false;
+            
+            if (factMode && allFacts.length > 0) {
+              renderCurrentFact();
+              showToast("Indeks diselaraskan (Sync)"); 
+            }
+          }
+        } else {
+          activeGlobalTopicId = 'default';
+        }
+        // ---------------------------------------------------------------
+
         rebuildFacts();
       });
+
       onSnapshot(query(collection(db, "users", currentUser.uid, "drawer")), snap => {
         allDrawers = snap.docs.map(d => ({id: d.id, ...d.data()}));
         if(sectionDrawer.classList.contains('active')) renderDrawers();
@@ -1264,8 +1300,13 @@
         activeGlobalTopicId = 'default';
       }
 
-      let savedIndex = parseInt(localStorage.getItem('istigfar_fact_index_' + activeGlobalTopicId)) || 0;
+      // --- KOD BARU: Baca lastIndex dari Firestore ---
+      let savedIndex = 0;
+      if (activeTopic && activeTopic.lastIndex !== undefined) {
+        savedIndex = parseInt(activeTopic.lastIndex);
+      }
       if (savedIndex >= allFacts.length) savedIndex = 0;
+      // -----------------------------------------------
       
       currentFactIndex = savedIndex;
       comboStep = 0;
