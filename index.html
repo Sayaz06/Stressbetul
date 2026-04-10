@@ -17,10 +17,16 @@
       --grad2: #8b5cf6;
       --danger: #f97373;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; 
+    }
     body {
       background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
       color: var(--text);
+      min-height: 100vh;
       min-height: 100dvh; 
       display: flex;
       align-items: stretch;
@@ -51,51 +57,190 @@
       overflow: hidden; 
       min-height: 0; 
     }
-    .title-main { font-size: 1.8rem; font-weight: 700; text-align: center; margin-bottom: 6px; }
-    .subtitle { text-align: center; font-size: 0.9rem; color: var(--subtext); margin-bottom: 18px; }
-    
+    .title-main {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--subtext);
+      margin-bottom: 18px;
+    }
     .btn {
-      width: 100%; border-radius: 999px; padding: 12px 16px; border: 1px solid transparent;
+      width: 100%;
+      border-radius: 999px;
+      padding: 12px 16px;
+      border: 1px solid transparent;
       background-image: linear-gradient(var(--bg), var(--bg)), linear-gradient(135deg, var(--grad1), var(--grad2));
-      background-origin: border-box; background-clip: padding-box, border-box;
-      color: var(--text); font-weight: 600; cursor: pointer; display: inline-flex;
-      align-items: center; justify-content: center; gap: 8px; transition: transform 0.12s ease;
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
       box-shadow: 0 12px 30px rgba(79, 70, 229, 0.35);
     }
-    .btn:active { transform: scale(0.98); }
-    .btn-secondary { background-image: none; background: rgba(15, 23, 42, 0.9); border-color: var(--border-mid); box-shadow: none; }
-    .btn-danger { background-image: none; background: rgba(127, 29, 29, 0.9); border-color: rgba(248, 113, 113, 0.5); }
-    .btn-sm { width: auto; padding: 6px 12px; font-size: 0.8rem; }
-    .btn-active { background: var(--grad1) !important; color: white; border-color: transparent; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
-
-    .section { display: none; flex-direction: column; flex: 1; min-height: 0; }
-    .section.active { display: flex; }
-    
-    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; z-index: 10; flex-shrink: 0; }
-    .topbar-title { font-size: 1.1rem; font-weight: 600; }
-    .topbar-sub { font-size: 0.8rem; color: var(--subtext); }
-
-    .stack { display: flex; flex-direction: column; gap: 12px; }
-    .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .row-center { display: flex; align-items: center; justify-content: center; gap: 10px; }
-    
-    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border-mid); font-size: 0.75rem; color: var(--subtext); background: rgba(15, 23, 42, 0.9); }
-    .pill { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border-mid); font-size: 0.8rem; color: var(--subtext); display: inline-flex; align-items: center; gap: 6px; }
-    .badge-status { padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
-    .badge-done { background: rgba(22, 163, 74, 0.18); color: #bbf7d0; border: 1px solid rgba(34, 197, 94, 0.5); }
-    .badge-false { background: rgba(127, 29, 29, 0.25); color: #fecaca; border: 1px solid rgba(248, 113, 113, 0.6); }
-    
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 40px rgba(79, 70, 229, 0.5);
+    }
+    .btn:active { 
+      transform: scale(0.98); 
+    }
+    .btn-secondary {
+      background-image: none;
+      background: rgba(15, 23, 42, 0.9);
+      border-color: var(--border-mid);
+      box-shadow: none;
+    }
+    .btn-secondary:hover {
+      background: rgba(15, 23, 42, 1);
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.7);
+    }
+    .btn-danger {
+      background-image: none;
+      background: rgba(127, 29, 29, 0.9);
+      border-color: rgba(248, 113, 113, 0.5);
+      box-shadow: 0 10px 26px rgba(127, 29, 29, 0.7);
+    }
+    .btn-sm {
+      width: auto;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      border-radius: 999px;
+    }
+    .btn-active { 
+      background: var(--grad1) !important; 
+      color: white; 
+      border-color: transparent; 
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); 
+    }
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .row-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-mid);
+      font-size: 0.75rem;
+      color: var(--subtext);
+      background: rgba(15, 23, 42, 0.9);
+    }
+    .badge-status {
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-done {
+      background: rgba(22, 163, 74, 0.18);
+      color: #bbf7d0;
+      border: 1px solid rgba(34, 197, 94, 0.5);
+    }
+    .badge-false {
+      background: rgba(127, 29, 29, 0.25);
+      color: #fecaca;
+      border: 1px solid rgba(248, 113, 113, 0.6);
+    }
+    .section {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+    .section.active {
+      display: flex;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      z-index: 10;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .topbar-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .topbar-sub {
+      font-size: 0.8rem;
+      color: var(--subtext);
+    }
     .counter-circle {
-      width: 210px; height: 210px; border-radius: 50%;
+      width: 210px;
+      height: 210px;
+      border-radius: 50%;
       border: 2px solid rgba(148, 163, 184, 0.5);
       background: radial-gradient(circle at top, rgba(79, 70, 229, 0.15), rgba(15, 23, 42, 0.95));
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      margin: 10px auto; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
-      z-index: 5; flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 10px auto;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
+      z-index: 5;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
     }
-    .counter-value { font-size: 3rem; font-weight: 700; }
-    .counter-label { font-size: 0.85rem; color: var(--subtext); margin-bottom: 4px; }
-    .counter-sub { font-size: 0.8rem; color: var(--subtext); margin-top: 6px; }
+    .counter-circle:active {
+      transform: scale(0.97);
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.9);
+    }
+    .counter-label {
+      font-size: 0.85rem;
+      color: var(--subtext);
+      margin-bottom: 4px;
+    }
+    .counter-value {
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+    .counter-sub {
+      font-size: 0.8rem;
+      color: var(--subtext);
+      margin-top: 6px;
+    }
+    .pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border-mid);
+      font-size: 0.8rem;
+      color: var(--subtext);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
     
     /* KOTAK FAKTA KEKAL (Flashcard) */
     #fact-display-box {
@@ -116,66 +261,200 @@
       user-select: none;
       flex-shrink: 0;
       position: relative;
+      transition: all 0.3s ease;
     }
-    #fact-display-box.show { display: flex; animation: fadeIn 0.3s ease-out; }
-    .fact-title-label { font-size: 0.75rem; color: var(--grad2); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-    .fact-content-text { font-size: 1.1rem; font-weight: 600; line-height: 1.4; padding: 0 10px; }
-    .fact-hint { font-size: 0.65rem; color: var(--subtext); margin-top: 8px; opacity: 0.8; }
-
+    #fact-display-box.show { 
+      display: flex; 
+      animation: fadeIn 0.3s ease-out; 
+    }
+    .fact-title-label { 
+      font-size: 0.75rem; 
+      color: var(--grad2); 
+      font-weight: 700; 
+      text-transform: uppercase; 
+      letter-spacing: 0.05em; 
+      margin-bottom: 6px; 
+    }
+    .fact-content-text { 
+      font-size: 1.1rem; 
+      font-weight: 600; 
+      line-height: 1.4; 
+      padding: 0 10px; 
+    }
+    .fact-hint { 
+      font-size: 0.65rem; 
+      color: var(--grad1); 
+      margin-top: 8px; 
+      font-weight: 600; 
+    }
     .btn-speak {
-      position: absolute; top: 50%; transform: translateY(-50%); right: 12px;
-      background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-      cursor: pointer; font-size: 1.1rem; z-index: 50; 
+      position: absolute; 
+      top: 50%; 
+      transform: translateY(-50%); 
+      right: 12px;
+      background: rgba(255, 255, 255, 0.15); 
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%; 
+      width: 36px; 
+      height: 36px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      cursor: pointer; 
+      font-size: 1.1rem; 
+      z-index: 50; 
+      transition: background 0.2s, transform 0.1s;
     }
-    .btn-speak:active { background: rgba(255, 255, 255, 0.3); }
-
-    .flip-animation { animation: flipCard 0.3s ease-in-out; }
-    @keyframes flipCard { 0% { transform: scaleY(1); opacity: 1; } 50% { transform: scaleY(0); opacity: 0.2; } 100% { transform: scaleY(1); opacity: 1; } }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .btn-speak:active { 
+      transform: scale(0.9);
+      background: rgba(255, 255, 255, 0.3); 
+    }
+    .flip-animation { 
+      animation: flipCard 0.3s ease-in-out; 
+    }
+    @keyframes flipCard { 
+      0% { transform: scaleY(1); opacity: 1; } 
+      50% { transform: scaleY(0); opacity: 0.2; } 
+      100% { transform: scaleY(1); opacity: 1; } 
+    }
+    @keyframes fadeIn { 
+      from { opacity: 0; transform: translateY(10px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    }
 
     /* TOAST NOTIFICATION */
     #toast-notification {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
+      position: fixed; 
+      bottom: 30px; 
+      left: 50%; 
       transform: translateX(-50%) translateY(100px);
-      background: rgba(99, 102, 241, 0.95);
-      color: white;
-      padding: 10px 20px;
+      background: rgba(99, 102, 241, 0.95); 
+      color: white; 
+      padding: 10px 20px; 
       border-radius: 999px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      opacity: 0;
+      font-size: 0.85rem; 
+      font-weight: 600; 
+      opacity: 0; 
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      z-index: 9999;
-      pointer-events: none;
+      z-index: 9999; 
+      pointer-events: none; 
       box-shadow: 0 8px 20px rgba(0,0,0,0.5);
     }
-    #toast-notification.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
+    #toast-notification.show { 
+      transform: translateX(-50%) translateY(0); 
+      opacity: 1; 
     }
 
-    /* Laci, Sejarah, Nota */
-    .list { margin-top: 10px; border-radius: 14px; border: 1px solid var(--border-soft); background: rgba(15, 23, 42, 0.9); flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 20px; }
-    .list-item { padding: 10px 12px; border-bottom: 1px solid rgba(31, 41, 55, 0.8); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .list-item:last-child { border-bottom: none; }
-    .list-main { display: flex; flex-direction: column; gap: 2px; }
-    .list-title { font-size: 0.9rem; font-weight: 500; }
-    .list-sub { font-size: 0.8rem; color: var(--subtext); }
+    .list { 
+      margin-top: 10px; 
+      border-radius: 14px; 
+      border: 1px solid var(--border-soft); 
+      background: rgba(15, 23, 42, 0.9); 
+      flex: 1; 
+      overflow-y: auto; 
+      min-height: 0; 
+      padding-bottom: 20px; 
+    }
+    .list-item { 
+      padding: 10px 12px; 
+      border-bottom: 1px solid rgba(31, 41, 55, 0.8); 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      gap: 10px; 
+    }
+    .list-item:last-child { 
+      border-bottom: none; 
+    }
+    .list-main { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 2px; 
+    }
+    .list-title { 
+      font-size: 0.9rem; 
+      font-weight: 500; 
+    }
+    .list-sub { 
+      font-size: 0.8rem; 
+      color: var(--subtext); 
+    }
     
-    .note-card { border-radius: 14px; border: 1px solid var(--border-soft); background: rgba(15, 23, 42, 0.9); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
-    textarea { width: 100%; min-height: 80px; resize: vertical; border-radius: 10px; border: 1px solid var(--border-mid); background: rgba(15, 23, 42, 0.9); color: var(--text); padding: 8px 10px; font-size: 0.9rem; outline: none; }
-    textarea:focus { border-color: var(--grad1); box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.5); }
-    .empty-state { text-align: center; font-size: 0.85rem; color: var(--subtext); padding: 14px 10px; }
+    .note-card { 
+      border-radius: 14px; 
+      border: 1px solid var(--border-soft); 
+      background: rgba(15, 23, 42, 0.9); 
+      padding: 10px 12px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 6px; 
+    }
+    textarea { 
+      width: 100%; 
+      min-height: 80px; 
+      resize: vertical; 
+      border-radius: 10px; 
+      border: 1px solid var(--border-mid); 
+      background: rgba(15, 23, 42, 0.9); 
+      color: var(--text); 
+      padding: 8px 10px; 
+      font-size: 0.9rem; 
+      outline: none; 
+    }
+    textarea:focus { 
+      border-color: var(--grad1); 
+      box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.5); 
+    }
+    .empty-state { 
+      text-align: center; 
+      font-size: 0.85rem; 
+      color: var(--subtext); 
+      padding: 14px 10px; 
+    }
     
-    .drawer-card { background: rgba(30, 41, 59, 0.5); border-radius: 12px; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border-soft); }
-    input.drawer-title { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border-mid); color: #fff; font-weight: 700; padding: 4px; margin-bottom: 8px; outline: none; }
-    textarea.drawer-notes { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border-soft); color: var(--subtext); border-radius: 8px; padding: 8px; font-size: 0.85rem; min-height: 80px; resize: none; outline: none; }
+    .drawer-card { 
+      background: rgba(30, 41, 59, 0.5); 
+      border-radius: 12px; 
+      padding: 12px; 
+      margin-bottom: 10px; 
+      border: 1px solid var(--border-soft); 
+    }
+    input.drawer-title { 
+      width: 100%; 
+      background: transparent; 
+      border: none; 
+      border-bottom: 1px solid var(--border-mid); 
+      color: #fff; 
+      font-weight: 700; 
+      padding: 4px; 
+      margin-bottom: 8px; 
+      outline: none; 
+    }
+    textarea.drawer-notes { 
+      width: 100%; 
+      background: rgba(0,0,0,0.2); 
+      border: 1px solid var(--border-soft); 
+      color: var(--subtext); 
+      border-radius: 8px; 
+      padding: 8px; 
+      font-size: 0.85rem; 
+      min-height: 80px; 
+      resize: none; 
+      outline: none; 
+    }
     
-    .footer { margin-top: auto; padding-top: 10px; text-align: center; font-size: 0.7rem; color: var(--subtext); flex-shrink: 0; }
-    .mt-8 { margin-top: 8px; flex-shrink: 0; }
+    .footer { 
+      margin-top: auto; 
+      padding-top: 10px; 
+      text-align: center; 
+      font-size: 0.7rem; 
+      color: var(--subtext); 
+      flex-shrink: 0; 
+    }
+    .mt-8 { margin-top: 8px; }
+    .mt-12 { margin-top: 12px; }
+    .mt-16 { margin-top: 16px; }
+    .small { font-size: 0.8rem; }
   </style>
 </head>
 <body>
@@ -187,10 +466,14 @@
       <section id="section-login" class="section active">
         <div style="margin: auto 0;">
           <div class="title-main">Istigfar</div>
-          <div class="subtitle">Tasbih harian & Laci Fakta, sync dengan akaun Google anda.</div>
+          <div class="subtitle">Tasbih harian & nota istighfar, sync dengan akaun Google anda.</div>
           <div class="stack mt-16">
-            <button id="btn-login-google" class="btn">Login dengan Google</button>
-            <div style="text-align: center; font-size: 0.8rem; color: var(--subtext);">Satu akaun, simpanan awan Firestore.</div>
+            <button id="btn-login-google" class="btn">
+              <span>Login dengan Google</span>
+            </button>
+            <div class="tagline" style="text-align: center; font-size: 0.8rem; color: var(--subtext);">
+              Satu akaun, simpanan awan Firestore, boleh buka di mana-mana.
+            </div>
           </div>
         </div>
       </section>
@@ -204,17 +487,24 @@
           <button id="btn-logout" class="btn btn-secondary btn-sm">Logout</button>
         </div>
         <div class="stack mt-8">
-          <button id="btn-go-tasbih" class="btn">Tasbih Countdown</button>
-          <button id="btn-go-notes" class="btn btn-secondary">Note For Istighfar</button>
+          <button id="btn-go-tasbih" class="btn">
+            <span>Tasbih Countdown</span>
+          </button>
+          <button id="btn-go-notes" class="btn btn-secondary">
+            <span>Note For Istighfar</span>
+          </button>
         </div>
-        <div class="footer mt-16">Repo: Stressbetul / Istigfar</div>
+        <div class="footer mt-16">
+          Repo: <span class="small">Stressbetul / Istigfar</span>
+        </div>
       </section>
 
       <section id="section-tasbih" class="section">
         <div class="topbar">
-          <div style="display: flex; gap: 6px;">
-            <button id="btn-back-home" class="btn btn-secondary btn-sm">← Menu</button>
-            <button id="btn-toggle-fact" class="btn btn-secondary btn-sm">Mode Fakta: OFF</button>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button id="btn-back-home-from-tasbih" class="btn btn-secondary btn-sm">← Menu</button>
+            <button id="btn-toggle-fact" class="btn btn-secondary btn-sm">Fakta: OFF</button>
+            <button id="btn-toggle-mode" class="btn btn-secondary btn-sm btn-active" style="display: none;">Mode: Normal</button>
           </div>
           <div style="text-align:right;">
             <button id="btn-go-subjects" class="btn btn-secondary btn-sm">Laci Fakta</button>
@@ -244,8 +534,12 @@
         </div>
 
         <div class="row" style="margin-top: auto;">
-          <div class="chip"><span>Auto simpan ke Firestore</span></div>
-          <div class="chip"><span id="tasbih-status-chip">Status: Aktif</span></div>
+          <div class="chip">
+            <span>Auto simpan ke Firestore</span>
+          </div>
+          <div class="chip">
+            <span id="tasbih-status-chip">Status: Aktif</span>
+          </div>
         </div>
       </section>
 
@@ -281,7 +575,7 @@
 
       <section id="section-history" class="section">
         <div class="topbar">
-          <button id="btn-back-tasbih-history" class="btn btn-secondary btn-sm">← Tasbih</button>
+          <button id="btn-back-tasbih-from-history" class="btn btn-secondary btn-sm">← Tasbih</button>
           <div style="text-align:right;">
             <div class="topbar-title">History</div>
             <div class="topbar-sub">Rekod tasbih harian</div>
@@ -292,7 +586,7 @@
 
       <section id="section-notes" class="section">
         <div class="topbar">
-          <button id="btn-back-home-notes" class="btn btn-secondary btn-sm">← Menu</button>
+          <button id="btn-back-home-from-notes" class="btn btn-secondary btn-sm">← Menu</button>
           <div style="text-align:right;">
             <div class="topbar-title">Note For Istighfar</div>
             <div class="topbar-sub">Catatan refleksi & doa</div>
@@ -308,10 +602,32 @@
   </div>
 
   <script type="module">
+    // Firebase v9 modular
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged,
+      setPersistence,
+      browserLocalPersistence
+    } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDoc,
+      collection,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      onSnapshot,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
+    // CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyAGLX_xxH_dQ06epX4XCXtuSHN0DwZFMjA",
       authDomain: "stress-auti-action.firebaseapp.com",
@@ -327,20 +643,34 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
+    // Panggil getVoices lebih awal supaya OS sempat load senarai suara
     window.speechSynthesis.getVoices();
 
-    const dom = {
-      login: document.getElementById("section-login"),
-      home: document.getElementById("section-home"),
-      tasbih: document.getElementById("section-tasbih"),
-      subjects: document.getElementById("section-subjects"),
-      topics: document.getElementById("section-topics"),
-      drawer: document.getElementById("section-drawer"),
-      history: document.getElementById("section-history"),
-      notes: document.getElementById("section-notes")
-    };
+    // DOM ELEMENTS ASAL & BARU (Dikembangkan sepenuhnya)
+    const sectionLogin = document.getElementById("section-login");
+    const sectionHome = document.getElementById("section-home");
+    const sectionTasbih = document.getElementById("section-tasbih");
+    const sectionHistory = document.getElementById("section-history");
+    const sectionNotes = document.getElementById("section-notes");
+    
+    // Dom baru untuk Laci 3 Peringkat
+    const sectionSubjects = document.getElementById("section-subjects");
+    const sectionTopics = document.getElementById("section-topics");
+    const sectionDrawer = document.getElementById("section-drawer");
+
+    const btnLoginGoogle = document.getElementById("btn-login-google");
+    const btnLogout = document.getElementById("btn-logout");
+    const btnGoTasbih = document.getElementById("btn-go-tasbih");
+    const btnGoNotes = document.getElementById("btn-go-notes");
+    
+    const btnBackHomeFromTasbih = document.getElementById("btn-back-home-from-tasbih");
+    const btnBackTasbihFromHistory = document.getElementById("btn-back-tasbih-from-history");
+    const btnBackHomeFromNotes = document.getElementById("btn-back-home-from-notes");
+    const btnGoHistory = document.getElementById("btn-go-history");
+    const btnAddNote = document.getElementById("btn-add-note");
 
     const homeUserEmail = document.getElementById("home-user-email");
+    const tasbihCircle = document.getElementById("tasbih-circle");
     const tasbihCountEl = document.getElementById("tasbih-count");
     const tasbihStatusEl = document.getElementById("tasbih-status");
     const tasbihStatusChip = document.getElementById("tasbih-status-chip");
@@ -348,10 +678,22 @@
     const historyList = document.getElementById("history-list");
     const notesList = document.getElementById("notes-list");
     
+    // DOM Laci & Fakta
     const subjectsList = document.getElementById("subjects-list");
     const topicsList = document.getElementById("topics-list");
     const drawerList = document.getElementById("drawer-list");
+    
+    const btnGoSubjects = document.getElementById("btn-go-subjects");
+    const btnBackTasbihSubj = document.getElementById("btn-back-tasbih-subj");
+    const btnBackSubjTopics = document.getElementById("btn-back-subj-topics");
+    const btnBackTopicsDrawer = document.getElementById("btn-back-topics-drawer");
+    const btnAddSubject = document.getElementById("btn-add-subject");
+    const btnAddTopic = document.getElementById("btn-add-topic");
+    const btnAddLaci = document.getElementById("btn-add-laci");
+
     const btnToggleFact = document.getElementById("btn-toggle-fact");
+    const btnToggleMode = document.getElementById("btn-toggle-mode");
+    
     const factDisplayBox = document.getElementById("fact-display-box");
     const factTitleEl = document.getElementById("fact-title");
     const factContentEl = document.getElementById("fact-content");
@@ -359,6 +701,7 @@
     const btnSpeak = document.getElementById("btn-speak");
     const toastNotification = document.getElementById("toast-notification");
 
+    // VARIABLES
     let currentUser = null;
     let currentTasbihDocRef = null;
     let currentTasbihData = null;
@@ -366,6 +709,10 @@
     let notesUnsub = null;
     
     let factMode = false;
+    let learningMode = 0; // 0=Normal, 1=Combo, 2=SuperCombo
+    const modeLabels = ["Mode: Normal", "Mode: Combo", "Mode: Super"];
+    let comboStep = 0; 
+    
     let allSubjects = [];
     let allTopics = [];
     let allDrawers = [];
@@ -378,9 +725,20 @@
     let isFlipped = false; 
     let hasShownStartupToast = false;
 
-    function showSection(name) {
-      Object.values(dom).forEach(s => s.classList.remove("active"));
-      dom[name].classList.add("active");
+    // ==========================================
+    // UTILITIES
+    // ==========================================
+    function showSection(section) {
+      sectionLogin.classList.remove("active");
+      sectionHome.classList.remove("active");
+      sectionTasbih.classList.remove("active");
+      sectionHistory.classList.remove("active");
+      sectionNotes.classList.remove("active");
+      sectionSubjects.classList.remove("active");
+      sectionTopics.classList.remove("active");
+      sectionDrawer.classList.remove("active");
+      
+      section.classList.add("active");
     }
 
     function showToast(message) {
@@ -408,13 +766,21 @@
       return `${yyyy}-${mm}-${dd}`;
     }
 
+    // ==========================================
+    // TASBIH LOGIC (ASAL)
+    // ==========================================
     async function ensureTodayTasbih() {
       if (!currentUser) return;
       const key = todayKey();
       const ref = doc(db, "users", currentUser.uid, "tasbih", key);
       const snap = await getDoc(ref);
       if (!snap.exists()) {
-        await setDoc(ref, { dateKey: key, createdAt: Date.now(), remaining: 10000, done: false });
+        await setDoc(ref, {
+          dateKey: key,
+          createdAt: Date.now(),
+          remaining: 10000,
+          done: false
+        });
       }
       const updatedSnap = await getDoc(ref);
       currentTasbihDocRef = ref;
@@ -439,10 +805,40 @@
       }
     }
 
+    async function decrementTasbih() {
+      if (!currentUser || !currentTasbihDocRef || !currentTasbihData) return;
+      if (currentTasbihData.done) return;
+      let remaining = currentTasbihData.remaining ?? 10000;
+      if (remaining <= 0) return;
+      
+      remaining -= 1;
+      const done = remaining <= 0;
+      currentTasbihData.remaining = remaining;
+      currentTasbihData.done = done;
+      
+      await setDoc(currentTasbihDocRef, {
+        ...currentTasbihData,
+        updatedAt: Date.now()
+      });
+      
+      updateTasbihUI();
+      cycleFact(); // Call logic fakta
+
+      if (done) {
+        showSection(sectionHistory);
+      }
+    }
+
+    // ==========================================
+    // HISTORY & NOTES LOGIC (ASAL)
+    // ==========================================
     function subscribeHistory() {
       if (!currentUser) return;
       if (historyUnsub) historyUnsub();
-      const q = query(collection(db, "users", currentUser.uid, "tasbih"), orderBy("dateKey", "desc"));
+      const q = query(
+        collection(db, "users", currentUser.uid, "tasbih"),
+        orderBy("dateKey", "desc")
+      );
       historyUnsub = onSnapshot(q, (snap) => {
         historyList.innerHTML = "";
         if (snap.empty) {
@@ -476,7 +872,10 @@
     function subscribeNotes() {
       if (!currentUser) return;
       if (notesUnsub) notesUnsub();
-      const q = query(collection(db, "users", currentUser.uid, "notes"), orderBy("createdAt", "desc"));
+      const q = query(
+        collection(db, "users", currentUser.uid, "notes"),
+        orderBy("createdAt", "desc")
+      );
       notesUnsub = onSnapshot(q, (snap) => {
         notesList.innerHTML = "";
         if (snap.empty) {
@@ -488,7 +887,9 @@
           const id = docSnap.id;
           const text = data.text || "";
           const createdAt = data.createdAt ? new Date(data.createdAt) : null;
-          const timeLabel = createdAt ? `${String(createdAt.getDate()).padStart(2, "0")}/${String(createdAt.getMonth() + 1).padStart(2, "0")}/${createdAt.getFullYear()}` : "";
+          const timeLabel = createdAt
+            ? `${String(createdAt.getDate()).padStart(2, "0")}/${String(createdAt.getMonth() + 1).padStart(2, "0")}/${createdAt.getFullYear()}`
+            : "";
           const wrapper = document.createElement("div");
           wrapper.className = "list-item";
           wrapper.innerHTML = `
@@ -508,8 +909,10 @@
         notesList.querySelectorAll(".note-textarea").forEach((ta) => {
           ta.addEventListener("input", async (e) => {
             const id = e.target.getAttribute("data-id");
+            const value = e.target.value;
             if (!currentUser || !id) return;
-            await updateDoc(doc(db, "users", currentUser.uid, "notes", id), { text: e.target.value, updatedAt: Date.now() });
+            const ref = doc(db, "users", currentUser.uid, "notes", id);
+            await updateDoc(ref, { text: value, updatedAt: Date.now() });
           });
         });
 
@@ -517,96 +920,228 @@
           btn.addEventListener("click", async (e) => {
             const id = e.target.getAttribute("data-id");
             if (!currentUser || !id) return;
-            await deleteDoc(doc(db, "users", currentUser.uid, "notes", id));
+            const ref = doc(db, "users", currentUser.uid, "notes", id);
+            await deleteDoc(ref);
           });
         });
       });
     }
 
-    async function addNote() {
+    async function addNoteFunc() {
       if (!currentUser) return;
-      await addDoc(collection(db, "users", currentUser.uid, "notes"), { text: "", createdAt: Date.now() });
-    }
-
-    function cycleFact() {
-      if (!factMode || allFacts.length === 0) return;
-      
-      isFlipped = false; 
-      const currentData = allFacts[currentFactIndex];
-      factTitleEl.textContent = currentData.title ? `[ ${currentData.title} ]` : '';
-      
-      if (currentData.isTamat) {
-        factContentEl.innerHTML = `<span style="color: #fca5a5; font-weight: bold;">${currentData.text}</span>`;
-        factHintEl.style.display = 'none'; 
-        btnSpeak.style.display = 'none'; 
-      } else {
-        factContentEl.textContent = currentData.text;
-        factHintEl.style.display = 'block';
-        btnSpeak.style.display = 'flex'; 
-      }
-
-      currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-      localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
-    }
-
-    async function decrementTasbih() {
-      if (!currentUser || !currentTasbihDocRef || !currentTasbihData) return;
-      if (currentTasbihData.done) return;
-      let remaining = currentTasbihData.remaining ?? 10000;
-      if (remaining <= 0) return;
-      
-      remaining -= 1;
-      const done = remaining <= 0;
-      currentTasbihData.remaining = remaining;
-      currentTasbihData.done = done;
-      
-      await setDoc(currentTasbihDocRef, { ...currentTasbihData, updatedAt: Date.now() });
-      updateTasbihUI();
-      cycleFact();
-
-      if (done) showSection('history');
+      await addDoc(collection(db, "users", currentUser.uid, "notes"), {
+        text: "",
+        createdAt: Date.now()
+      });
     }
 
     // ==========================================
-    // RENDER & SORT (ALPHANUMERIC)
+    // FUNGSI ANIMASI & AUDIO
+    // ==========================================
+    function triggerFadeAnimation(callback) {
+      factDisplayBox.classList.remove("show");
+      void factDisplayBox.offsetWidth;
+      factDisplayBox.classList.add("show");
+      callback();
+    }
+
+    function triggerFlipAnimation(callback) {
+      factDisplayBox.classList.remove("flip-animation");
+      void factDisplayBox.offsetWidth;
+      factDisplayBox.classList.add("flip-animation");
+      setTimeout(callback, 150);
+    }
+
+    function playFactAudio(rawText, isMalay) {
+      if (!rawText || rawText.includes("Menterjemah") || rawText.includes("Laci Tamat") || rawText.includes("Tiada terjemahan")) return;
+      
+      // Regex buang nombor
+      const cleanText = rawText.replace(/^\s*\d+[\.\)]\s*/, '');
+      
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = isMalay ? 'ms-MY' : 'en-US'; 
+      utterance.rate = 0.85; 
+      utterance.pitch = 1.1; 
+      
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(v => v.lang.includes(isMalay ? 'ms' : 'en') && (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Zira')));
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // ==========================================
+    // FUNGSI RENDER CURRENT FACT
+    // ==========================================
+    function renderCurrentFact() {
+      const data = allFacts[currentFactIndex];
+      
+      if (data.isTamat) {
+        factTitleEl.textContent = `[ ${data.title} ]`;
+        factContentEl.innerHTML = `<span style="color: #fca5a5; font-weight: bold;">${data.text}</span>`;
+        factHintEl.style.display = 'none';
+        btnSpeak.style.display = 'none';
+        return;
+      }
+
+      if (!isFlipped) {
+        // MUKA DEPAN (ENGLISH)
+        factTitleEl.textContent = `[ ${data.title} ]`;
+        factContentEl.textContent = data.text;
+      } else {
+        // MUKA BELAKANG (MELAYU)
+        factTitleEl.textContent = `[ ${data.title} ] (Maksud)`;
+        if (data.translation) {
+          factContentEl.textContent = data.translation;
+        } else {
+          factContentEl.textContent = "Menterjemah... ⏳";
+          const cleanTextForTranslate = data.text.replace(/^\s*\d+[\.\)]\s*/, ''); 
+          const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ms&dt=t&q=${encodeURIComponent(cleanTextForTranslate)}`;
+          
+          fetch(url)
+            .then(res => res.json())
+            .then(resData => {
+              const translatedText = resData[0][0][0];
+              data.translation = translatedText; 
+              if (isFlipped && allFacts[currentFactIndex] === data) {
+                factContentEl.textContent = translatedText;
+              }
+            })
+            .catch(err => { 
+              if(isFlipped) factContentEl.textContent = "Gagal terjemah."; 
+            });
+        }
+      }
+
+      factHintEl.style.display = 'block';
+      btnSpeak.style.display = 'flex';
+      
+      if (learningMode === 2) {
+        factHintEl.textContent = "(Super Combo: Sapu/Enter untuk Audio/Maksud)";
+      } else if (learningMode === 1) {
+        factHintEl.textContent = "(Combo: Sapu/Enter untuk Maksud)";
+      } else {
+        factHintEl.textContent = "(Normal: Klik kotak untuk Maksud)";
+      }
+    }
+
+    // ==========================================
+    // LOGIK CYCLE FACT (NORMAL, COMBO, SUPER COMBO)
+    // ==========================================
+    function cycleFact() {
+      if (!factMode || allFacts.length === 0) return;
+      const currentData = allFacts[currentFactIndex];
+
+      if (currentData.isTamat) {
+        comboStep = 0;
+        isFlipped = false;
+        currentFactIndex = (currentFactIndex + 1) % allFacts.length;
+        localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
+        triggerFadeAnimation(renderCurrentFact);
+        return;
+      }
+
+      if (learningMode === 0) {
+        // MODE NORMAL
+        comboStep = 0;
+        isFlipped = false;
+        currentFactIndex = (currentFactIndex + 1) % allFacts.length;
+        localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
+        triggerFadeAnimation(renderCurrentFact);
+      } 
+      else if (learningMode === 1) {
+        // MODE COMBO
+        if (comboStep === 0) {
+          isFlipped = true;
+          comboStep = 1;
+          triggerFlipAnimation(renderCurrentFact);
+        } else {
+          isFlipped = false;
+          comboStep = 0;
+          currentFactIndex = (currentFactIndex + 1) % allFacts.length;
+          localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
+          triggerFlipAnimation(renderCurrentFact);
+        }
+      }
+      else if (learningMode === 2) {
+        // MODE SUPER COMBO
+        if (comboStep === 0) {
+          playFactAudio(currentData.text, false);
+          comboStep = 1;
+        } 
+        else if (comboStep === 1) {
+          isFlipped = true;
+          comboStep = 2;
+          triggerFlipAnimation(renderCurrentFact);
+        } 
+        else if (comboStep === 2) {
+          let textToRead = currentData.translation || factContentEl.textContent;
+          playFactAudio(textToRead, true);
+          comboStep = 3;
+        } 
+        else if (comboStep === 3) {
+          isFlipped = false;
+          comboStep = 0;
+          currentFactIndex = (currentFactIndex + 1) % allFacts.length;
+          localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
+          triggerFlipAnimation(renderCurrentFact);
+        }
+      }
+    }
+
+    // ==========================================
+    // RENDER & HIERARCHY (3-LEVEL)
     // ==========================================
     function subscribeAllHierarchyData() {
       onSnapshot(query(collection(db, "users", currentUser.uid, "subjects")), snap => {
         allSubjects = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        if(dom.subjects.classList.contains('active')) renderSubjects();
+        if(sectionSubjects.classList.contains('active')) renderSubjects();
       });
       onSnapshot(query(collection(db, "users", currentUser.uid, "topics")), snap => {
         allTopics = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        if(dom.topics.classList.contains('active')) renderTopics();
+        if(sectionTopics.classList.contains('active')) renderTopics();
         rebuildFacts();
       });
       onSnapshot(query(collection(db, "users", currentUser.uid, "drawer")), snap => {
         allDrawers = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        if(dom.drawer.classList.contains('active')) renderDrawers();
+        if(sectionDrawer.classList.contains('active')) renderDrawers();
         rebuildFacts();
       });
     }
 
     function renderSubjects() {
       subjectsList.innerHTML = "";
-      
-      // SORT: Susun Subjek mengikut Abjad & Nombor
-      const sortedSubjects = [...allSubjects].sort((a, b) => 
-        (a.name || "").localeCompare(b.name || "", undefined, {numeric: true})
-      );
+      const sortedSubjects = [...allSubjects].sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
       
       sortedSubjects.forEach(data => {
         const div = document.createElement("div");
         div.className = "drawer-card";
-        div.style.display = "flex"; div.style.gap = "8px"; div.style.alignItems = "center";
+        div.style.display = "flex"; 
+        div.style.gap = "8px"; 
+        div.style.alignItems = "center";
+        
         div.innerHTML = `
           <input class="subject-title" value="${data.name || ''}" placeholder="Nama Subjek..." style="flex: 1; border: none; background: transparent; color: white; border-bottom: 1px solid var(--border-mid); outline: none; padding: 4px;">
           <button class="btn btn-secondary btn-sm btn-buka-sub" data-id="${data.id}">Buka</button>
           <button class="btn btn-secondary btn-sm btn-del-sub" data-id="${data.id}" style="color:var(--danger); border-color:var(--danger);">X</button>
         `;
-        div.querySelector(".subject-title").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "subjects", data.id), { name: e.target.value });
-        div.querySelector(".btn-buka-sub").onclick = () => { currentSubjectId = data.id; showSection('topics'); renderTopics(); };
-        div.querySelector(".btn-del-sub").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "subjects", data.id));
+        
+        div.querySelector(".subject-title").addEventListener("change", (e) => {
+          updateDoc(doc(db, "users", currentUser.uid, "subjects", data.id), { name: e.target.value });
+        });
+        
+        div.querySelector(".btn-buka-sub").addEventListener("click", () => { 
+          currentSubjectId = data.id; 
+          showSection(sectionTopics); 
+          renderTopics(); 
+        });
+        
+        div.querySelector(".btn-del-sub").addEventListener("click", () => {
+          deleteDoc(doc(db, "users", currentUser.uid, "subjects", data.id));
+        });
+        
         subjectsList.appendChild(div);
       });
     }
@@ -614,16 +1149,15 @@
     function renderTopics() {
       topicsList.innerHTML = "";
       const filteredTopics = allTopics.filter(t => t.subjectId === currentSubjectId);
-      
-      // SORT: Susun Topik mengikut Abjad & Nombor
-      const sortedTopics = filteredTopics.sort((a, b) => 
-        (a.name || "").localeCompare(b.name || "", undefined, {numeric: true})
-      );
+      const sortedTopics = filteredTopics.sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
       
       sortedTopics.forEach(data => {
         const div = document.createElement("div");
-        div.className = "drawer-card";
-        div.style.display = "flex"; div.style.gap = "8px"; div.style.alignItems = "center";
+        div.className = "drawer-card"; 
+        div.style.display = "flex"; 
+        div.style.gap = "8px"; 
+        div.style.alignItems = "center";
+        
         div.innerHTML = `
           <input type="checkbox" class="topic-active" ${data.isActive ? 'checked' : ''} style="width: 20px; height: 20px; accent-color: var(--grad1);">
           <input class="topic-title" value="${data.name || ''}" placeholder="Nama Topik..." style="flex: 1; border: none; background: transparent; color: white; border-bottom: 1px solid var(--border-mid); outline: none; padding: 4px;">
@@ -631,8 +1165,7 @@
           <button class="btn btn-secondary btn-sm btn-del-topik" style="color:var(--danger); border-color:var(--danger);">X</button>
         `;
         
-        // SINGLE TICK LOGIC
-        div.querySelector(".topic-active").onchange = async (e) => { 
+        div.querySelector(".topic-active").addEventListener("change", async (e) => { 
           const isChecked = e.target.checked;
           if (isChecked) {
             const others = allTopics.filter(t => t.isActive && t.id !== data.id);
@@ -641,11 +1174,22 @@
             }
           }
           await updateDoc(doc(db, "users", currentUser.uid, "topics", data.id), { isActive: isChecked }); 
-        };
+        });
         
-        div.querySelector(".topic-title").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "topics", data.id), { name: e.target.value });
-        div.querySelector(".btn-buka-topik").onclick = () => { currentTopicId = data.id; showSection('drawer'); renderDrawers(); };
-        div.querySelector(".btn-del-topik").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "topics", data.id));
+        div.querySelector(".topic-title").addEventListener("change", (e) => {
+          updateDoc(doc(db, "users", currentUser.uid, "topics", data.id), { name: e.target.value });
+        });
+        
+        div.querySelector(".btn-buka-topik").addEventListener("click", () => { 
+          currentTopicId = data.id; 
+          showSection(sectionDrawer); 
+          renderDrawers(); 
+        });
+        
+        div.querySelector(".btn-del-topik").addEventListener("click", () => {
+          deleteDoc(doc(db, "users", currentUser.uid, "topics", data.id));
+        });
+        
         topicsList.appendChild(div);
       });
     }
@@ -653,11 +1197,7 @@
     function renderDrawers() {
       drawerList.innerHTML = "";
       const filteredDrawers = allDrawers.filter(d => d.topicId === currentTopicId);
-      
-      // SORT: Susun Laci mengikut Abjad & Nombor
-      const sortedDrawers = filteredDrawers.sort((a, b) => 
-        (a.title || "").localeCompare(b.title || "", undefined, {numeric: true})
-      );
+      const sortedDrawers = filteredDrawers.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, {numeric: true}));
       
       sortedDrawers.forEach(data => {
         const div = document.createElement("div");
@@ -669,9 +1209,19 @@
             <button class="btn btn-secondary btn-sm btn-del-laci" style="color:var(--danger); border-color:var(--danger);">Padam</button>
           </div>
         `;
-        div.querySelector(".drawer-title").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { title: e.target.value });
-        div.querySelector(".drawer-notes").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { notes: e.target.value });
-        div.querySelector(".btn-del-laci").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "drawer", data.id));
+        
+        div.querySelector(".drawer-title").addEventListener("change", (e) => {
+          updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { title: e.target.value });
+        });
+        
+        div.querySelector(".drawer-notes").addEventListener("change", (e) => {
+          updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { notes: e.target.value });
+        });
+        
+        div.querySelector(".btn-del-laci").addEventListener("click", () => {
+          deleteDoc(doc(db, "users", currentUser.uid, "drawer", data.id));
+        });
+        
         drawerList.appendChild(div);
       });
     }
@@ -682,15 +1232,12 @@
       
       if (activeTopic) {
         activeGlobalTopicId = activeTopic.id;
-        
-        if (!hasShownStartupToast) {
-          showToast(`Topik Aktif: ${activeTopic.name || 'Tanpa Nama'}`);
-          hasShownStartupToast = true;
+        if (!hasShownStartupToast) { 
+          showToast(`Topik Aktif: ${activeTopic.name || 'Tanpa Nama'}`); 
+          hasShownStartupToast = true; 
         }
-
-        // Pastikan fakta ditarik mengikut urunan laci yang dah disort
-        const activeDrawers = allDrawers.filter(d => d.topicId === activeTopic.id)
-            .sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, {numeric: true}));
+        
+        const activeDrawers = allDrawers.filter(d => d.topicId === activeTopic.id).sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, {numeric: true}));
         
         activeDrawers.forEach(data => {
           const tajukLaci = data.title || "Tiada Tajuk";
@@ -699,11 +1246,18 @@
             if (lines.length > 0) {
               lines.forEach(line => {
                 const parts = line.split('=');
-                const frontText = parts[0].trim();
-                const backText = parts.length > 1 ? parts[1].trim() : null; 
-                allFacts.push({ title: tajukLaci, text: frontText, translation: backText, isTamat: false });
+                allFacts.push({ 
+                  title: tajukLaci, 
+                  text: parts[0].trim(), 
+                  translation: parts.length > 1 ? parts[1].trim() : null, 
+                  isTamat: false 
+                });
               });
-              allFacts.push({ title: tajukLaci, text: "✅ Laci Tamat. Sapu/tekan untuk seterusnya.", isTamat: true });
+              allFacts.push({ 
+                title: tajukLaci, 
+                text: "✅ Laci Tamat. Sapu/tekan untuk seterusnya.", 
+                isTamat: true 
+              });
             }
           }
         });
@@ -713,27 +1267,30 @@
 
       let savedIndex = parseInt(localStorage.getItem('istigfar_fact_index_' + activeGlobalTopicId)) || 0;
       if (savedIndex >= allFacts.length) savedIndex = 0;
+      
       currentFactIndex = savedIndex;
+      comboStep = 0;
+      isFlipped = false;
       
       if (factMode && allFacts.length > 0) {
-        factTitleEl.textContent = `[ ${allFacts[currentFactIndex].title} ]`;
-        factContentEl.textContent = "Sapu/Tekan/Enter untuk mula...";
-        factHintEl.style.display = 'block';
-        btnSpeak.style.display = 'flex';
+        renderCurrentFact();
       } else if (allFacts.length === 0) {
         factTitleEl.textContent = "";
-        factContentEl.textContent = "Tiada topik aktif/ditanda. Sila tick SATU topik.";
+        factContentEl.textContent = "Tiada topik aktif. Sila tick SATU topik.";
         factHintEl.style.display = 'none';
         btnSpeak.style.display = 'none';
       }
     }
 
+    // ==========================================
+    // INITIALIZATION & AUTH
+    // ==========================================
     setPersistence(auth, browserLocalPersistence);
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
       if (user) {
         homeUserEmail.textContent = user.email || "";
-        showSection('tasbih');
+        showSection(sectionTasbih);
         await ensureTodayTasbih();
         subscribeHistory();
         subscribeNotes();
@@ -742,131 +1299,133 @@
         homeUserEmail.textContent = "";
         if (notesUnsub) notesUnsub();
         if (historyUnsub) historyUnsub();
-        showSection('login');
+        showSection(sectionLogin);
       }
     });
 
-    document.getElementById("btn-login-google").addEventListener("click", () => signInWithPopup(auth, provider));
-    document.getElementById("btn-logout").addEventListener("click", () => signOut(auth));
+    // ==========================================
+    // EVENT LISTENERS (UI NAVIGASI ASAL & BARU)
+    // ==========================================
+    btnLoginGoogle.addEventListener("click", () => signInWithPopup(auth, provider));
+    btnLogout.addEventListener("click", () => signOut(auth));
     
-    document.getElementById("btn-go-tasbih").addEventListener("click", () => { showSection('tasbih'); ensureTodayTasbih(); });
-    document.getElementById("btn-back-home").addEventListener("click", () => showSection('home'));
+    btnGoTasbih.addEventListener("click", () => { showSection(sectionTasbih); ensureTodayTasbih(); });
+    btnBackHomeFromTasbih.addEventListener("click", () => showSection(sectionHome));
     
-    document.getElementById("btn-go-notes").addEventListener("click", () => showSection('notes'));
-    document.getElementById("btn-back-home-notes").addEventListener("click", () => showSection('home'));
-    document.getElementById("btn-add-note").addEventListener("click", addNote);
+    btnGoNotes.addEventListener("click", () => showSection(sectionNotes));
+    btnBackHomeFromNotes.addEventListener("click", () => showSection(sectionHome));
+    btnAddNote.addEventListener("click", addNoteFunc);
 
-    document.getElementById("btn-go-history").addEventListener("click", () => showSection('history'));
-    document.getElementById("btn-back-tasbih-history").addEventListener("click", () => showSection('tasbih'));
+    btnGoHistory.addEventListener("click", () => showSection(sectionHistory));
+    btnBackTasbihFromHistory.addEventListener("click", () => showSection(sectionTasbih));
 
-    document.getElementById("btn-go-subjects").addEventListener("click", () => { showSection('subjects'); renderSubjects(); });
-    document.getElementById("btn-back-tasbih-subj").addEventListener("click", () => showSection('tasbih'));
-    document.getElementById("btn-back-subj-topics").addEventListener("click", () => { showSection('subjects'); renderSubjects(); });
-    document.getElementById("btn-back-topics-drawer").addEventListener("click", () => { showSection('topics'); renderTopics(); });
+    btnGoSubjects.addEventListener("click", () => { showSection(sectionSubjects); renderSubjects(); });
+    btnBackTasbihSubj.addEventListener("click", () => showSection(sectionTasbih));
+    btnBackSubjTopics.addEventListener("click", () => { showSection(sectionSubjects); renderSubjects(); });
+    btnBackTopicsDrawer.addEventListener("click", () => { showSection(sectionTopics); renderTopics(); });
 
-    document.getElementById("btn-add-subject").addEventListener("click", () => addDoc(collection(db, "users", currentUser.uid, "subjects"), { name: "", createdAt: Date.now() }));
-    document.getElementById("btn-add-topic").addEventListener("click", () => { if(currentSubjectId) addDoc(collection(db, "users", currentUser.uid, "topics"), { name: "", subjectId: currentSubjectId, isActive: false, createdAt: Date.now() }); });
-    document.getElementById("btn-add-laci").addEventListener("click", () => { if(currentTopicId) addDoc(collection(db, "users", currentUser.uid, "drawer"), { title: "", notes: "", topicId: currentTopicId, createdAt: Date.now() }); });
+    btnAddSubject.addEventListener("click", () => {
+      addDoc(collection(db, "users", currentUser.uid, "subjects"), { name: "", createdAt: Date.now() });
+    });
+    btnAddTopic.addEventListener("click", () => { 
+      if(currentSubjectId) {
+        addDoc(collection(db, "users", currentUser.uid, "topics"), { name: "", subjectId: currentSubjectId, isActive: false, createdAt: Date.now() }); 
+      }
+    });
+    btnAddLaci.addEventListener("click", () => { 
+      if(currentTopicId) {
+        addDoc(collection(db, "users", currentUser.uid, "drawer"), { title: "", notes: "", topicId: currentTopicId, createdAt: Date.now() }); 
+      }
+    });
 
+    // ==========================================
+    // LOGIK TOGGLE BUTTONS (FAKTA & 3 MODE)
+    // ==========================================
     btnToggleFact.addEventListener("click", () => {
       factMode = !factMode;
-      btnToggleFact.textContent = `Mode Fakta: ${factMode ? 'ON' : 'OFF'}`;
+      btnToggleFact.textContent = `Fakta: ${factMode ? 'ON' : 'OFF'}`;
       btnToggleFact.classList.toggle("btn-active", factMode);
-      if (factMode) { factDisplayBox.classList.add("show"); rebuildFacts(); } 
-      else { factDisplayBox.classList.remove("show"); }
+      if (factMode) { 
+        factDisplayBox.classList.add("show"); 
+        btnToggleMode.style.display = "inline-flex";
+        rebuildFacts(); 
+      } else { 
+        factDisplayBox.classList.remove("show"); 
+        btnToggleMode.style.display = "none";
+      }
     });
 
+    btnToggleMode.addEventListener("click", () => {
+      learningMode = (learningMode + 1) % 3; 
+      btnToggleMode.textContent = modeLabels[learningMode];
+      comboStep = 0;
+      isFlipped = false;
+      renderCurrentFact();
+    });
+
+    // KLIK MANUAL HANYA UNTUK MODE NORMAL
     factDisplayBox.addEventListener('click', (e) => {
       e.stopPropagation(); 
-      let viewingIndex = currentFactIndex === 0 ? allFacts.length - 1 : currentFactIndex - 1;
-      if (allFacts.length === 0 || allFacts[viewingIndex].isTamat) return;
-
-      const currentData = allFacts[viewingIndex];
+      if (learningMode !== 0) return; 
+      
+      if (allFacts.length === 0 || allFacts[currentFactIndex].isTamat) return;
       isFlipped = !isFlipped; 
-
-      factDisplayBox.classList.remove("flip-animation");
-      void factDisplayBox.offsetWidth; 
-      factDisplayBox.classList.add("flip-animation");
-
-      setTimeout(() => {
-        if (!isFlipped) {
-          factContentEl.textContent = currentData.text;
-          factTitleEl.textContent = `[ ${currentData.title} ]`;
-        } else {
-          factTitleEl.textContent = `[ ${currentData.title} ] (Maksud)`;
-          if (currentData.translation) {
-            factContentEl.textContent = currentData.translation;
-          } else {
-            factContentEl.textContent = "Menterjemah... ⏳";
-            const cleanTextForTranslate = currentData.text.replace(/^\s*\d+[\.\)]\s*/, ''); 
-            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ms&dt=t&q=${encodeURIComponent(cleanTextForTranslate)}`;
-            fetch(url)
-              .then(res => res.json())
-              .then(data => {
-                const translatedText = data[0][0][0];
-                currentData.translation = translatedText; 
-                if (isFlipped && viewingIndex === (currentFactIndex === 0 ? allFacts.length - 1 : currentFactIndex - 1)) {
-                  factContentEl.textContent = translatedText;
-                }
-              }).catch(err => { if (isFlipped) factContentEl.textContent = "Gagal terjemah."; });
-          }
-        }
-      }, 150);
+      triggerFlipAnimation(renderCurrentFact);
     });
 
+    // BUTANG SUARA MANUAL
     btnSpeak.addEventListener('click', (e) => {
       e.stopPropagation(); 
-      let viewingIndex = currentFactIndex === 0 ? allFacts.length - 1 : currentFactIndex - 1;
-      if (allFacts.length === 0 || allFacts[viewingIndex].isTamat) return;
-      
-      const currentData = allFacts[viewingIndex];
+      if (allFacts.length === 0 || allFacts[currentFactIndex].isTamat) return;
+      const currentData = allFacts[currentFactIndex];
       let rawTextToRead = isFlipped ? (currentData.translation ? currentData.translation : factContentEl.textContent) : currentData.text;
-      
-      const cleanText = rawTextToRead.replace(/^\s*\d+[\.\)]\s*/, '');
-      
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      
-      utterance.lang = isFlipped ? 'ms-MY' : 'en-US'; 
-      utterance.rate = 0.85; 
-      utterance.pitch = 1.1; 
-      
-      const voices = window.speechSynthesis.getVoices();
-      const preferredVoice = voices.find(v => v.lang.includes(isFlipped ? 'ms' : 'en') && (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Zira')));
-      if (preferredVoice) utterance.voice = preferredVoice;
-
-      window.speechSynthesis.speak(utterance);
+      playFactAudio(rawTextToRead, isFlipped);
     });
 
+    // ==========================================
+    // LOGIK FULL SCREEN CLICK, SWIPE (5px) & KEYBOARD
+    // ==========================================
     let touchY = 0;
     let lastDir = null;
     let isSwiping = false;
     const GAP = 5;
 
     document.addEventListener("touchstart", (e) => {
-      if(!dom.tasbih.classList.contains('active')) return;
+      if(!sectionTasbih.classList.contains('active')) return;
       if(e.target.closest('button') || e.target.closest('.topbar') || e.target.closest('#fact-display-box')) return;
       touchY = e.touches[0].clientY;
       isSwiping = false;
     }, {passive:true});
 
     document.addEventListener("touchmove", (e) => {
-      if(!dom.tasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box')) return;
+      if(!sectionTasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box')) return;
       const currentY = e.touches[0].clientY;
       const diff = currentY - touchY;
       if(Math.abs(diff) > 3) isSwiping = true;
-      if(diff < -GAP && lastDir !== 'UP') { decrementTasbih(); lastDir = 'UP'; touchY = currentY; if(navigator.vibrate) navigator.vibrate(25); } 
-      else if(diff > GAP && lastDir !== 'DOWN') { decrementTasbih(); lastDir = 'DOWN'; touchY = currentY; if(navigator.vibrate) navigator.vibrate(25); }
+      
+      if(diff < -GAP && lastDir !== 'UP') { 
+        decrementTasbih(); 
+        lastDir = 'UP'; 
+        touchY = currentY; 
+        if(navigator.vibrate) navigator.vibrate(25); 
+      } 
+      else if(diff > GAP && lastDir !== 'DOWN') { 
+        decrementTasbih(); 
+        lastDir = 'DOWN'; 
+        touchY = currentY; 
+        if(navigator.vibrate) navigator.vibrate(25); 
+      }
     }, {passive:true});
 
     document.addEventListener("click", (e) => {
-      if(!dom.tasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box') || isSwiping) return;
+      if(!sectionTasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box') || isSwiping) return;
       decrementTasbih();
     });
 
     document.addEventListener("keydown", (e) => {
-      if (!dom.tasbih.classList.contains('active')) return;
+      if (!sectionTasbih.classList.contains('active')) return;
       if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+      
       if (e.code === "NumpadEnter" || e.key === "Enter") {
         e.preventDefault();
         decrementTasbih();
@@ -874,8 +1433,11 @@
       }
     });
 
+    // PWA SERVICE WORKER
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => { navigator.serviceWorker.register("./service-worker.js").catch(console.error); });
+      window.addEventListener("load", () => { 
+        navigator.serviceWorker.register("./service-worker.js").catch(console.error); 
+      });
     }
   </script>
 </body>
