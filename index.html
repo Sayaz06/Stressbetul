@@ -646,14 +646,13 @@
     // Panggil getVoices lebih awal supaya OS sempat load senarai suara
     window.speechSynthesis.getVoices();
 
-    // DOM ELEMENTS ASAL & BARU (Dikembangkan sepenuhnya)
+    // DOM ELEMENTS ASAL & BARU 
     const sectionLogin = document.getElementById("section-login");
     const sectionHome = document.getElementById("section-home");
     const sectionTasbih = document.getElementById("section-tasbih");
     const sectionHistory = document.getElementById("section-history");
     const sectionNotes = document.getElementById("section-notes");
     
-    // Dom baru untuk Laci 3 Peringkat
     const sectionSubjects = document.getElementById("section-subjects");
     const sectionTopics = document.getElementById("section-topics");
     const sectionDrawer = document.getElementById("section-drawer");
@@ -822,7 +821,7 @@
       });
       
       updateTasbihUI();
-      cycleFact(); // Call logic fakta
+      cycleFact(); 
 
       if (done) {
         showSection(sectionHistory);
@@ -955,7 +954,6 @@
     function playFactAudio(rawText, isMalay) {
       if (!rawText || rawText.includes("Menterjemah") || rawText.includes("Laci Tamat") || rawText.includes("Tiada terjemahan")) return;
       
-      // Regex buang nombor
       const cleanText = rawText.replace(/^\s*\d+[\.\)]\s*/, '');
       
       window.speechSynthesis.cancel();
@@ -973,7 +971,7 @@
     }
 
     // ==========================================
-    // FUNGSI RENDER CURRENT FACT
+    // FUNGSI RENDER CURRENT FACT (DENGAN TRANSLATE API)
     // ==========================================
     function renderCurrentFact() {
       const data = allFacts[currentFactIndex];
@@ -987,11 +985,9 @@
       }
 
       if (!isFlipped) {
-        // MUKA DEPAN (ENGLISH)
         factTitleEl.textContent = `[ ${data.title} ]`;
         factContentEl.textContent = data.text;
       } else {
-        // MUKA BELAKANG (MELAYU)
         factTitleEl.textContent = `[ ${data.title} ] (Maksud)`;
         if (data.translation) {
           factContentEl.textContent = data.translation;
@@ -1007,6 +1003,10 @@
               data.translation = translatedText; 
               if (isFlipped && allFacts[currentFactIndex] === data) {
                 factContentEl.textContent = translatedText;
+                // Main audio automatik lepas terjemah dijumpai jika Mode Super
+                if (learningMode === 2) {
+                  playFactAudio(translatedText, true);
+                }
               }
             })
             .catch(err => { 
@@ -1019,7 +1019,7 @@
       btnSpeak.style.display = 'flex';
       
       if (learningMode === 2) {
-        factHintEl.textContent = "(Super Combo: Sapu/Enter untuk Audio/Maksud)";
+        factHintEl.textContent = "(Super Combo: Sapu/Enter untuk Audio & Maksud)";
       } else if (learningMode === 1) {
         factHintEl.textContent = "(Combo: Sapu/Enter untuk Maksud)";
       } else {
@@ -1028,7 +1028,7 @@
     }
 
     // ==========================================
-    // LOGIK CYCLE FACT (NORMAL, COMBO, SUPER COMBO)
+    // LOGIK CYCLE FACT (NORMAL, COMBO, SUPER COMBO 2-STEP AUDIO)
     // ==========================================
     function cycleFact() {
       if (!factMode || allFacts.length === 0) return;
@@ -1044,7 +1044,7 @@
       }
 
       if (learningMode === 0) {
-        // MODE NORMAL
+        // --- MODE NORMAL ---
         comboStep = 0;
         isFlipped = false;
         currentFactIndex = (currentFactIndex + 1) % allFacts.length;
@@ -1052,7 +1052,7 @@
         triggerFadeAnimation(renderCurrentFact);
       } 
       else if (learningMode === 1) {
-        // MODE COMBO
+        // --- MODE COMBO (2 Langkah Tanpa Audio Automatik) ---
         if (comboStep === 0) {
           isFlipped = true;
           comboStep = 1;
@@ -1066,27 +1066,26 @@
         }
       }
       else if (learningMode === 2) {
-        // MODE SUPER COMBO
+        // --- MODE SUPER COMBO (2 Langkah + Audio Automatik) ---
         if (comboStep === 0) {
-          playFactAudio(currentData.text, false);
-          comboStep = 1;
-        } 
-        else if (comboStep === 1) {
           isFlipped = true;
-          comboStep = 2;
-          triggerFlipAnimation(renderCurrentFact);
-        } 
-        else if (comboStep === 2) {
-          let textToRead = currentData.translation || factContentEl.textContent;
-          playFactAudio(textToRead, true);
-          comboStep = 3;
-        } 
-        else if (comboStep === 3) {
+          comboStep = 1;
+          triggerFlipAnimation(() => {
+            renderCurrentFact();
+            if (currentData.translation) {
+              playFactAudio(currentData.translation, true);
+            }
+          });
+        } else {
           isFlipped = false;
           comboStep = 0;
           currentFactIndex = (currentFactIndex + 1) % allFacts.length;
           localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
-          triggerFlipAnimation(renderCurrentFact);
+          triggerFlipAnimation(() => {
+            renderCurrentFact();
+            const nextData = allFacts[currentFactIndex];
+            playFactAudio(nextData.text, false);
+          });
         }
       }
     }
@@ -1361,6 +1360,11 @@
       comboStep = 0;
       isFlipped = false;
       renderCurrentFact();
+      
+      // Auto-play audio on initial load mode Super if user toggles to it
+      if (learningMode === 2 && allFacts.length > 0 && !allFacts[currentFactIndex].isTamat) {
+        playFactAudio(allFacts[currentFactIndex].text, false);
+      }
     });
 
     // KLIK MANUAL HANYA UNTUK MODE NORMAL
