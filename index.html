@@ -303,7 +303,9 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    // DOM ELEMENTS (LENGKAP)
+    // Panggil getVoices lebih awal supaya OS sempat load senarai suara
+    window.speechSynthesis.getVoices();
+
     const dom = {
       login: document.getElementById("section-login"),
       home: document.getElementById("section-home"),
@@ -323,7 +325,6 @@
     const historyList = document.getElementById("history-list");
     const notesList = document.getElementById("notes-list");
     
-    // DOM Laci & Fakta
     const subjectsList = document.getElementById("subjects-list");
     const topicsList = document.getElementById("topics-list");
     const drawerList = document.getElementById("drawer-list");
@@ -334,7 +335,6 @@
     const factHintEl = document.getElementById("fact-hint");
     const btnSpeak = document.getElementById("btn-speak");
 
-    // STATE VARIABLES
     let currentUser = null;
     let currentTasbihDocRef = null;
     let currentTasbihData = null;
@@ -351,9 +351,6 @@
     let currentFactIndex = 0;
     let isFlipped = false; 
 
-    // ==========================================
-    // FUNGSI ASAL (KEMBALI 100%)
-    // ==========================================
     function showSection(name) {
       Object.values(dom).forEach(s => s.classList.remove("active"));
       dom[name].classList.add("active");
@@ -382,12 +379,7 @@
       const ref = doc(db, "users", currentUser.uid, "tasbih", key);
       const snap = await getDoc(ref);
       if (!snap.exists()) {
-        await setDoc(ref, {
-          dateKey: key,
-          createdAt: Date.now(),
-          remaining: 10000,
-          done: false
-        });
+        await setDoc(ref, { dateKey: key, createdAt: Date.now(), remaining: 10000, done: false });
       }
       const updatedSnap = await getDoc(ref);
       currentTasbihDocRef = ref;
@@ -412,7 +404,6 @@
       }
     }
 
-    // FUNGSI SUBSCRIBE HISTORY ASAL
     function subscribeHistory() {
       if (!currentUser) return;
       if (historyUnsub) historyUnsub();
@@ -447,7 +438,6 @@
       });
     }
 
-    // FUNGSI SUBSCRIBE NOTES ASAL
     function subscribeNotes() {
       if (!currentUser) return;
       if (notesUnsub) notesUnsub();
@@ -463,9 +453,7 @@
           const id = docSnap.id;
           const text = data.text || "";
           const createdAt = data.createdAt ? new Date(data.createdAt) : null;
-          const timeLabel = createdAt
-            ? `${String(createdAt.getDate()).padStart(2, "0")}/${String(createdAt.getMonth() + 1).padStart(2, "0")}/${createdAt.getFullYear()}`
-            : "";
+          const timeLabel = createdAt ? `${String(createdAt.getDate()).padStart(2, "0")}/${String(createdAt.getMonth() + 1).padStart(2, "0")}/${createdAt.getFullYear()}` : "";
           const wrapper = document.createElement("div");
           wrapper.className = "list-item";
           wrapper.innerHTML = `
@@ -485,10 +473,8 @@
         notesList.querySelectorAll(".note-textarea").forEach((ta) => {
           ta.addEventListener("input", async (e) => {
             const id = e.target.getAttribute("data-id");
-            const value = e.target.value;
             if (!currentUser || !id) return;
-            const ref = doc(db, "users", currentUser.uid, "notes", id);
-            await updateDoc(ref, { text: value, updatedAt: Date.now() });
+            await updateDoc(doc(db, "users", currentUser.uid, "notes", id), { text: e.target.value, updatedAt: Date.now() });
           });
         });
 
@@ -496,8 +482,7 @@
           btn.addEventListener("click", async (e) => {
             const id = e.target.getAttribute("data-id");
             if (!currentUser || !id) return;
-            const ref = doc(db, "users", currentUser.uid, "notes", id);
-            await deleteDoc(ref);
+            await deleteDoc(doc(db, "users", currentUser.uid, "notes", id));
           });
         });
       });
@@ -505,15 +490,9 @@
 
     async function addNote() {
       if (!currentUser) return;
-      await addDoc(collection(db, "users", currentUser.uid, "notes"), {
-        text: "",
-        createdAt: Date.now()
-      });
+      await addDoc(collection(db, "users", currentUser.uid, "notes"), { text: "", createdAt: Date.now() });
     }
 
-    // ==========================================
-    // FUNGSI GABUNGAN TASBIH & FAKTA
-    // ==========================================
     function cycleFact() {
       if (!factMode || allFacts.length === 0) return;
       
@@ -546,21 +525,13 @@
       currentTasbihData.remaining = remaining;
       currentTasbihData.done = done;
       
-      await setDoc(currentTasbihDocRef, {
-        ...currentTasbihData, updatedAt: Date.now()
-      });
-      
+      await setDoc(currentTasbihDocRef, { ...currentTasbihData, updatedAt: Date.now() });
       updateTasbihUI();
       cycleFact();
 
-      if (done) {
-        showSection('history');
-      }
+      if (done) showSection('history');
     }
 
-    // ==========================================
-    // DATA SYNC & RENDER LOGIC (3-LEVEL)
-    // ==========================================
     function subscribeAllHierarchyData() {
       onSnapshot(query(collection(db, "users", currentUser.uid, "subjects"), orderBy("createdAt", "asc")), snap => {
         allSubjects = snap.docs.map(d => ({id: d.id, ...d.data()}));
@@ -675,9 +646,6 @@
       }
     }
 
-    // ==========================================
-    // AUTH & SETUP
-    // ==========================================
     setPersistence(auth, browserLocalPersistence);
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
@@ -696,25 +664,19 @@
       }
     });
 
-    // ==========================================
-    // EVENT LISTENERS (Semua Dikembalikan!)
-    // ==========================================
     document.getElementById("btn-login-google").addEventListener("click", () => signInWithPopup(auth, provider));
     document.getElementById("btn-logout").addEventListener("click", () => signOut(auth));
     
     document.getElementById("btn-go-tasbih").addEventListener("click", () => { showSection('tasbih'); ensureTodayTasbih(); });
     document.getElementById("btn-back-home").addEventListener("click", () => showSection('home'));
     
-    // Notes
     document.getElementById("btn-go-notes").addEventListener("click", () => showSection('notes'));
     document.getElementById("btn-back-home-notes").addEventListener("click", () => showSection('home'));
     document.getElementById("btn-add-note").addEventListener("click", addNote);
 
-    // History
     document.getElementById("btn-go-history").addEventListener("click", () => showSection('history'));
     document.getElementById("btn-back-tasbih-history").addEventListener("click", () => showSection('tasbih'));
 
-    // Hierarchy Laci Fakta
     document.getElementById("btn-go-subjects").addEventListener("click", () => { showSection('subjects'); renderSubjects(); });
     document.getElementById("btn-back-tasbih-subj").addEventListener("click", () => showSection('tasbih'));
     document.getElementById("btn-back-subj-topics").addEventListener("click", () => { showSection('subjects'); renderSubjects(); });
@@ -728,17 +690,12 @@
       factMode = !factMode;
       btnToggleFact.textContent = `Mode Fakta: ${factMode ? 'ON' : 'OFF'}`;
       btnToggleFact.classList.toggle("btn-active", factMode);
-      
-      if (factMode) {
-        factDisplayBox.classList.add("show");
-        rebuildFacts();
-      } else {
-        factDisplayBox.classList.remove("show");
-      }
+      if (factMode) { factDisplayBox.classList.add("show"); rebuildFacts(); } 
+      else { factDisplayBox.classList.remove("show"); }
     });
 
     // ==========================================
-    // LOGIK FLIP & AUTO-TRANSLATE
+    // LOGIK FLIP & AUTO-TRANSLATE (GOOGLE API)
     // ==========================================
     factDisplayBox.addEventListener('click', (e) => {
       e.stopPropagation(); 
@@ -762,8 +719,13 @@
             factContentEl.textContent = currentData.translation;
           } else {
             factContentEl.textContent = "Menterjemah... ⏳";
-            const cleanTextForTranslate = currentData.text.replace(/^\d+[\.\)]\s*/, ''); 
+            
+            // REGEX POTONG NOMBOR (eg: "1. ", "100. ", "2) ") SEBELUM TERJEMAH
+            const cleanTextForTranslate = currentData.text.replace(/^\s*\d+[\.\)]\s*/, ''); 
+            
+            // PAKSA TERJEMAH DARI ENGLISH (sl=en) KE MELAYU (tl=ms)
             const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ms&dt=t&q=${encodeURIComponent(cleanTextForTranslate)}`;
+            
             fetch(url)
               .then(res => res.json())
               .then(data => {
@@ -779,19 +741,32 @@
     });
 
     // ==========================================
-    // LOGIK SUARA
+    // LOGIK SUARA (TEXT-TO-SPEECH) BEBAS NOMBOR
     // ==========================================
     btnSpeak.addEventListener('click', (e) => {
       e.stopPropagation(); 
       let viewingIndex = currentFactIndex === 0 ? allFacts.length - 1 : currentFactIndex - 1;
       if (allFacts.length === 0 || allFacts[viewingIndex].isTamat) return;
+      
       const currentData = allFacts[viewingIndex];
       let rawTextToRead = isFlipped ? (currentData.translation ? currentData.translation : factContentEl.textContent) : currentData.text;
-      const cleanText = rawTextToRead.replace(/^\d+[\.\)]\s*/, '');
+      
+      // REGEX POTONG NOMBOR SEBELUM SEBUT
+      const cleanText = rawTextToRead.replace(/^\s*\d+[\.\)]\s*/, '');
+      
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(cleanText);
+      
+      // PAKSA BAHASA (EN untuk depan, MS untuk belakang/terjemahan)
       utterance.lang = isFlipped ? 'ms-MY' : 'en-US'; 
-      utterance.rate = 0.9; 
+      utterance.rate = 0.85; // Diperlahankan sikit
+      utterance.pitch = 1.1; // Ditinggikan sikit supaya bunyinya lebih feminine
+      
+      // CUBA CARI SUARA PEREMPUAN/GOOGLE DI DALAM PERANTI
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(v => v.lang.includes(isFlipped ? 'ms' : 'en') && (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Zira')));
+      if (preferredVoice) utterance.voice = preferredVoice;
+
       window.speechSynthesis.speak(utterance);
     });
 
