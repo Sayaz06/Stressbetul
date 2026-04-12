@@ -989,7 +989,8 @@
         if (isSempadan) {
           triggerVibration([200, 100, 200]); // Getaran Panjang & Berganda
         } else {
-          triggerVibration([60]); // Getaran Pendek Normal
+          // PERUBAHAN DI SINI: Dua kali getaran dan lebih panjang (120ms getar, 60ms rehat, 120ms getar)
+          triggerVibration([120, 60, 120]); 
         }
       }
 
