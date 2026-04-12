@@ -16,7 +16,6 @@
       --grad1: #6366f1;
       --grad2: #8b5cf6;
       --danger: #f97373;
-      --success: #10b981; /* Tambahan untuk butang Rutin */
     }
     * { 
       box-sizing: border-box; 
@@ -113,12 +112,6 @@
       border-color: rgba(248, 113, 113, 0.5);
       box-shadow: 0 10px 26px rgba(127, 29, 29, 0.7);
     }
-    .btn-success {
-      background-image: none;
-      background: rgba(16, 185, 129, 0.9);
-      border-color: rgba(52, 211, 153, 0.5);
-      box-shadow: 0 10px 26px rgba(16, 185, 129, 0.7);
-    }
     .btn-sm {
       width: auto;
       padding: 6px 12px;
@@ -130,12 +123,6 @@
       color: white; 
       border-color: transparent; 
       box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); 
-    }
-    .btn-active-success { 
-      background: var(--success) !important; 
-      color: white; 
-      border-color: transparent; 
-      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); 
     }
     .stack {
       display: flex;
@@ -255,7 +242,7 @@
       gap: 6px;
     }
     
-    /* KOTAK FAKTA KEKAL (Flashcard) */
+    /* KOTAK FAKTA & RUTIN KEKAL (Flashcard) */
     #fact-display-box {
       margin-top: 15px;
       background: rgba(30, 41, 59, 0.8);
@@ -455,19 +442,32 @@
       resize: none; 
       outline: none; 
     }
-
-    /* QURANIC SYMBOL TOOLBAR */
-    .quran-toolbar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 6px; }
-    .quran-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--border-mid); color: #fff; border-radius: 6px; padding: 4px 8px; font-size: 1.1rem; cursor: pointer; flex-shrink: 0; }
-    .quran-btn:active { background: var(--grad1); }
-
-    /* PANDUAN CARD */
-    .panduan-card { background: rgba(15, 23, 42, 0.95); border: 1px solid var(--grad1); border-radius: 12px; padding: 16px; margin-bottom: 16px; font-size: 0.85rem; line-height: 1.5; color: #cbd5e1; }
-    .panduan-card h3 { color: #fff; margin-bottom: 8px; font-size: 1rem; border-bottom: 1px solid var(--border-mid); padding-bottom: 4px; }
-    .panduan-card ul { margin-left: 20px; margin-bottom: 10px; }
-    .panduan-card li { margin-bottom: 4px; }
-    .highlight { color: #a78bfa; font-weight: bold; }
     
+    /* ARABIC TOOLBAR CSS */
+    .arabic-toolbar {
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 4px; 
+      padding: 6px;
+      background: rgba(15, 23, 42, 0.9); 
+      border: 1px solid var(--border-soft);
+      border-radius: 8px; 
+      margin-bottom: 6px;
+    }
+    .arabic-btn {
+      background: rgba(30, 41, 59, 0.8); 
+      border: 1px solid var(--border-mid);
+      color: white; 
+      border-radius: 4px; 
+      padding: 4px 8px; 
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.1s ease;
+    }
+    .arabic-btn:active { 
+      background: var(--grad1); 
+    }
+
     .footer { 
       margin-top: auto; 
       padding-top: 10px; 
@@ -492,7 +492,7 @@
       <section id="section-login" class="section active">
         <div style="margin: auto 0;">
           <div class="title-main">Istigfar</div>
-          <div class="subtitle">Tasbih harian, Kamus Ilmu & Rutin Wirid.</div>
+          <div class="subtitle">Tasbih harian & nota istighfar, sync dengan akaun Google anda.</div>
           <div class="stack mt-16">
             <button id="btn-login-google" class="btn">
               <span>Login dengan Google</span>
@@ -516,11 +516,8 @@
           <button id="btn-go-tasbih" class="btn">
             <span>Tasbih Countdown</span>
           </button>
-          <button id="btn-go-rutin-menu" class="btn btn-success">
-            <span>Mode Rutin (Wirid Solat)</span>
-          </button>
           <button id="btn-go-notes" class="btn btn-secondary">
-            <span>Panduan & Nota Refleksi</span>
+            <span>Note For Istighfar</span>
           </button>
         </div>
         <div class="footer mt-16">
@@ -533,25 +530,28 @@
           <div style="display: flex; gap: 6px; flex-wrap: wrap;">
             <button id="btn-back-home-from-tasbih" class="btn btn-secondary btn-sm">← Menu</button>
             <button id="btn-toggle-fact" class="btn btn-secondary btn-sm">Fakta: OFF</button>
-            <button id="btn-toggle-rutin" class="btn btn-secondary btn-sm" style="color:var(--success); border-color:var(--success);">Rutin: OFF</button>
+            <button id="btn-toggle-rutin" class="btn btn-secondary btn-sm">Rutin: OFF</button>
             <button id="btn-toggle-mode" class="btn btn-secondary btn-sm btn-active" style="display: none;">Mode: Normal</button>
           </div>
-          <div style="text-align:right;">
-            <button id="btn-go-subjects" class="btn btn-secondary btn-sm">Laci Fakta</button>
+          <div style="text-align:right; display:flex; gap:6px; flex-direction:column; align-items:flex-end;">
+            <div style="display:flex; gap:6px;">
+              <button id="btn-go-subjects" class="btn btn-secondary btn-sm">Laci Fakta</button>
+              <button id="btn-go-routine-times" class="btn btn-secondary btn-sm" style="border-color:var(--grad1);">Laci Rutin</button>
+            </div>
             <div class="topbar-sub" id="tasbih-date-label" style="margin-top: 4px;"></div>
           </div>
         </div>
 
         <div class="row-center" style="margin-bottom: 10px;">
-          <span class="pill" id="global-target-pill">
-            <span>Baki Harian:</span>
-            <strong id="global-baki-text">10000</strong>
+          <span class="pill">
+            <span>Target harian</span>
+            <strong>10,000</strong>
           </span>
           <button id="btn-go-history" class="btn btn-secondary btn-sm">History</button>
         </div>
 
         <div id="tasbih-circle" class="counter-circle">
-          <div class="counter-label" id="circle-label">Baki hari ini</div>
+          <div class="counter-label">Baki hari ini</div>
           <div id="tasbih-count" class="counter-value">10000</div>
           <div id="tasbih-status" class="counter-sub">Tekan / Sapu Skrin / Enter</div>
         </div>
@@ -603,26 +603,27 @@
         <div class="list mt-8" id="drawer-list" style="padding: 10px;"></div>
       </section>
 
-      <section id="section-routines" class="section">
+      <section id="section-routine-times" class="section">
         <div class="topbar">
-          <button id="btn-back-tasbih-routines" class="btn btn-secondary btn-sm">← Tasbih</button>
-          <div class="topbar-title">Senarai Waktu Rutin</div>
+          <button id="btn-back-tasbih-routine" class="btn btn-secondary btn-sm">← Tasbih</button>
+          <div class="topbar-title">Waktu Rutin</div>
         </div>
         <div style="font-size: 0.75rem; color: var(--subtext); text-align: center; margin-bottom: 8px;">
-          Tanda SATU waktu untuk mulakan rutin.
+          Tanda (tick) SATU kotak sahaja untuk aktifkan rutin ini.
         </div>
-        <button id="btn-add-routine" class="btn btn-success btn-sm">Tambah Waktu Baru</button>
-        <div class="list mt-8" id="routines-list" style="padding: 10px;"></div>
+        <button id="btn-add-routine-time" class="btn btn-sm mt-8">Tambah Waktu Rutin</button>
+        <div class="list mt-8" id="routine-times-list" style="padding: 10px;"></div>
       </section>
 
-      <section id="section-routine-drawer" class="section">
+      <section id="section-routine-drawers" class="section">
         <div class="topbar">
-          <button id="btn-back-routines" class="btn btn-secondary btn-sm">← Waktu</button>
-          <div class="topbar-title">Isi Zikir Rutin</div>
+          <button id="btn-back-routine-drawer" class="btn btn-secondary btn-sm">← Waktu Rutin</button>
+          <div class="topbar-title">Laci Zikir Rutin</div>
         </div>
-        <button id="btn-add-routine-laci" class="btn btn-success btn-sm mt-8">Tambah Zikir</button>
-        <div class="list mt-8" id="routine-drawer-list" style="padding: 10px;"></div>
+        <button id="btn-add-routine-drawer" class="btn btn-sm mt-8">Tambah Laci Zikir</button>
+        <div class="list mt-8" id="routine-drawers-list" style="padding: 10px;"></div>
       </section>
+
 
       <section id="section-history" class="section">
         <div class="topbar">
@@ -639,27 +640,28 @@
         <div class="topbar">
           <button id="btn-back-home-from-notes" class="btn btn-secondary btn-sm">← Menu</button>
           <div style="text-align:right;">
-            <div class="topbar-title">Panduan & Nota</div>
+            <div class="topbar-title">Note For Istighfar</div>
             <div class="topbar-sub">Catatan refleksi & doa</div>
           </div>
         </div>
 
-        <div class="panduan-card mt-8">
-          <h3>📖 Panduan Penggunaan Aplikasi</h3>
-          <ul>
-            <li><span class="highlight">Format Laci Fakta (Kamus):</span> Tulis <code style="color:#fcd34d;">Perkataan = Terjemahan</code>. Cth: <i>Apple = Buah Epal</i>.</li>
-            <li><span class="highlight">Format Laci Rutin (Wirid):</span> Tulis <code style="color:#fcd34d;">Zikir = Jumlah = Maksud/Kelebihan</code>. Cth: <i>Subhanallah = 33 = Maha Suci Allah</i>.</li>
-          </ul>
-          <h3>🧠 Mode Pembelajaran (Kamus)</h3>
-          <ul>
-            <li><span class="highlight">Mode Normal:</span> Sapu = Perkataan baru. Klik kotak = Terjemahan.</li>
-            <li><span class="highlight">Mode Combo:</span> Sapu 1 = Maksud. Sapu 2 = Perkataan baru.</li>
-            <li><span class="highlight">Mode Super:</span> Sapu 1 = Auto Audio + Maksud. Sapu 2 = Auto Audio + Perkataan baru.</li>
-          </ul>
-          <div style="text-align:center; font-size:0.75rem; margin-top:8px;"><i>Tip: Guna butang ENTER untuk sapuan pantas! Nombor siri (1., 2.) akan dibuang automatik dari audio & terjemahan.</i></div>
+        <div class="note-card mt-8" style="border-color: var(--grad1); background: rgba(30, 41, 59, 0.9);">
+          <div style="font-size:0.95rem; font-weight:bold; color:var(--grad1); margin-bottom:4px;">📘 Panduan Pengguna</div>
+          <div style="font-size:0.8rem; line-height:1.5; color:var(--text);">
+            <strong>• Format Kamus (Laci Fakta):</strong><br>
+            <span style="color:var(--subtext);">Perkataan = Maksud (Cth: Alhamdulillah = Segala Puji Bagi Allah)</span><br><br>
+            <strong>• Format Rutin Wirid:</strong><br>
+            <span style="color:var(--subtext);">Zikir = Target = Maksud (Cth: Subhanallah = 33 = Maha Suci Allah)</span><br><br>
+            <strong>• 3 Mode Pembelajaran:</strong><br>
+            <span style="color:var(--subtext);">1. Normal: Klik kotak paparan untuk lihat terjemahan.<br>
+            2. Combo: Sapu/Enter paparkan maksud. Sapu/Enter sekali lagi ke laci baru.<br>
+            3. Super: Sama seperti Combo, tapi bacaan audio dimainkan secara automatik.</span><br><br>
+            <strong>• Shortcut:</strong><br>
+            <span style="color:var(--subtext);">Tekan <b>Enter / NumpadEnter</b> atau <b>Sapu Skrin (Swipe) atas/bawah</b> untuk zikir pantas tanpa menyentuh bulatan tengah.</span>
+          </div>
         </div>
 
-        <div class="row mt-8">
+        <div class="row mt-12">
           <button id="btn-add-note" class="btn btn-sm">Tambah Nota</button>
           <span class="chip">Auto-save ke Firestore</span>
         </div>
@@ -723,8 +725,9 @@
     const sectionSubjects = document.getElementById("section-subjects");
     const sectionTopics = document.getElementById("section-topics");
     const sectionDrawer = document.getElementById("section-drawer");
-    const sectionRoutines = document.getElementById("section-routines");
-    const sectionRoutineDrawer = document.getElementById("section-routine-drawer");
+
+    const sectionRoutineTimes = document.getElementById("section-routine-times");
+    const sectionRoutineDrawers = document.getElementById("section-routine-drawers");
 
     const btnLoginGoogle = document.getElementById("btn-login-google");
     const btnLogout = document.getElementById("btn-logout");
@@ -750,9 +753,10 @@
     const subjectsList = document.getElementById("subjects-list");
     const topicsList = document.getElementById("topics-list");
     const drawerList = document.getElementById("drawer-list");
-    const routinesList = document.getElementById("routines-list");
-    const routineDrawerList = document.getElementById("routine-drawer-list");
     
+    const routineTimesList = document.getElementById("routine-times-list");
+    const routineDrawersList = document.getElementById("routine-drawers-list");
+
     const btnGoSubjects = document.getElementById("btn-go-subjects");
     const btnBackTasbihSubj = document.getElementById("btn-back-tasbih-subj");
     const btnBackSubjTopics = document.getElementById("btn-back-subj-topics");
@@ -761,13 +765,12 @@
     const btnAddTopic = document.getElementById("btn-add-topic");
     const btnAddLaci = document.getElementById("btn-add-laci");
 
-    const btnGoRutinMenu = document.getElementById("btn-go-rutin-menu");
-    const btnBackTasbihRoutines = document.getElementById("btn-back-tasbih-routines");
-    const btnBackRoutines = document.getElementById("btn-back-routines");
-    const btnAddRoutine = document.getElementById("btn-add-routine");
-    const btnAddRoutineLaci = document.getElementById("btn-add-routine-laci");
+    const btnGoRoutineTimes = document.getElementById("btn-go-routine-times");
+    const btnBackTasbihRoutine = document.getElementById("btn-back-tasbih-routine");
+    const btnBackRoutineDrawer = document.getElementById("btn-back-routine-drawer");
+    const btnAddRoutineTime = document.getElementById("btn-add-routine-time");
+    const btnAddRoutineDrawer = document.getElementById("btn-add-routine-drawer");
 
-    // Indicators & Popups
     const btnToggleFact = document.getElementById("btn-toggle-fact");
     const btnToggleRutin = document.getElementById("btn-toggle-rutin");
     const btnToggleMode = document.getElementById("btn-toggle-mode");
@@ -778,43 +781,40 @@
     const factHintEl = document.getElementById("fact-hint");
     const btnSpeak = document.getElementById("btn-speak");
     const toastNotification = document.getElementById("toast-notification");
-    const circleLabel = document.getElementById("circle-label");
-    const globalBakiText = document.getElementById("global-baki-text");
 
-    // VARIABLES STATE GLOBAL
+    // VARIABLES
     let currentUser = null;
     let currentTasbihDocRef = null;
     let currentTasbihData = null;
     let historyUnsub = null;
     let notesUnsub = null;
     
-    // VARIABLES MODE
     let factMode = false;
-    let rutinMode = false;
+    let routineMode = false;
     let learningMode = 0; // 0=Normal, 1=Combo, 2=SuperCombo
     const modeLabels = ["Mode: Normal", "Mode: Combo", "Mode: Super"];
     let comboStep = 0; 
-    let isFlipped = false; 
-    let hasShownStartupToast = false;
     
-    // DATA FAKTA (KAMUS)
     let allSubjects = [];
     let allTopics = [];
     let allDrawers = [];
     let currentSubjectId = null;
     let currentTopicId = null;
     let activeGlobalTopicId = 'default'; 
-    let allFacts = []; 
-    let currentFactIndex = 0;
-
-    // DATA RUTIN (WIRID)
-    let allRoutines = [];
+    
+    let allRoutineTimes = [];
     let allRoutineDrawers = [];
-    let currentRoutineId = null; 
+    let currentRoutineTimeId = null;
     let activeGlobalRoutineId = 'default';
-    let routineFacts = []; 
-    let currentRoutineIndex = 0; 
-    let currentRoutineRemaining = 0; 
+
+    let allFacts = []; 
+    let allRoutines = [];
+    let currentFactIndex = 0;
+    let currentRoutineIndex = 0;
+    let currentRoutineTarget = 0;
+
+    let isFlipped = false; 
+    let hasShownStartupToast = false;
 
     // ==========================================
     // UTILITIES
@@ -828,8 +828,8 @@
       sectionSubjects.classList.remove("active");
       sectionTopics.classList.remove("active");
       sectionDrawer.classList.remove("active");
-      sectionRoutines.classList.remove("active");
-      sectionRoutineDrawer.classList.remove("active");
+      sectionRoutineTimes.classList.remove("active");
+      sectionRoutineDrawers.classList.remove("active");
       
       section.classList.add("active");
     }
@@ -859,93 +859,121 @@
       return `${yyyy}-${mm}-${dd}`;
     }
 
-function updateTasbihUI() {
-      if (!currentTasbihData) return;
-      const globalRem = currentTasbihData.remaining ?? 10000;
-      globalBakiText.textContent = globalRem; 
-
-      if (rutinMode) {
-        circleLabel.textContent = "Sisa Target Rutin";
-        tasbihCountEl.textContent = currentRoutineRemaining;
-        tasbihCountEl.style.color = currentRoutineRemaining === 0 ? "var(--success)" : "white";
-      } else {
-        circleLabel.textContent = "Baki Hari Ini";
-        tasbihCountEl.textContent = globalRem;
-        tasbihCountEl.style.color = "white";
+    // ==========================================
+    // TASBIH LOGIC 
+    // ==========================================
+    async function ensureTodayTasbih() {
+      if (!currentUser) return;
+      const key = todayKey();
+      const ref = doc(db, "users", currentUser.uid, "tasbih", key);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        await setDoc(ref, {
+          dateKey: key,
+          createdAt: Date.now(),
+          remaining: 10000,
+          done: false
+        });
       }
+      const updatedSnap = await getDoc(ref);
+      currentTasbihDocRef = ref;
+      currentTasbihData = updatedSnap.data();
+      updateTasbihUI();
+    }
 
+    function updateTasbihUI() {
+      if (!currentTasbihData) return;
+      const remaining = currentTasbihData.remaining ?? 10000;
+      const done = !!currentTasbihData.done;
+      
       const now = new Date();
       const { label } = formatDateLabel(now);
       tasbihDateLabel.textContent = label;
-      
-      if (currentTasbihData.done) {
-        tasbihStatusEl.textContent = "Done untuk hari ini";
-        tasbihStatusChip.textContent = "Status: Done";
-      } else {
-        tasbihStatusEl.textContent = "Tekan / Sapu Skrin / Enter";
-        tasbihStatusChip.textContent = "Status: Aktif";
-      }
-    }
 
-    async function decrementGlobalOnly() {
-      if (!currentUser || !currentTasbihDocRef || !currentTasbihData) return;
-      let remaining = currentTasbihData.remaining ?? 10000;
-      if (remaining > 0) remaining -= 1;
-      currentTasbihData.remaining = remaining;
-      currentTasbihData.done = remaining <= 0;
-      await setDoc(currentTasbihDocRef, {
-        ...currentTasbihData,
-        updatedAt: Date.now()
-      });
+      if (routineMode && allRoutines.length > 0) {
+        // UI Untuk Mode Rutin
+        const curRtn = allRoutines[currentRoutineIndex];
+        document.querySelector(".counter-label").textContent = curRtn.isTamat ? "Rutin Tamat" : "Target Mini Zikir";
+        tasbihCountEl.textContent = currentRoutineTarget;
+        tasbihStatusEl.textContent = `Sapu/Enter (Baki Harian: ${remaining})`;
+        tasbihStatusChip.textContent = `Mode Rutin Aktif`;
+      } else {
+        // UI Untuk Mode Biasa
+        document.querySelector(".counter-label").textContent = "Baki hari ini";
+        tasbihCountEl.textContent = remaining;
+        if (done) {
+          tasbihStatusEl.textContent = "Done untuk hari ini";
+          tasbihStatusChip.textContent = "Status: Done";
+        } else {
+          tasbihStatusEl.textContent = "Tekan / Sapu Skrin / Enter";
+          tasbihStatusChip.textContent = "Status: Aktif";
+        }
+      }
     }
 
     async function decrementTasbih() {
-      if (!sectionTasbih.classList.contains('active')) return;
-      if (currentTasbihData.done && !rutinMode) return; 
-
-      await decrementGlobalOnly();
-
-      if (rutinMode) {
-        if (routineFacts.length === 0) { updateTasbihUI(); return; }
-        if (currentRoutineRemaining > 0) {
-          currentRoutineRemaining--;
-          updateTasbihUI();
-          if (currentRoutineRemaining === 0) {
-            if (navigator.vibrate) navigator.vibrate([100, 50, 100]); 
-            currentRoutineIndex++;
-            if (currentRoutineIndex >= routineFacts.length) {
-              factTitleEl.textContent = "[ ALHAMDULILLAH ]";
-              factContentEl.innerHTML = `<span style="color: var(--success); font-weight: bold;">Rutin Wirid Selesai!</span>`;
-              factHintEl.style.display = 'none';
-              btnSpeak.style.display = 'none';
-            } else {
-              currentRoutineRemaining = routineFacts[currentRoutineIndex].target;
-              updateTasbihUI();
-              renderRoutineFact();
-            }
-          }
+      if (!currentUser || !currentTasbihDocRef || !currentTasbihData) return;
+      
+      // 1. Tolak Baki Harian 10,000 Secara Serentak
+      if (!currentTasbihData.done) {
+        let remaining = currentTasbihData.remaining ?? 10000;
+        if (remaining > 0) {
+          remaining -= 1;
+          const done = remaining <= 0;
+          currentTasbihData.remaining = remaining;
+          currentTasbihData.done = done;
+          await setDoc(currentTasbihDocRef, {
+            ...currentTasbihData,
+            updatedAt: Date.now()
+          });
         }
-      } 
-      else if (factMode) {
-        updateTasbihUI();
-        cycleFactKamus();
-      } 
-      else {
-        updateTasbihUI();
       }
 
-      if (currentTasbihData.done && !rutinMode) {
+      // 2. Tolak Target Mini Rutin Jika Aktif
+      if (routineMode && allRoutines.length > 0) {
+        if (currentRoutineTarget > 0) {
+          currentRoutineTarget -= 1;
+        }
+
+        // Logic Auto-Next Apabila Target Mini = 0
+        if (currentRoutineTarget <= 0) {
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]); // Getar Panjang
+          
+          currentRoutineIndex = (currentRoutineIndex + 1) % allRoutines.length;
+          const nextRtn = allRoutines[currentRoutineIndex];
+          currentRoutineTarget = nextRtn.target;
+          
+          isFlipped = false;
+          comboStep = 0;
+          triggerFadeAnimation(renderCurrentFact); // Kitaran ke zikir seterusnya
+        } else {
+          if (navigator.vibrate) navigator.vibrate(25); // Getar biasa
+        }
+      } else {
+        // Mode Fakta / Biasa
+        if (navigator.vibrate) navigator.vibrate(25);
+        if (!currentTasbihData.done) {
+            cycleFact(); 
+        }
+      }
+      
+      updateTasbihUI();
+
+      if (currentTasbihData.done && !routineMode) {
         showSection(sectionHistory);
       }
     }
 
     // ==========================================
-    // HISTORY & NOTES LOGIC (ASAL)
+    // HISTORY & NOTES LOGIC
     // ==========================================
     function subscribeHistory() {
       if (!currentUser) return;
       if (historyUnsub) historyUnsub();
-      const q = query(collection(db, "users", currentUser.uid, "tasbih"), orderBy("dateKey", "desc"));
+      const q = query(
+        collection(db, "users", currentUser.uid, "tasbih"),
+        orderBy("dateKey", "desc")
+      );
       historyUnsub = onSnapshot(q, (snap) => {
         historyList.innerHTML = "";
         if (snap.empty) {
@@ -979,7 +1007,10 @@ function updateTasbihUI() {
     function subscribeNotes() {
       if (!currentUser) return;
       if (notesUnsub) notesUnsub();
-      const q = query(collection(db, "users", currentUser.uid, "notes"), orderBy("createdAt", "desc"));
+      const q = query(
+        collection(db, "users", currentUser.uid, "notes"),
+        orderBy("createdAt", "desc")
+      );
       notesUnsub = onSnapshot(q, (snap) => {
         notesList.innerHTML = "";
         if (snap.empty) {
@@ -1057,7 +1088,7 @@ function updateTasbihUI() {
     }
 
     function playFactAudio(rawText, isMalay) {
-      if (!rawText || rawText.includes("Menterjemah") || rawText.includes("Laci Tamat") || rawText.includes("Tiada terjemahan")) return;
+      if (!rawText || rawText.includes("Menterjemah") || rawText.includes("Tamat") || rawText.includes("Tiada terjemahan")) return;
       
       const cleanText = rawText.replace(/^\s*\d+[\.\)]\s*/, '');
       
@@ -1076,34 +1107,24 @@ function updateTasbihUI() {
     }
 
     // ==========================================
-    // RENDER CURRENT FACT (RUTIN & KAMUS)
+    // FUNGSI RENDER CURRENT FACT / RUTIN (UNIFIED)
     // ==========================================
-    function renderRoutineFact() {
-      if (routineFacts.length === 0) return;
-      if (currentRoutineIndex >= routineFacts.length) return; 
-      
-      const data = routineFacts[currentRoutineIndex];
-      const zikirText = data.text;
-      const zikirFadhilat = data.translation; 
+    function renderCurrentFact() {
+      const dataSource = routineMode ? allRoutines : allFacts;
+      const currentIndex = routineMode ? currentRoutineIndex : currentFactIndex;
 
-      if (!isFlipped) {
-        factTitleEl.textContent = `[ Rutin ${currentRoutineIndex + 1}/${routineFacts.length} ]`;
-        factContentEl.textContent = zikirText;
-      } else {
-        factTitleEl.textContent = `[ Maksud / Fadhilat ]`;
-        factContentEl.textContent = zikirFadhilat ? zikirFadhilat : "Tiada huraian disediakan.";
+      if (dataSource.length === 0) {
+        factTitleEl.textContent = "";
+        factContentEl.textContent = routineMode ? "Tiada rutin aktif. Sila tick SATU waktu." : "Tiada topik aktif. Sila tick SATU topik.";
+        factHintEl.style.display = 'none';
+        btnSpeak.style.display = 'none';
+        return;
       }
-      factHintEl.textContent = "(Tekan/Klik untuk lihat Maksud/Fadhilat)";
-      factHintEl.style.display = 'block';
-      btnSpeak.style.display = 'none'; 
-    }
 
-    function renderFactKamus() {
-      if (allFacts.length === 0) return;
-      const data = allFacts[currentFactIndex];
+      const data = dataSource[currentIndex];
       
       if (data.isTamat) {
-        factTitleEl.textContent = `[ ${data.title} ]`;
+        factTitleEl.textContent = `[ Status ]`;
         factContentEl.innerHTML = `<span style="color: #fca5a5; font-weight: bold;">${data.text}</span>`;
         factHintEl.style.display = 'none';
         btnSpeak.style.display = 'none';
@@ -1111,10 +1132,10 @@ function updateTasbihUI() {
       }
 
       if (!isFlipped) {
-        factTitleEl.textContent = `[ ${data.title} ]`;
+        factTitleEl.textContent = routineMode ? `[ Zikir: ${data.title} ]` : `[ ${data.title} ]`;
         factContentEl.textContent = data.text;
       } else {
-        factTitleEl.textContent = `[ ${data.title} ] (Maksud)`;
+        factTitleEl.textContent = routineMode ? `[ Zikir: ${data.title} ] (Maksud)` : `[ ${data.title} ] (Maksud)`;
         if (data.translation) {
           factContentEl.textContent = data.translation;
         } else {
@@ -1127,7 +1148,7 @@ function updateTasbihUI() {
             .then(resData => {
               const translatedText = resData[0][0][0];
               data.translation = translatedText; 
-              if (isFlipped && allFacts[currentFactIndex] === data) {
+              if (isFlipped && dataSource[currentIndex] === data) {
                 factContentEl.textContent = translatedText;
                 if (learningMode === 2) {
                   playFactAudio(translatedText, true);
@@ -1144,24 +1165,36 @@ function updateTasbihUI() {
       btnSpeak.style.display = 'flex';
       
       if (learningMode === 2) {
-        factHintEl.textContent = "(Super Combo: Sapu/Enter untuk Audio & Maksud)";
+        factHintEl.textContent = routineMode ? "(Super Combo: Sapu/Enter audio & maksud)" : "(Super Combo: Sapu/Enter untuk Audio & Maksud)";
       } else if (learningMode === 1) {
-        factHintEl.textContent = "(Combo: Sapu/Enter untuk Maksud)";
+        factHintEl.textContent = routineMode ? "(Combo: Sapu/Enter untuk Maksud)" : "(Combo: Sapu/Enter untuk Maksud)";
       } else {
         factHintEl.textContent = "(Normal: Klik kotak untuk Maksud)";
       }
     }
 
-    function cycleFactKamus() {
-      if (allFacts.length === 0) return;
+    function syncIndexToFirestore(newIndex) {
+      if (!routineMode && activeGlobalTopicId !== 'default' && currentUser) {
+        updateDoc(doc(db, "users", currentUser.uid, "topics", activeGlobalTopicId), {
+          lastIndex: newIndex
+        }).catch(err => console.log("Gagal sync index ke Firestore:", err));
+      }
+    }
+
+    function cycleFact() {
+      // Nota: Dalam Mode Rutin, pertukaran ke zikir seterusnya (next index) 
+      // diuruskan murni oleh Target Mini di dalam decrementTasbih.
+      if (routineMode) return; 
+
+      if (!factMode || allFacts.length === 0) return;
       const currentData = allFacts[currentFactIndex];
 
       if (currentData.isTamat) {
         comboStep = 0;
         isFlipped = false;
         currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-        localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
-        triggerFadeAnimation(renderFactKamus);
+        syncIndexToFirestore(currentFactIndex); 
+        triggerFadeAnimation(renderCurrentFact);
         return;
       }
 
@@ -1169,20 +1202,20 @@ function updateTasbihUI() {
         comboStep = 0;
         isFlipped = false;
         currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-        localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
-        triggerFadeAnimation(renderFactKamus);
+        syncIndexToFirestore(currentFactIndex); 
+        triggerFadeAnimation(renderCurrentFact);
       } 
       else if (learningMode === 1) {
         if (comboStep === 0) {
           isFlipped = true;
           comboStep = 1;
-          triggerFlipAnimation(renderFactKamus);
+          triggerFlipAnimation(renderCurrentFact);
         } else {
           isFlipped = false;
           comboStep = 0;
           currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-          localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
-          triggerFlipAnimation(renderFactKamus);
+          syncIndexToFirestore(currentFactIndex); 
+          triggerFlipAnimation(renderCurrentFact);
         }
       }
       else if (learningMode === 2) {
@@ -1190,7 +1223,7 @@ function updateTasbihUI() {
           isFlipped = true;
           comboStep = 1;
           triggerFlipAnimation(() => {
-            renderFactKamus();
+            renderCurrentFact();
             if (currentData.translation) {
               playFactAudio(currentData.translation, true);
             }
@@ -1199,9 +1232,9 @@ function updateTasbihUI() {
           isFlipped = false;
           comboStep = 0;
           currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-          localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
+          syncIndexToFirestore(currentFactIndex); 
           triggerFlipAnimation(() => {
-            renderFactKamus();
+            renderCurrentFact();
             const nextData = allFacts[currentFactIndex];
             playFactAudio(nextData.text, false);
           });
@@ -1210,25 +1243,62 @@ function updateTasbihUI() {
     }
 
     // ==========================================
-    // RENDER & HIERARCHY (KAMUS)
+    // RENDER & HIERARCHY 
     // ==========================================
     function subscribeAllHierarchyData() {
+      // 1. Data Fakta
       onSnapshot(query(collection(db, "users", currentUser.uid, "subjects")), snap => {
         allSubjects = snap.docs.map(d => ({id: d.id, ...d.data()}));
         if(sectionSubjects.classList.contains('active')) renderSubjects();
       });
+      
       onSnapshot(query(collection(db, "users", currentUser.uid, "topics")), snap => {
         allTopics = snap.docs.map(d => ({id: d.id, ...d.data()}));
         if(sectionTopics.classList.contains('active')) renderTopics();
-        rebuildFactsKamus();
+
+        const activeTopic = allTopics.find(t => t.isActive);
+        if (activeTopic) {
+          activeGlobalTopicId = activeTopic.id;
+          const dbIndex = activeTopic.lastIndex || 0;
+          
+          if (currentFactIndex !== dbIndex) {
+            currentFactIndex = dbIndex;
+            comboStep = 0;
+            isFlipped = false;
+            
+            if (factMode && allFacts.length > 0) {
+              renderCurrentFact();
+              showToast("Indeks diselaraskan (Sync)"); 
+            }
+          }
+        } else {
+          activeGlobalTopicId = 'default';
+        }
+
+        rebuildFacts();
       });
+
       onSnapshot(query(collection(db, "users", currentUser.uid, "drawer")), snap => {
         allDrawers = snap.docs.map(d => ({id: d.id, ...d.data()}));
         if(sectionDrawer.classList.contains('active')) renderDrawers();
-        rebuildFactsKamus();
+        rebuildFacts();
+      });
+
+      // 2. Data Rutin Wirid
+      onSnapshot(query(collection(db, "users", currentUser.uid, "routine_times")), snap => {
+        allRoutineTimes = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        if(sectionRoutineTimes.classList.contains('active')) renderRoutineTimes();
+        rebuildRoutines();
+      });
+
+      onSnapshot(query(collection(db, "users", currentUser.uid, "routine_drawers")), snap => {
+        allRoutineDrawers = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        if(sectionRoutineDrawers.classList.contains('active')) renderRoutineDrawers();
+        rebuildRoutines();
       });
     }
 
+    // FUNGSI RENDER FAKTA
     function renderSubjects() {
       subjectsList.innerHTML = "";
       const sortedSubjects = [...allSubjects].sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
@@ -1344,8 +1414,7 @@ function updateTasbihUI() {
       });
     }
 
-    function rebuildFactsKamus() {
-      if (!factMode) return;
+    function rebuildFacts() {
       allFacts = [];
       const activeTopic = allTopics.find(t => t.isActive);
       
@@ -1384,16 +1453,19 @@ function updateTasbihUI() {
         activeGlobalTopicId = 'default';
       }
 
-      let savedIndex = parseInt(localStorage.getItem('istigfar_fact_index_' + activeGlobalTopicId)) || 0;
+      let savedIndex = 0;
+      if (activeTopic && activeTopic.lastIndex !== undefined) {
+        savedIndex = parseInt(activeTopic.lastIndex);
+      }
       if (savedIndex >= allFacts.length) savedIndex = 0;
       
       currentFactIndex = savedIndex;
       comboStep = 0;
       isFlipped = false;
       
-      if (factMode && allFacts.length > 0) {
-        renderFactKamus();
-      } else if (allFacts.length === 0) {
+      if (!routineMode && factMode && allFacts.length > 0) {
+        renderCurrentFact();
+      } else if (!routineMode && allFacts.length === 0) {
         factTitleEl.textContent = "";
         factContentEl.textContent = "Tiada topik aktif. Sila tick SATU topik.";
         factHintEl.style.display = 'none';
@@ -1401,28 +1473,13 @@ function updateTasbihUI() {
       }
     }
 
-    // ==========================================
-    // RENDER & HIERARCHY (RUTIN WIRID)
-    // ==========================================
-    function subscribeRoutinesData() {
-      onSnapshot(query(collection(db, "users", currentUser.uid, "routines")), snap => {
-        allRoutines = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        if(sectionRoutines.classList.contains('active')) renderRoutines();
-        rebuildFactsRutin();
-      });
-      onSnapshot(query(collection(db, "users", currentUser.uid, "routine_drawers")), snap => {
-        allRoutineDrawers = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        if(sectionRoutineDrawer.classList.contains('active')) renderRoutineDrawers();
-        rebuildFactsRutin();
-      });
-    }
 
-    function renderRoutines() {
-      const list = document.getElementById("routines-list");
-      list.innerHTML = "";
-      const sortedRoutines = [...allRoutines].sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
+    // FUNGSI RENDER RUTIN WIRID
+    function renderRoutineTimes() {
+      routineTimesList.innerHTML = "";
+      const sortedTimes = [...allRoutineTimes].sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
       
-      sortedRoutines.forEach(data => {
+      sortedTimes.forEach(data => {
         const div = document.createElement("div");
         div.className = "drawer-card"; 
         div.style.display = "flex"; 
@@ -1430,144 +1487,157 @@ function updateTasbihUI() {
         div.style.alignItems = "center";
         
         div.innerHTML = `
-          <input type="checkbox" class="routine-active" ${data.isActive ? 'checked' : ''} style="width: 20px; height: 20px; accent-color: var(--success);">
-          <input class="routine-title" value="${data.name || ''}" placeholder="Waktu (Cth: Lepas Zohor)" style="flex: 1; border: none; background: transparent; color: white; border-bottom: 1px solid var(--border-mid); outline: none; padding: 4px;">
-          <button class="btn btn-secondary btn-sm btn-buka-rutin">Zikir</button>
-          <button class="btn btn-secondary btn-sm btn-del-rutin" style="color:var(--danger); border-color:var(--danger);">X</button>
+          <input type="checkbox" class="routine-active" ${data.isActive ? 'checked' : ''} style="width: 20px; height: 20px; accent-color: var(--grad1);">
+          <input class="routine-title" value="${data.name || ''}" placeholder="Cth: Lepas Zohor..." style="flex: 1; border: none; background: transparent; color: white; border-bottom: 1px solid var(--border-mid); outline: none; padding: 4px;">
+          <button class="btn btn-secondary btn-sm btn-buka-rtn">Buka</button>
+          <button class="btn btn-secondary btn-sm btn-del-rtn" style="color:var(--danger); border-color:var(--danger);">X</button>
         `;
         
         div.querySelector(".routine-active").addEventListener("change", async (e) => { 
           const isChecked = e.target.checked;
           if (isChecked) {
-            const others = allRoutines.filter(t => t.isActive && t.id !== data.id);
+            const others = allRoutineTimes.filter(t => t.isActive && t.id !== data.id);
             for (let t of others) {
-              await updateDoc(doc(db, "users", currentUser.uid, "routines", t.id), { isActive: false });
+              await updateDoc(doc(db, "users", currentUser.uid, "routine_times", t.id), { isActive: false });
             }
           }
-          await updateDoc(doc(db, "users", currentUser.uid, "routines", data.id), { isActive: isChecked }); 
+          await updateDoc(doc(db, "users", currentUser.uid, "routine_times", data.id), { isActive: isChecked }); 
         });
         
         div.querySelector(".routine-title").addEventListener("change", (e) => {
-          updateDoc(doc(db, "users", currentUser.uid, "routines", data.id), { name: e.target.value });
+          updateDoc(doc(db, "users", currentUser.uid, "routine_times", data.id), { name: e.target.value });
         });
         
-        div.querySelector(".btn-buka-rutin").addEventListener("click", () => { 
-          currentRoutineId = data.id; 
-          showSection(sectionRoutineDrawer); 
+        div.querySelector(".btn-buka-rtn").addEventListener("click", () => { 
+          currentRoutineTimeId = data.id; 
+          showSection(sectionRoutineDrawers); 
           renderRoutineDrawers(); 
         });
         
-        div.querySelector(".btn-del-rutin").addEventListener("click", () => {
-          deleteDoc(doc(db, "users", currentUser.uid, "routines", data.id));
+        div.querySelector(".btn-del-rtn").addEventListener("click", () => {
+          deleteDoc(doc(db, "users", currentUser.uid, "routine_times", data.id));
         });
         
-        list.appendChild(div);
+        routineTimesList.appendChild(div);
       });
     }
 
     function renderRoutineDrawers() {
-      const list = document.getElementById("routine-drawer-list");
-      list.innerHTML = "";
-      const filtered = allRoutineDrawers.filter(d => d.routineId === currentRoutineId).sort((a, b) => a.createdAt - b.createdAt);
+      routineDrawersList.innerHTML = "";
+      const filteredDrawers = allRoutineDrawers.filter(d => d.timeId === currentRoutineTimeId);
+      const sortedDrawers = filteredDrawers.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, {numeric: true}));
       
-      filtered.forEach(data => {
+      const arabicSymbols = ['ّ', 'ٰ', 'ٓ', 'ْ', 'ۚ', 'ۖ', 'ۗ', 'ۛ', '۞'];
+
+      sortedDrawers.forEach(data => {
         const div = document.createElement("div");
         div.className = "drawer-card";
+        
+        let symbolsHtml = arabicSymbols.map(sym => `<button class="arabic-btn">${sym}</button>`).join('');
+
         div.innerHTML = `
-          <div style="font-size: 0.75rem; color: var(--grad2); margin-bottom: 6px;">Format: Teks Zikir = Jumlah Target = Maksud/Kelebihan</div>
-          
-          <div class="quran-toolbar">
-            <button class="quran-btn" onclick="insertSym(this, 'ّ')">ّ (Sabdu)</button>
-            <button class="quran-btn" onclick="insertSym(this, 'ٰ')">ٰ (Alif Kecil)</button>
-            <button class="quran-btn" onclick="insertSym(this, 'ٓ')">ٓ (Mad)</button>
-            <button class="quran-btn" onclick="insertSym(this, 'ْ')">ْ (Sukun)</button>
-            <button class="quran-btn" onclick="insertSym(this, 'ۚ')">ۚ</button>
-            <button class="quran-btn" onclick="insertSym(this, 'ۖ')">ۖ</button>
-            <button class="quran-btn" onclick="insertSym(this, 'ۗ')">ۗ</button>
-            <button class="quran-btn" onclick="insertSym(this, 'ۛ')">ۛ</button>
-            <button class="quran-btn" onclick="insertSym(this, '۞')">۞</button>
+          <input class="drawer-title" value="${data.title || ''}" placeholder="Tajuk Rutin (Cth: Istighfar)" style="width:100%; margin-bottom:8px;">
+          <div class="arabic-toolbar">
+            ${symbolsHtml}
           </div>
-          
-          <textarea class="drawer-notes" placeholder="Cth: Subhanallah = 33 = Maha Suci Allah. Fadhilat besar.">${data.notes || ''}</textarea>
-          <div style="text-align: right; margin-top: 6px;">
-            <button class="btn btn-secondary btn-sm btn-del-rutinlaci" style="color:var(--danger); border-color:var(--danger);">Padam</button>
+          <textarea class="drawer-notes" placeholder="Format: Teks Zikir = Target Mini = Maksud">${data.notes || ''}</textarea>
+          <div style="text-align: right; margin-top:8px;">
+            <button class="btn btn-secondary btn-sm btn-del-laci" style="color:var(--danger); border-color:var(--danger);">Padam</button>
           </div>
         `;
         
-        div.querySelector(".drawer-notes").addEventListener("change", (e) => {
-          updateDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id), { notes: e.target.value });
+        div.querySelector(".drawer-title").addEventListener("change", (e) => {
+          updateDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id), { title: e.target.value });
         });
         
-        div.querySelector(".btn-del-rutinlaci").addEventListener("click", () => {
+        const textarea = div.querySelector(".drawer-notes");
+        textarea.addEventListener("change", (e) => {
+          updateDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id), { notes: e.target.value });
+        });
+
+        // Event listener Toolbar Arab
+        const btns = div.querySelectorAll(".arabic-btn");
+        btns.forEach(btn => {
+          btn.addEventListener("click", () => {
+             const sym = btn.textContent;
+             const start = textarea.selectionStart;
+             const end = textarea.selectionEnd;
+             const val = textarea.value;
+             textarea.value = val.substring(0, start) + sym + val.substring(end);
+             textarea.selectionStart = textarea.selectionEnd = start + sym.length;
+             textarea.focus();
+             updateDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id), { notes: textarea.value });
+          });
+        });
+
+        div.querySelector(".btn-del-laci").addEventListener("click", () => {
           deleteDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id));
         });
         
-        list.appendChild(div);
+        routineDrawersList.appendChild(div);
       });
     }
 
-    window.insertSym = function(btn, symbol) {
-      const textarea = btn.parentElement.nextElementSibling;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const text = textarea.value;
-      const before = text.substring(0, start);
-      const after = text.substring(end, text.length);
-      textarea.value = (before + symbol + after);
-      textarea.selectionStart = textarea.selectionEnd = start + symbol.length;
-      textarea.focus();
-      textarea.dispatchEvent(new Event('change'));
-    };
-
-    function rebuildFactsRutin() {
-      if (!rutinMode) return;
-      routineFacts = [];
-      const activeRoutine = allRoutines.find(t => t.isActive);
+    function rebuildRoutines() {
+      allRoutines = [];
+      const activeTime = allRoutineTimes.find(t => t.isActive);
       
-      if (activeRoutine) {
-        activeGlobalRoutineId = activeRoutine.id;
-        showToast(`Rutin: ${activeRoutine.name || 'Tanpa Nama'}`);
-        
-        const activeDrawers = allRoutineDrawers.filter(d => d.routineId === activeRoutine.id).sort((a,b) => a.createdAt - b.createdAt);
+      if (activeTime) {
+        const activeDrawers = allRoutineDrawers.filter(d => d.timeId === activeTime.id).sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, {numeric: true}));
         
         activeDrawers.forEach(data => {
+          const tajukLaci = data.title || "Tiada Tajuk";
           if(data.notes) {
             const lines = data.notes.split('\n').filter(l => l.trim() !== "");
-            lines.forEach(line => {
-              const parts = line.split('=');
-              if (parts.length >= 2) {
-                routineFacts.push({ 
-                  text: parts[0].trim(), 
-                  target: parseInt(parts[1].trim()) || 1, 
-                  translation: parts.length > 2 ? parts[2].trim() : "Tiada huraian"
+            if (lines.length > 0) {
+              lines.forEach(line => {
+                const parts = line.split('=');
+                const zikir = parts[0] ? parts[0].trim() : "Kosong";
+                const targetVal = parts[1] ? parseInt(parts[1].trim()) : 1;
+                const maksud = parts[2] ? parts[2].trim() : null;
+
+                allRoutines.push({ 
+                  title: tajukLaci, 
+                  text: zikir, 
+                  target: isNaN(targetVal) ? 1 : targetVal,
+                  translation: maksud, 
+                  isTamat: false 
                 });
-              } else {
-                 routineFacts.push({ text: parts[0].trim(), target: 1, translation: "" });
-              }
-            });
+              });
+            }
           }
         });
-      } else {
-        activeGlobalRoutineId = 'default';
+
+        if (allRoutines.length > 0) {
+          allRoutines.push({ 
+             title: "Tamat", 
+             text: "✅ Rutin Selesai. Kembali ke Mula.", 
+             target: 0,
+             isTamat: true 
+          });
+        }
       }
 
-      currentRoutineIndex = 0;
-      isFlipped = false;
-      
-      if (routineFacts.length > 0) {
-        currentRoutineRemaining = routineFacts[0].target;
-        renderRoutineFact();
-      } else {
-        currentRoutineRemaining = 0;
-        factTitleEl.textContent = "";
-        factContentEl.textContent = "Tiada Rutin Aktif. Sila tambah dan tick waktu.";
-        factHintEl.style.display = 'none';
+      // Pastikan index selamat
+      if (currentRoutineIndex >= allRoutines.length) {
+          currentRoutineIndex = 0;
       }
-      updateTasbihUI();
+      
+      if (allRoutines.length > 0) {
+          currentRoutineTarget = allRoutines[currentRoutineIndex].target;
+      } else {
+          currentRoutineTarget = 0;
+      }
+      
+      if (routineMode && allRoutines.length > 0) {
+        updateTasbihUI();
+        renderCurrentFact();
+      }
     }
 
+
     // ==========================================
-    // INITIALIZATION & AUTH (ASAL)
+    // INITIALIZATION & AUTH
     // ==========================================
     setPersistence(auth, browserLocalPersistence);
     onAuthStateChanged(auth, async (user) => {
@@ -1579,7 +1649,6 @@ function updateTasbihUI() {
         subscribeHistory();
         subscribeNotes();
         subscribeAllHierarchyData();
-        subscribeRoutinesData();
       } else {
         homeUserEmail.textContent = "";
         if (notesUnsub) notesUnsub();
@@ -1591,100 +1660,74 @@ function updateTasbihUI() {
     // ==========================================
     // EVENT LISTENERS (UI NAVIGASI ASAL & BARU)
     // ==========================================
+    btnLoginGoogle.addEventListener("click", () => signInWithPopup(auth, provider));
+    btnLogout.addEventListener("click", () => signOut(auth));
     
-    // Login & Logout
-    btnLoginGoogle.addEventListener("click", async () => {
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (e) {
-        console.error(e);
-        alert("Login gagal. Cuba lagi. Error: " + e.message);
-      }
+    btnGoTasbih.addEventListener("click", () => { showSection(sectionTasbih); ensureTodayTasbih(); });
+    btnBackHomeFromTasbih.addEventListener("click", () => showSection(sectionHome));
+    
+    btnGoNotes.addEventListener("click", () => showSection(sectionNotes));
+    btnBackHomeFromNotes.addEventListener("click", () => showSection(sectionHome));
+    btnAddNote.addEventListener("click", addNoteFunc);
+
+    btnGoHistory.addEventListener("click", () => showSection(sectionHistory));
+    btnBackTasbihFromHistory.addEventListener("click", () => showSection(sectionTasbih));
+
+    // Navigasi Fakta
+    btnGoSubjects.addEventListener("click", () => { showSection(sectionSubjects); renderSubjects(); });
+    btnBackTasbihSubj.addEventListener("click", () => showSection(sectionTasbih));
+    btnBackSubjTopics.addEventListener("click", () => { showSection(sectionSubjects); renderSubjects(); });
+    btnBackTopicsDrawer.addEventListener("click", () => { showSection(sectionTopics); renderTopics(); });
+
+    // Navigasi Rutin
+    btnGoRoutineTimes.addEventListener("click", () => { showSection(sectionRoutineTimes); renderRoutineTimes(); });
+    btnBackTasbihRoutine.addEventListener("click", () => showSection(sectionTasbih));
+    btnBackRoutineDrawer.addEventListener("click", () => { showSection(sectionRoutineTimes); renderRoutineTimes(); });
+
+    // Tambah Data Fakta
+    btnAddSubject.addEventListener("click", () => {
+      addDoc(collection(db, "users", currentUser.uid, "subjects"), { name: "", createdAt: Date.now() });
     });
-
-    btnLogout.addEventListener("click", async () => {
-      try {
-        await signOut(auth);
-      } catch (e) {
-        console.error(e);
-      }
-    });
-
-    // Navigasi
-    btnGoTasbih.addEventListener("click", async () => {
-      showSection(sectionTasbih);
-      await ensureTodayTasbih();
-    });
-
-    btnBackHomeFromTasbih.addEventListener("click", () => {
-      showSection(sectionHome);
-    });
-
-    btnGoNotes.addEventListener("click", () => {
-      showSection(sectionNotes);
-    });
-
-    btnBackHomeFromNotes.addEventListener("click", () => {
-      showSection(sectionHome);
-    });
-
-    btnAddNote.addEventListener("click", async () => {
-      await addNoteFunc();
-    });
-
-    btnGoHistory.addEventListener("click", () => {
-      showSection(sectionHistory);
-    });
-
-    btnBackTasbihFromHistory.addEventListener("click", () => {
-      showSection(sectionTasbih);
-    });
-
-    // Navigasi Laci Kamus & Rutin
-    document.getElementById("btn-go-subjects").addEventListener("click", () => { showSection(sectionSubjects); renderSubjects(); });
-    document.getElementById("btn-back-tasbih-subj").addEventListener("click", () => showSection(sectionTasbih));
-    document.getElementById("btn-back-subj-topics").addEventListener("click", () => { showSection(sectionSubjects); renderSubjects(); });
-    document.getElementById("btn-back-topics-drawer").addEventListener("click", () => { showSection(sectionTopics); renderTopics(); });
-
-    document.getElementById("btn-go-rutin-menu").addEventListener("click", () => { showSection(sectionRoutines); renderRoutines(); });
-    document.getElementById("btn-back-routines").addEventListener("click", () => { showSection(sectionRoutines); renderRoutines(); });
-    document.getElementById("btn-back-tasbih-routines").addEventListener("click", () => showSection(sectionTasbih));
-
-    document.getElementById("btn-add-subject").addEventListener("click", async () => {
-      await addDoc(collection(db, "users", currentUser.uid, "subjects"), { name: "", createdAt: Date.now() });
-    });
-    document.getElementById("btn-add-topic").addEventListener("click", async () => { 
+    btnAddTopic.addEventListener("click", () => { 
       if(currentSubjectId) {
-        await addDoc(collection(db, "users", currentUser.uid, "topics"), { name: "", subjectId: currentSubjectId, isActive: false, createdAt: Date.now() }); 
+        addDoc(collection(db, "users", currentUser.uid, "topics"), { name: "", subjectId: currentSubjectId, isActive: false, createdAt: Date.now() }); 
       }
     });
-    document.getElementById("btn-add-laci").addEventListener("click", async () => { 
+    btnAddLaci.addEventListener("click", () => { 
       if(currentTopicId) {
-        await addDoc(collection(db, "users", currentUser.uid, "drawer"), { title: "", notes: "", topicId: currentTopicId, createdAt: Date.now() }); 
+        addDoc(collection(db, "users", currentUser.uid, "drawer"), { title: "", notes: "", topicId: currentTopicId, createdAt: Date.now() }); 
       }
     });
-    document.getElementById("btn-add-routine").addEventListener("click", async () => {
-      await addDoc(collection(db, "users", currentUser.uid, "routines"), { name: "", isActive: false, createdAt: Date.now() });
+
+    // Tambah Data Rutin
+    btnAddRoutineTime.addEventListener("click", () => {
+      addDoc(collection(db, "users", currentUser.uid, "routine_times"), { name: "", isActive: false, createdAt: Date.now() });
     });
-    document.getElementById("btn-add-routine-laci").addEventListener("click", async () => {
-      if(currentRoutineId) {
-        await addDoc(collection(db, "users", currentUser.uid, "routine_drawers"), { notes: "", routineId: currentRoutineId, createdAt: Date.now() });
+    btnAddRoutineDrawer.addEventListener("click", () => { 
+      if(currentRoutineTimeId) {
+        addDoc(collection(db, "users", currentUser.uid, "routine_drawers"), { title: "", notes: "", timeId: currentRoutineTimeId, createdAt: Date.now() }); 
       }
     });
+
 
     // ==========================================
-    // LOGIK TOGGLE BUTTONS (FAKTA & RUTIN)
+    // LOGIK TOGGLE BUTTONS (FAKTA, RUTIN & 3 MODE)
     // ==========================================
     btnToggleFact.addEventListener("click", () => {
       factMode = !factMode;
+      if (factMode && routineMode) {
+         routineMode = false; // Matikan Rutin jika Fakta aktif
+         btnToggleRutin.textContent = "Rutin: OFF";
+         btnToggleRutin.classList.remove("btn-active");
+      }
+
       btnToggleFact.textContent = `Fakta: ${factMode ? 'ON' : 'OFF'}`;
       btnToggleFact.classList.toggle("btn-active", factMode);
       
       if (factMode) { 
-        if (rutinMode) btnToggleRutin.click(); // Matikan Rutin
         factDisplayBox.classList.add("show"); 
         btnToggleMode.style.display = "inline-flex";
-        rebuildFactsKamus(); 
+        rebuildFacts(); 
       } else { 
         factDisplayBox.classList.remove("show"); 
         btnToggleMode.style.display = "none";
@@ -1693,17 +1736,23 @@ function updateTasbihUI() {
     });
 
     btnToggleRutin.addEventListener("click", () => {
-      rutinMode = !rutinMode;
-      btnToggleRutin.textContent = `Rutin: ${rutinMode ? 'ON' : 'OFF'}`;
-      btnToggleRutin.classList.toggle("btn-active-success", rutinMode);
-      
-      if (rutinMode) {
-        if (factMode) btnToggleFact.click(); // Matikan Fakta
-        factDisplayBox.classList.add("show");
-        btnToggleMode.style.display = "none"; 
-        rebuildFactsRutin();
-      } else {
-        factDisplayBox.classList.remove("show");
+      routineMode = !routineMode;
+      if (routineMode && factMode) {
+         factMode = false; // Matikan Fakta jika Rutin aktif
+         btnToggleFact.textContent = "Fakta: OFF";
+         btnToggleFact.classList.remove("btn-active");
+      }
+
+      btnToggleRutin.textContent = `Rutin: ${routineMode ? 'ON' : 'OFF'}`;
+      btnToggleRutin.classList.toggle("btn-active", routineMode);
+
+      if (routineMode) { 
+        factDisplayBox.classList.add("show"); 
+        btnToggleMode.style.display = "inline-flex";
+        rebuildRoutines(); 
+      } else { 
+        factDisplayBox.classList.remove("show"); 
+        btnToggleMode.style.display = "none";
       }
       updateTasbihUI();
     });
@@ -1713,36 +1762,42 @@ function updateTasbihUI() {
       btnToggleMode.textContent = modeLabels[learningMode];
       comboStep = 0;
       isFlipped = false;
-      renderFactKamus();
+      renderCurrentFact();
       
-      if (learningMode === 2 && allFacts.length > 0 && !allFacts[currentFactIndex].isTamat) {
-        playFactAudio(allFacts[currentFactIndex].text, false);
+      // Auto-play audio on initial load mode Super if user toggles to it
+      const dataSource = routineMode ? allRoutines : allFacts;
+      const currentIndex = routineMode ? currentRoutineIndex : currentFactIndex;
+      if (learningMode === 2 && dataSource.length > 0 && !dataSource[currentIndex].isTamat) {
+        playFactAudio(dataSource[currentIndex].text, false);
       }
     });
 
-    // KLIK MANUAL HANYA UNTUK MODE NORMAL ATAU RUTIN
+    // KLIK MANUAL FLIP BOX 
     factDisplayBox.addEventListener('click', (e) => {
       e.stopPropagation(); 
-      if (rutinMode) {
-        if (routineFacts.length === 0 || currentRoutineIndex >= routineFacts.length) return;
-        isFlipped = !isFlipped;
-        triggerFlipAnimation(renderRoutineFact);
-      } else if (factMode) {
-        if (learningMode !== 0 || allFacts.length === 0 || allFacts[currentFactIndex].isTamat) return;
-        isFlipped = !isFlipped; 
-        triggerFlipAnimation(renderFactKamus);
-      }
+      const dataSource = routineMode ? allRoutines : allFacts;
+      const currentIndex = routineMode ? currentRoutineIndex : currentFactIndex;
+
+      // Dalam mode Rutin, kita benarkan klik flip walau dalam mode combo/super
+      // kerana swipe sudah dipintas untuk menolak Target Mini
+      if (!routineMode && learningMode !== 0) return; 
+      
+      if (dataSource.length === 0 || dataSource[currentIndex].isTamat) return;
+      isFlipped = !isFlipped; 
+      triggerFlipAnimation(renderCurrentFact);
     });
 
     // BUTANG SUARA MANUAL
     btnSpeak.addEventListener('click', (e) => {
       e.stopPropagation(); 
-      if (allFacts.length === 0 || allFacts[currentFactIndex].isTamat) return;
-      const currentData = allFacts[currentFactIndex];
+      const dataSource = routineMode ? allRoutines : allFacts;
+      const currentIndex = routineMode ? currentRoutineIndex : currentFactIndex;
+
+      if (dataSource.length === 0 || dataSource[currentIndex].isTamat) return;
+      const currentData = dataSource[currentIndex];
       let rawTextToRead = isFlipped ? (currentData.translation ? currentData.translation : factContentEl.textContent) : currentData.text;
       playFactAudio(rawTextToRead, isFlipped);
     });
-
 
     // ==========================================
     // LOGIK FULL SCREEN CLICK, SWIPE (5px) & KEYBOARD
@@ -1766,22 +1821,20 @@ function updateTasbihUI() {
       if(Math.abs(diff) > 3) isSwiping = true;
       
       if(diff < -GAP && lastDir !== 'UP') { 
-        triggerAction(); 
+        decrementTasbih(); 
         lastDir = 'UP'; 
         touchY = currentY; 
-        if(navigator.vibrate) navigator.vibrate(25); 
       } 
       else if(diff > GAP && lastDir !== 'DOWN') { 
-        triggerAction(); 
+        decrementTasbih(); 
         lastDir = 'DOWN'; 
         touchY = currentY; 
-        if(navigator.vibrate) navigator.vibrate(25); 
       }
     }, {passive:true});
 
     document.addEventListener("click", (e) => {
       if(!sectionTasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box') || isSwiping) return;
-      triggerAction();
+      decrementTasbih();
     });
 
     document.addEventListener("keydown", (e) => {
@@ -1790,8 +1843,7 @@ function updateTasbihUI() {
       
       if (e.code === "NumpadEnter" || e.key === "Enter") {
         e.preventDefault();
-        triggerAction();
-        if(navigator.vibrate) navigator.vibrate(25);
+        decrementTasbih();
       }
     });
 
