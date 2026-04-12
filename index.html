@@ -892,9 +892,7 @@
 
     // FUNGSI GETARAN SELARAS (TIRU "LACI TAMAT")
     function triggerVibration(pattern) {
-      // PERUBAHAN: Block getaran jika Mode Super (learningMode === 2) aktif
-      if (learningMode === 2) return; 
-
+      if (learningMode === 2) return; // Block getaran jika Mode Super aktif
       if ("vibrate" in navigator) {
         navigator.vibrate(pattern);
       }
@@ -1016,6 +1014,9 @@
           currentRoutineIndex = (currentRoutineIndex + 1) % allRoutines.length;
           const nextRtn = allRoutines[currentRoutineIndex];
           currentRoutineTarget = nextRtn.target;
+          
+          // KUNCI UTAMA: Simpan Index Rutin ke Firebase apabila bertukar laci
+          syncIndexToFirestore(currentRoutineIndex);
           
           isFlipped = false;
           comboStep = 0;
@@ -1246,11 +1247,17 @@
       }
     }
 
+    // FUNGSI DIKEMASKINI: Menyimpan index Laci Fakta DAN Laci Rutin ke Cloud
     function syncIndexToFirestore(newIndex) {
-      if (!routineMode && activeGlobalTopicId !== 'default' && currentUser) {
+      if (!currentUser) return;
+      if (!routineMode && activeGlobalTopicId !== 'default') {
         updateDoc(doc(db, "users", currentUser.uid, "topics", activeGlobalTopicId), {
           lastIndex: newIndex
-        }).catch(err => console.log("Gagal sync index ke Firestore:", err));
+        }).catch(err => console.log("Gagal sync index Fakta ke Firestore:", err));
+      } else if (routineMode && activeGlobalRoutineId !== 'default') {
+        updateDoc(doc(db, "users", currentUser.uid, "routine_times", activeGlobalRoutineId), {
+          lastIndex: newIndex
+        }).catch(err => console.log("Gagal sync index Rutin ke Firestore:", err));
       }
     }
 
@@ -1340,7 +1347,7 @@
             
             if (factMode && allFacts.length > 0) {
               renderCurrentFact();
-              showToast("Indeks diselaraskan (Sync)"); 
+              showToast("Indeks Fakta diselaraskan (Sync)"); 
             }
           }
         } else {
@@ -1360,6 +1367,26 @@
       onSnapshot(query(collection(db, "users", currentUser.uid, "routine_times")), snap => {
         allRoutineTimes = snap.docs.map(d => ({id: d.id, ...d.data()}));
         if(sectionRoutineTimes.classList.contains('active')) renderRoutineTimes();
+        
+        // PINTASAN: Tarik data Index Rutin yang disave di Cloud
+        const activeTime = allRoutineTimes.find(t => t.isActive);
+        if (activeTime) {
+          activeGlobalRoutineId = activeTime.id;
+          const dbIndex = activeTime.lastIndex || 0;
+          
+          if (currentRoutineIndex !== dbIndex) {
+            currentRoutineIndex = dbIndex;
+            comboStep = 0;
+            isFlipped = false;
+            
+            if (routineMode && allRoutines.length > 0) {
+              showToast("Indeks Rutin diselaraskan (Sync)"); 
+            }
+          }
+        } else {
+          activeGlobalRoutineId = 'default';
+        }
+
         rebuildRoutines();
       });
 
@@ -1674,12 +1701,12 @@
       const activeTime = allRoutineTimes.find(t => t.isActive);
       
       if (activeTime) {
+        activeGlobalRoutineId = activeTime.id;
         const activeDrawers = allRoutineDrawers.filter(d => d.timeId === activeTime.id).sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, {numeric: true}));
         
         activeDrawers.forEach(data => {
           const tajukLaci = data.title || "Tiada Tajuk";
           
-          // Backwards compatibility untuk data lama yang guna "notes" (Format lama)
           if(data.notes && !data.zikir) {
             const lines = data.notes.split('\n').filter(l => l.trim() !== "");
             if (lines.length > 0) {
@@ -1699,7 +1726,6 @@
               });
             }
           } 
-          // Data baru guna kotak berasingan (zikir, target, maksud)
           else if (data.zikir || data.target || data.maksud) {
              const zikirText = data.zikir ? data.zikir.trim() : "Kosong";
              const targetVal = parseInt(data.target);
@@ -1723,17 +1749,34 @@
              isTamat: true 
           });
         }
+      } else {
+        activeGlobalRoutineId = 'default';
       }
 
-      // Pastikan index selamat
-      if (currentRoutineIndex >= allRoutines.length) {
-          currentRoutineIndex = 0;
+      // KUNCI PENTING: Baca index terakhir dari Cloud
+      let savedIndex = 0;
+      if (activeTime && activeTime.lastIndex !== undefined) {
+        savedIndex = parseInt(activeTime.lastIndex);
       }
-      
-      if (allRoutines.length > 0) {
-          currentRoutineTarget = allRoutines[currentRoutineIndex].target;
+      if (savedIndex >= allRoutines.length) savedIndex = 0;
+
+      const isIndexChanged = currentRoutineIndex !== savedIndex;
+      currentRoutineIndex = savedIndex;
+
+      // Fail-safe untuk setup initial / refresh
+      if (isIndexChanged) {
+          comboStep = 0;
+          isFlipped = false;
+          if (allRoutines.length > 0) {
+              currentRoutineTarget = allRoutines[currentRoutineIndex].target;
+          } else {
+              currentRoutineTarget = 0;
+          }
       } else {
-          currentRoutineTarget = 0;
+          // Jika aplikasi baru di-load dan target masih 0, paksa ia ambil target asal laci (bukan tamat)
+          if (allRoutines.length > 0 && currentRoutineTarget === 0 && !allRoutines[currentRoutineIndex].isTamat) {
+              currentRoutineTarget = allRoutines[currentRoutineIndex].target;
+          }
       }
       
       if (routineMode && allRoutines.length > 0) {
