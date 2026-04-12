@@ -274,18 +274,35 @@
       text-transform: uppercase; 
       letter-spacing: 0.05em; 
       margin-bottom: 6px; 
+      flex-shrink: 0;
     }
     .fact-content-text { 
       font-size: 1.1rem; 
       font-weight: 600; 
       line-height: 1.4; 
       padding: 0 10px; 
+      width: 100%;
+      max-height: 30vh; /* Hadkan ketinggian maksimum teks */
+      overflow-y: auto; /* Membenarkan scroll untuk teks panjang */
     }
+    /* Scrollbar cantik untuk teks dalam flashcard */
+    .fact-content-text::-webkit-scrollbar {
+      width: 4px;
+    }
+    .fact-content-text::-webkit-scrollbar-track {
+      background: transparent; 
+    }
+    .fact-content-text::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.5); 
+      border-radius: 4px;
+    }
+
     .fact-hint { 
       font-size: 0.65rem; 
       color: var(--grad1); 
       margin-top: 8px; 
       font-weight: 600; 
+      flex-shrink: 0;
     }
     .btn-speak {
       position: absolute; 
@@ -1158,6 +1175,9 @@
       }
 
       const data = dataSource[currentIndex];
+      
+      // RESET SKROL KE ATAS SETIAP KALI RENDER BARU
+      factContentEl.scrollTop = 0;
       
       if (data.isTamat) {
         factTitleEl.textContent = `[ Status ]`;
