@@ -282,10 +282,10 @@
       line-height: 1.4; 
       padding: 0 10px; 
       width: 100%;
-      max-height: 30vh; /* Hadkan ketinggian maksimum teks */
-      overflow-y: auto; /* Membenarkan scroll untuk teks panjang */
+      max-height: 30vh; 
+      overflow-y: auto; 
     }
-    /* Scrollbar cantik untuk teks dalam flashcard */
+    /* Scrollbar cantik */
     .fact-content-text::-webkit-scrollbar {
       width: 4px;
     }
@@ -460,7 +460,7 @@
       outline: none; 
     }
     
-    /* ARABIC TOOLBAR & NEW DRAWER INPUTS CSS */
+    /* ARABIC TOOLBAR */
     .arabic-toolbar {
       display: flex; 
       flex-wrap: wrap; 
@@ -739,7 +739,7 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    // Panggil getVoices lebih awal supaya OS sempat load senarai suara
+    // Panggil getVoices lebih awal
     window.speechSynthesis.getVoices();
 
     // DOM ELEMENTS ASAL & BARU 
@@ -844,7 +844,7 @@
     let hasShownStartupToast = false;
 
     // ==========================================
-    // UTILITIES
+    // UTILITIES & VIBRATION HANDLER
     // ==========================================
     function showSection(section) {
       sectionLogin.classList.remove("active");
@@ -884,6 +884,13 @@
       const mm = String(now.getMonth() + 1).padStart(2, "0");
       const dd = String(now.getDate()).padStart(2, "0");
       return `${yyyy}-${mm}-${dd}`;
+    }
+
+    // FUNGSI GETARAN SELARAS (TIRU "LACI TAMAT")
+    function triggerVibration(pattern) {
+      if ("vibrate" in navigator) {
+        navigator.vibrate(pattern);
+      }
     }
 
     // ==========================================
@@ -969,29 +976,31 @@
         needFirebaseUpdate = true;
         if (done) isSempadan = true; // Sempadan Harian
       } else if (!routineMode) {
-        // PERUBAHAN: Jika baki dah 0 dan dalam mode biasa, tetap benarkan getaran & pertukaran laci!
+        // Jika baki dah 0 dan dalam mode biasa, tetap benarkan getaran & pertukaran laci
         didDecrement = true; 
       }
 
-      // 3. TRIGGER GETARAN SEGERA (SANGAT PENTING: Mesti sebelum logik lain jalan)
+      // 3. TRIGGER GETARAN SEGERA MENGGUNAKAN FUNGSI STANDARD
       if (didDecrement) {
         if (isSempadan) {
-          if (navigator.vibrate) navigator.vibrate([200, 100, 200]); 
+          triggerVibration([200, 100, 200]); // Getaran Panjang & Berganda
         } else {
-          // PERUBAHAN: Masa getaran dinaikkan kepada 80ms supaya OS telefon tidak abaikannya
-          if (navigator.vibrate) navigator.vibrate([80]); 
+          triggerVibration([60]); // Getaran Pendek Normal
         }
       }
 
-      // 4. KEMASKINI FIREBASE SECARA ASYNCHRONOUS
+      // 4. KEMASKINI FIREBASE SECARA ASYNCHRONOUS (HANYA SIFIR 10 ATAU TAMAT)
       if (needFirebaseUpdate) {
         currentTasbihData.remaining = remaining;
         currentTasbihData.done = done;
         
-        setDoc(currentTasbihDocRef, {
-          ...currentTasbihData,
-          updatedAt: Date.now()
-        }).catch(err => console.log(err));
+        // OPTIMASI: Hanya simpan ke Firestore jika nombor gandaan 10 (cth: 9990, 9980) atau sudah Done (0)
+        if (remaining % 10 === 0 || done) {
+          setDoc(currentTasbihDocRef, {
+            ...currentTasbihData,
+            updatedAt: Date.now()
+          }).catch(err => console.log("Gagal simpan ke Firestore:", err));
+        }
       }
 
       // 5. UPDATE UI & LOGIK ANIMASI CYCLE/AUTO-NEXT
@@ -1245,7 +1254,7 @@
       const currentData = allFacts[currentFactIndex];
 
       if (currentData.isTamat) {
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]); // Getaran Sempadan Laci Fakta
+        triggerVibration([200, 100, 200]); // Getaran Sempadan Laci Fakta
         comboStep = 0;
         isFlipped = false;
         currentFactIndex = (currentFactIndex + 1) % allFacts.length;
@@ -1867,8 +1876,7 @@
     factDisplayBox.addEventListener('click', (e) => {
       e.stopPropagation(); 
       
-      // PERUBAHAN: Letak getaran pendek manual bila flip kotak
-      if (navigator.vibrate) navigator.vibrate([50]); 
+      triggerVibration([50]); // Getaran manual
       
       const dataSource = routineMode ? allRoutines : allFacts;
       const currentIndex = routineMode ? currentRoutineIndex : currentFactIndex;
