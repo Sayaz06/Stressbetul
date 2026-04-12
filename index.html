@@ -921,70 +921,81 @@
       }
     }
 
-    async function decrementTasbih() {
+    function decrementTasbih() {
       if (!currentUser || !currentTasbihDocRef || !currentTasbihData) return;
       
+      let remaining = currentTasbihData.remaining ?? 10000;
+      let done = !!currentTasbihData.done;
+      
+      // Jika dah tamat (baki 0) dan bukan dalam mode rutin, abaikan klik
+      if (done && !routineMode) return;
+
       let isSempadan = false;
       let didDecrement = false;
+      let needFirebaseUpdate = false;
 
-      // 1. Tolak Baki Harian 10,000 Secara Serentak
-      if (!currentTasbihData.done) {
-        let remaining = currentTasbihData.remaining ?? 10000;
-        if (remaining > 0) {
-          remaining -= 1;
-          didDecrement = true;
-          const done = remaining <= 0;
-          if (done) isSempadan = true; // Sempadan Harian capai 0
-          
-          currentTasbihData.remaining = remaining;
-          currentTasbihData.done = done;
-          await setDoc(currentTasbihDocRef, {
-            ...currentTasbihData,
-            updatedAt: Date.now()
-          });
-        }
-      }
-
-      // 2. Tolak Target Mini Rutin Jika Aktif
+      // 1. Semak Target Mini Rutin Jika Aktif
+      let routineAutoNext = false;
       if (routineMode && allRoutines.length > 0) {
-        didDecrement = true; // Boleh jalan walaupun baki harian habis
+        didDecrement = true; 
         if (currentRoutineTarget > 0) {
           currentRoutineTarget -= 1;
         }
-
-        // Logic Auto-Next Apabila Target Mini = 0
         if (currentRoutineTarget <= 0) {
-          isSempadan = true; // Sempadan Target Mini capai 0
-          
+          isSempadan = true; // Sempadan Rutin
+          routineAutoNext = true;
+        }
+      } 
+
+      // 2. Semak Baki Harian 10,000
+      if (!done && remaining > 0) {
+        remaining -= 1;
+        done = remaining <= 0;
+        didDecrement = true;
+        needFirebaseUpdate = true;
+        if (done) isSempadan = true; // Sempadan Harian
+      }
+
+      // 3. TRIGGER GETARAN SEGERA (SANGAT PENTING: Mesti sebelum `setDoc` Firebase)
+      if (didDecrement) {
+        if (isSempadan) {
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]); 
+        } else {
+          if (navigator.vibrate) navigator.vibrate(40); 
+        }
+      }
+
+      // 4. KEMASKINI FIREBASE SECARA ASYNCHRONOUS (Tanpa `await` untuk elak block getaran)
+      if (needFirebaseUpdate) {
+        currentTasbihData.remaining = remaining;
+        currentTasbihData.done = done;
+        
+        setDoc(currentTasbihDocRef, {
+          ...currentTasbihData,
+          updatedAt: Date.now()
+        }).catch(err => console.log(err));
+      }
+
+      // 5. UPDATE UI & LOGIK ANIMASI CYCLE/AUTO-NEXT
+      if (routineMode && allRoutines.length > 0) {
+        if (routineAutoNext) {
           currentRoutineIndex = (currentRoutineIndex + 1) % allRoutines.length;
           const nextRtn = allRoutines[currentRoutineIndex];
           currentRoutineTarget = nextRtn.target;
           
           isFlipped = false;
           comboStep = 0;
-          triggerFadeAnimation(renderCurrentFact); // Kitaran ke zikir seterusnya
+          triggerFadeAnimation(renderCurrentFact); 
         }
       } else {
-        // Mode Fakta / Biasa
-        if (didDecrement) {
+        if (didDecrement && !done) {
             cycleFact(); 
-        }
-      }
-      
-      // TRIGGER GETARAN UNIFIED UNTUK SEMUA JENIS COUNTDOWN
-      if (didDecrement) {
-        if (isSempadan) {
-          // Getaran berganda untuk sempadan (10,000 capai 0 ATAU Target Rutin capai 0)
-          if (navigator.vibrate) navigator.vibrate([200, 100, 200]); 
-        } else {
-          // Getaran biasa (40ms) untuk klik normal
-          if (navigator.vibrate) navigator.vibrate(40); 
         }
       }
       
       updateTasbihUI();
 
-      if (currentTasbihData.done && !routineMode) {
+      if (done && !routineMode && needFirebaseUpdate) {
         showSection(sectionHistory);
       }
     }
