@@ -16,6 +16,7 @@
       --grad1: #6366f1;
       --grad2: #8b5cf6;
       --danger: #f97373;
+      --success: #10b981;
     }
     * { 
       box-sizing: border-box; 
@@ -112,6 +113,7 @@
       border-color: rgba(248, 113, 113, 0.5);
       box-shadow: 0 10px 26px rgba(127, 29, 29, 0.7);
     }
+    .btn-success { background-image: none; background: rgba(16, 185, 129, 0.9); border-color: rgba(52, 211, 153, 0.5); }
     .btn-sm {
       width: auto;
       padding: 6px 12px;
@@ -124,6 +126,7 @@
       border-color: transparent; 
       box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); 
     }
+    .btn-active-success { background: var(--success) !important; color: white; border-color: transparent; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
     .stack {
       display: flex;
       flex-direction: column;
@@ -224,6 +227,7 @@
     .counter-value {
       font-size: 2.8rem;
       font-weight: 700;
+      transition: color 0.3s; 
       letter-spacing: 0.08em;
     }
     .counter-sub {
@@ -442,6 +446,18 @@
       resize: none; 
       outline: none; 
     }
+
+    /* QURANIC SYMBOL TOOLBAR */
+    .quran-toolbar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 6px; }
+    .quran-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--border-mid); color: #fff; border-radius: 6px; padding: 4px 8px; font-size: 1.1rem; cursor: pointer; flex-shrink: 0; }
+    .quran-btn:active { background: var(--grad1); }
+
+    /* PANDUAN CARD */
+    .panduan-card { background: rgba(15, 23, 42, 0.95); border: 1px solid var(--grad1); border-radius: 12px; padding: 16px; margin-bottom: 16px; font-size: 0.85rem; line-height: 1.5; color: #cbd5e1; }
+    .panduan-card h3 { color: #fff; margin-bottom: 8px; font-size: 1rem; border-bottom: 1px solid var(--border-mid); padding-bottom: 4px; }
+    .panduan-card ul { margin-left: 20px; margin-bottom: 10px; }
+    .panduan-card li { margin-bottom: 4px; }
+    .highlight { color: #a78bfa; font-weight: bold; }
     
     .footer { 
       margin-top: auto; 
@@ -457,7 +473,6 @@
     .small { font-size: 0.8rem; }
   </style>
 </head>
-
 <body>
   <div class="app-shell">
     <div class="card">
@@ -467,7 +482,7 @@
       <section id="section-login" class="section active">
         <div style="margin: auto 0;">
           <div class="title-main">Istigfar</div>
-          <div class="subtitle">Tasbih harian & nota istighfar, sync dengan akaun Google anda.</div>
+          <div class="subtitle">Tasbih harian, Kamus Ilmu & Rutin Wirid.</div>
           <div class="stack mt-16">
             <button id="btn-login-google" class="btn">
               <span>Login dengan Google</span>
@@ -491,8 +506,11 @@
           <button id="btn-go-tasbih" class="btn">
             <span>Tasbih Countdown</span>
           </button>
+          <button id="btn-go-rutin-menu" class="btn btn-success">
+            <span>Mode Rutin (Wirid Solat)</span>
+          </button>
           <button id="btn-go-notes" class="btn btn-secondary">
-            <span>Note For Istighfar</span>
+            <span>Panduan & Note For Istighfar</span>
           </button>
         </div>
         <div class="footer mt-16">
@@ -505,7 +523,9 @@
           <div style="display: flex; gap: 6px; flex-wrap: wrap;">
             <button id="btn-back-home-from-tasbih" class="btn btn-secondary btn-sm">← Menu</button>
             <button id="btn-toggle-fact" class="btn btn-secondary btn-sm">Fakta: OFF</button>
+            <button id="btn-toggle-rutin" class="btn btn-secondary btn-sm" style="color:var(--success); border-color:var(--success);">Rutin: OFF</button>
             <button id="btn-toggle-mode" class="btn btn-secondary btn-sm btn-active" style="display: none;">Mode: Normal</button>
+            <button id="btn-toggle-vibrate" class="btn btn-secondary btn-sm btn-active">Getaran: ON</button>
           </div>
           <div style="text-align:right;">
             <button id="btn-go-subjects" class="btn btn-secondary btn-sm">Laci Fakta</button>
@@ -514,15 +534,15 @@
         </div>
 
         <div class="row-center" style="margin-bottom: 10px;">
-          <span class="pill">
-            <span>Target harian</span>
-            <strong>10,000</strong>
+          <span class="pill" id="global-target-pill">
+            <span>Baki Harian:</span>
+            <strong id="global-baki-text">10000</strong>
           </span>
           <button id="btn-go-history" class="btn btn-secondary btn-sm">History</button>
         </div>
 
         <div id="tasbih-circle" class="counter-circle">
-          <div class="counter-label">Baki hari ini</div>
+          <div class="counter-label" id="circle-label">Baki hari ini</div>
           <div id="tasbih-count" class="counter-value">10000</div>
           <div id="tasbih-status" class="counter-sub">Tekan / Sapu Skrin / Enter</div>
         </div>
@@ -547,7 +567,7 @@
       <section id="section-subjects" class="section">
         <div class="topbar">
           <button id="btn-back-tasbih-subj" class="btn btn-secondary btn-sm">← Tasbih</button>
-          <div class="topbar-title">Senarai Subjek</div>
+          <div class="topbar-title">Senarai Subjek (Kamus)</div>
         </div>
         <button id="btn-add-subject" class="btn btn-sm mt-8">Tambah Subjek</button>
         <div class="list mt-8" id="subjects-list" style="padding: 10px;"></div>
@@ -559,7 +579,7 @@
           <div class="topbar-title">Senarai Topik</div>
         </div>
         <div style="font-size: 0.75rem; color: var(--subtext); text-align: center; margin-bottom: 8px;">
-          Tanda (tick) SATU kotak sahaja untuk aktifkan.
+          Tanda SATU kotak sahaja untuk aktifkan.
         </div>
         <button id="btn-add-topic" class="btn btn-sm">Tambah Topik</button>
         <div class="list mt-8" id="topics-list" style="padding: 10px;"></div>
@@ -568,10 +588,29 @@
       <section id="section-drawer" class="section">
         <div class="topbar">
           <button id="btn-back-topics-drawer" class="btn btn-secondary btn-sm">← Topik</button>
-          <div class="topbar-title">Isi Laci</div>
+          <div class="topbar-title">Isi Laci Kamus</div>
         </div>
         <button id="btn-add-laci" class="btn btn-sm mt-8">Tambah Laci</button>
         <div class="list mt-8" id="drawer-list" style="padding: 10px;"></div>
+      </section>
+
+      <section id="section-routines" class="section">
+        <div class="topbar">
+          <button class="btn btn-secondary btn-sm btn-back-to-tasbih">← Tasbih</button>
+          <div class="topbar-title">Senarai Waktu Rutin</div>
+        </div>
+        <div style="font-size: 0.75rem; text-align: center; margin-bottom: 8px;">Tanda SATU waktu untuk mulakan rutin.</div>
+        <button id="btn-add-routine" class="btn btn-success btn-sm">Tambah Waktu Baru</button>
+        <div class="list mt-8" id="routines-list" style="padding: 10px;"></div>
+      </section>
+
+      <section id="section-routine-drawer" class="section">
+        <div class="topbar">
+          <button id="btn-back-routines" class="btn btn-secondary btn-sm">← Waktu</button>
+          <div class="topbar-title">Isi Zikir Rutin</div>
+        </div>
+        <button id="btn-add-routine-laci" class="btn btn-success btn-sm mt-8">Tambah Zikir</button>
+        <div class="list mt-8" id="routine-drawer-list" style="padding: 10px;"></div>
       </section>
 
       <section id="section-history" class="section">
@@ -593,6 +632,22 @@
             <div class="topbar-sub">Catatan refleksi & doa</div>
           </div>
         </div>
+        
+        <div class="panduan-card">
+          <h3>📖 Panduan Penggunaan Aplikasi</h3>
+          <ul>
+            <li><span class="highlight">Format Laci Fakta (Kamus):</span> Tulis <code style="color:#fcd34d;">Perkataan = Terjemahan</code>. Cth: <i>Apple = Buah Epal</i>.</li>
+            <li><span class="highlight">Format Laci Rutin (Wirid):</span> Tulis <code style="color:#fcd34d;">Zikir = Jumlah = Maksud/Kelebihan</code>. Cth: <i>Subhanallah = 33 = Maha Suci Allah</i>.</li>
+          </ul>
+          <h3>🧠 Mode Pembelajaran (Kamus)</h3>
+          <ul>
+            <li><span class="highlight">Mode Normal:</span> Sapu = Perkataan baru. Klik kotak = Terjemahan.</li>
+            <li><span class="highlight">Mode Combo:</span> Sapu 1 = Maksud. Sapu 2 = Perkataan baru.</li>
+            <li><span class="highlight">Mode Super:</span> Sapu 1 = Auto Audio + Maksud. Sapu 2 = Auto Audio + Perkataan baru.</li>
+          </ul>
+          <div style="text-align:center; font-size:0.75rem; margin-top:8px;"><i>Tip: Guna butang ENTER untuk sapuan pantas! Nombor siri (1., 2.) akan dibuang automatik dari audio & terjemahan.</i></div>
+        </div>
+
         <div class="row mt-8">
           <button id="btn-add-note" class="btn btn-sm">Tambah Nota</button>
           <span class="chip">Auto-save ke Firestore</span>
@@ -603,7 +658,6 @@
   </div>
 
   <script type="module">
-    // Firebase v9 modular
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
     import {
       getAuth,
@@ -644,55 +698,34 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    // Panggil getVoices lebih awal supaya OS sempat load senarai suara
     window.speechSynthesis.getVoices();
 
-    // DOM ELEMENTS ASAL & BARU 
-    const sectionLogin = document.getElementById("section-login");
-    const sectionHome = document.getElementById("section-home");
-    const sectionTasbih = document.getElementById("section-tasbih");
-    const sectionHistory = document.getElementById("section-history");
-    const sectionNotes = document.getElementById("section-notes");
-    
-    const sectionSubjects = document.getElementById("section-subjects");
-    const sectionTopics = document.getElementById("section-topics");
-    const sectionDrawer = document.getElementById("section-drawer");
-
-    const btnLoginGoogle = document.getElementById("btn-login-google");
-    const btnLogout = document.getElementById("btn-logout");
-    const btnGoTasbih = document.getElementById("btn-go-tasbih");
-    const btnGoNotes = document.getElementById("btn-go-notes");
-    
-    const btnBackHomeFromTasbih = document.getElementById("btn-back-home-from-tasbih");
-    const btnBackTasbihFromHistory = document.getElementById("btn-back-tasbih-from-history");
-    const btnBackHomeFromNotes = document.getElementById("btn-back-home-from-notes");
-    const btnGoHistory = document.getElementById("btn-go-history");
-    const btnAddNote = document.getElementById("btn-add-note");
+    const dom = {
+      login: document.getElementById("section-login"),
+      home: document.getElementById("section-home"),
+      tasbih: document.getElementById("section-tasbih"),
+      subjects: document.getElementById("section-subjects"),
+      topics: document.getElementById("section-topics"),
+      drawer: document.getElementById("section-drawer"),
+      routines: document.getElementById("section-routines"),
+      routineDrawer: document.getElementById("section-routine-drawer"),
+      history: document.getElementById("section-history"),
+      notes: document.getElementById("section-notes")
+    };
 
     const homeUserEmail = document.getElementById("home-user-email");
-    const tasbihCircle = document.getElementById("tasbih-circle");
     const tasbihCountEl = document.getElementById("tasbih-count");
-    const tasbihStatusEl = document.getElementById("tasbih-status");
-    const tasbihStatusChip = document.getElementById("tasbih-status-chip");
-    const tasbihDateLabel = document.getElementById("tasbih-date-label");
-    const historyList = document.getElementById("history-list");
-    const notesList = document.getElementById("notes-list");
+    const circleLabel = document.getElementById("circle-label");
+    const globalBakiText = document.getElementById("global-baki-text");
     
-    // DOM Laci & Fakta
     const subjectsList = document.getElementById("subjects-list");
     const topicsList = document.getElementById("topics-list");
     const drawerList = document.getElementById("drawer-list");
     
-    const btnGoSubjects = document.getElementById("btn-go-subjects");
-    const btnBackTasbihSubj = document.getElementById("btn-back-tasbih-subj");
-    const btnBackSubjTopics = document.getElementById("btn-back-subj-topics");
-    const btnBackTopicsDrawer = document.getElementById("btn-back-topics-drawer");
-    const btnAddSubject = document.getElementById("btn-add-subject");
-    const btnAddTopic = document.getElementById("btn-add-topic");
-    const btnAddLaci = document.getElementById("btn-add-laci");
-
     const btnToggleFact = document.getElementById("btn-toggle-fact");
+    const btnToggleRutin = document.getElementById("btn-toggle-rutin");
     const btnToggleMode = document.getElementById("btn-toggle-mode");
+    const btnToggleVibrate = document.getElementById("btn-toggle-vibrate"); // BUTANG BARU
     
     const factDisplayBox = document.getElementById("fact-display-box");
     const factTitleEl = document.getElementById("fact-title");
@@ -700,88 +733,55 @@
     const factHintEl = document.getElementById("fact-hint");
     const btnSpeak = document.getElementById("btn-speak");
     const toastNotification = document.getElementById("toast-notification");
+    const historyList = document.getElementById("history-list");
+    const notesList = document.getElementById("notes-list");
 
-    // VARIABLES
     let currentUser = null;
     let currentTasbihDocRef = null;
-    let currentTasbihData = null;
+    let currentTasbihData = null; 
     let historyUnsub = null;
     let notesUnsub = null;
     
     let factMode = false;
-    let learningMode = 0; // 0=Normal, 1=Combo, 2=SuperCombo
+    let rutinMode = false;
+    let vibrateMode = true; // STATE GETARAN (Default ON)
+    
+    let learningMode = 0; 
     const modeLabels = ["Mode: Normal", "Mode: Combo", "Mode: Super"];
     let comboStep = 0; 
-    
-    let allSubjects = [];
-    let allTopics = [];
-    let allDrawers = [];
-    let currentSubjectId = null;
-    let currentTopicId = null;
-    let activeGlobalTopicId = 'default'; 
-    
+    let isFlipped = false; 
+
+    let allSubjects = [], allTopics = [], allDrawers = [];
+    let currentSubjectId = null, currentTopicId = null, activeGlobalTopicId = 'default'; 
     let allFacts = []; 
     let currentFactIndex = 0;
-    let isFlipped = false; 
+
+    let allRoutines = [], allRoutineDrawers = [];
+    let currentRoutineId = null; 
+    let activeGlobalRoutineId = 'default';
+    let routineFacts = []; 
+    let currentRoutineIndex = 0; 
+    let currentRoutineRemaining = 0; 
+
     let hasShownStartupToast = false;
 
     // ==========================================
     // UTILITIES
     // ==========================================
-    function showSection(section) {
-      sectionLogin.classList.remove("active");
-      sectionHome.classList.remove("active");
-      sectionTasbih.classList.remove("active");
-      sectionHistory.classList.remove("active");
-      sectionNotes.classList.remove("active");
-      sectionSubjects.classList.remove("active");
-      sectionTopics.classList.remove("active");
-      sectionDrawer.classList.remove("active");
-      
-      section.classList.add("active");
-    }
-
-    function showToast(message) {
-      toastNotification.textContent = message;
-      toastNotification.classList.add("show");
-      setTimeout(() => {
-        toastNotification.classList.remove("show");
-      }, 3500);
-    }
-
-    function formatDateLabel(dateObj) {
-      const days = ["Ahad", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu"];
-      const d = days[dateObj.getDay()];
-      const dd = String(dateObj.getDate()).padStart(2, "0");
-      const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const yyyy = dateObj.getFullYear();
-      return { label: `${d}, ${dd}/${mm}/${yyyy}`, day: d, date: dd, month: mm, year: yyyy };
-    }
-
-    function todayKey() {
-      const now = new Date();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, "0");
-      const dd = String(now.getDate()).padStart(2, "0");
-      return `${yyyy}-${mm}-${dd}`;
-    }
+    function showSection(name) { Object.values(dom).forEach(s => s.classList.remove("active")); dom[name].classList.add("active"); }
+    function showToast(message) { toastNotification.textContent = message; toastNotification.classList.add("show"); setTimeout(() => { toastNotification.classList.remove("show"); }, 3500); }
+    function todayKey() { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; }
+    function formatDateLabel(dateObj) { const days = ["Ahad", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu"]; const d = days[dateObj.getDay()]; const dd = String(dateObj.getDate()).padStart(2, "0"); const mm = String(dateObj.getMonth() + 1).padStart(2, "0"); const yyyy = dateObj.getFullYear(); return { label: `${d}, ${dd}/${mm}/${yyyy}`, day: d, date: dd, month: mm, year: yyyy }; }
 
     // ==========================================
-    // TASBIH LOGIC (ASAL)
+    // INITIALIZATION TASBIH (GLOBAL 10K)
     // ==========================================
     async function ensureTodayTasbih() {
       if (!currentUser) return;
       const key = todayKey();
       const ref = doc(db, "users", currentUser.uid, "tasbih", key);
       const snap = await getDoc(ref);
-      if (!snap.exists()) {
-        await setDoc(ref, {
-          dateKey: key,
-          createdAt: Date.now(),
-          remaining: 10000,
-          done: false
-        });
-      }
+      if (!snap.exists()) await setDoc(ref, { dateKey: key, createdAt: Date.now(), remaining: 10000, done: false });
       const updatedSnap = await getDoc(ref);
       currentTasbihDocRef = ref;
       currentTasbihData = updatedSnap.data();
@@ -790,150 +790,170 @@
 
     function updateTasbihUI() {
       if (!currentTasbihData) return;
-      const remaining = currentTasbihData.remaining ?? 10000;
-      const done = !!currentTasbihData.done;
-      tasbihCountEl.textContent = remaining;
-      const now = new Date();
-      const { label } = formatDateLabel(now);
-      tasbihDateLabel.textContent = label;
-      if (done) {
-        tasbihStatusEl.textContent = "Done untuk hari ini";
-        tasbihStatusChip.textContent = "Status: Done";
+      const globalRem = currentTasbihData.remaining ?? 10000;
+      globalBakiText.textContent = globalRem; 
+
+      if (rutinMode) {
+        circleLabel.textContent = "Sisa Target Rutin";
+        tasbihCountEl.textContent = currentRoutineRemaining;
+        tasbihCountEl.style.color = currentRoutineRemaining === 0 ? "var(--success)" : "white";
       } else {
-        tasbihStatusEl.textContent = "Tekan / Sapu Skrin / Enter";
-        tasbihStatusChip.textContent = "Status: Aktif";
+        circleLabel.textContent = "Baki Hari Ini";
+        tasbihCountEl.textContent = globalRem;
+        tasbihCountEl.style.color = "white";
       }
     }
 
-async function decrementTasbih() {
+    async function decrementGlobalOnly() {
       if (!currentUser || !currentTasbihDocRef || !currentTasbihData) return;
-      if (currentTasbihData.done) return;
       let remaining = currentTasbihData.remaining ?? 10000;
-      if (remaining <= 0) return;
-      
-      remaining -= 1;
-      const done = remaining <= 0;
+      if (remaining > 0) remaining -= 1;
       currentTasbihData.remaining = remaining;
-      currentTasbihData.done = done;
-      
-      await setDoc(currentTasbihDocRef, {
-        ...currentTasbihData,
-        updatedAt: Date.now()
-      });
-      
-      updateTasbihUI();
-      cycleFact(); 
+      currentTasbihData.done = remaining <= 0;
+      await setDoc(currentTasbihDocRef, { ...currentTasbihData, updatedAt: Date.now() });
+    }
 
-      if (done) {
-        showSection(sectionHistory);
+    // ==========================================
+    // MASTER DECREMENT LOGIC (SWIPE/CLICK/ENTER)
+    // ==========================================
+    async function triggerAction() {
+      if (!dom.tasbih.classList.contains('active')) return;
+      if (currentTasbihData.done && !rutinMode) return; 
+
+      // KOD BARU: Vibrate Berpusat
+      if (vibrateMode && navigator.vibrate) navigator.vibrate(30);
+
+      await decrementGlobalOnly();
+
+      if (rutinMode) {
+        if (routineFacts.length === 0) { updateTasbihUI(); return; }
+
+        if (currentRoutineRemaining > 0) {
+          currentRoutineRemaining--;
+          updateTasbihUI();
+          
+          if (currentRoutineRemaining === 0) {
+            // Getaran isyarat jika selesai satu tahap rutin
+            if (vibrateMode && navigator.vibrate) navigator.vibrate([100, 50, 100]); 
+            currentRoutineIndex++;
+            
+            if (currentRoutineIndex >= routineFacts.length) {
+              factTitleEl.textContent = "[ ALHAMDULILLAH ]";
+              factContentEl.innerHTML = `<span style="color: var(--success); font-weight: bold;">Rutin Wirid Selesai!</span>`;
+              factHintEl.style.display = 'none';
+              btnSpeak.style.display = 'none';
+            } else {
+              currentRoutineRemaining = routineFacts[currentRoutineIndex].target;
+              updateTasbihUI();
+              renderRoutineFact();
+            }
+          }
+        }
+      } 
+      else if (factMode) {
+        updateTasbihUI();
+        if (allFacts.length === 0) return;
+        const currentData = allFacts[currentFactIndex];
+
+        if (currentData.isTamat) {
+          comboStep = 0; isFlipped = false;
+          currentFactIndex = (currentFactIndex + 1) % allFacts.length;
+          localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
+          triggerFadeAnimation(renderFactKamus);
+          return;
+        }
+
+        if (learningMode === 0) {
+          comboStep = 0; isFlipped = false;
+          currentFactIndex = (currentFactIndex + 1) % allFacts.length;
+          localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
+          triggerFadeAnimation(renderFactKamus);
+        } 
+        else if (learningMode === 1) {
+          if (comboStep === 0) {
+            isFlipped = true; comboStep = 1;
+            triggerFlipAnimation(renderFactKamus);
+          } else {
+            isFlipped = false; comboStep = 0;
+            currentFactIndex = (currentFactIndex + 1) % allFacts.length;
+            localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
+            triggerFlipAnimation(renderFactKamus);
+          }
+        }
+        else if (learningMode === 2) {
+          if (comboStep === 0) {
+            isFlipped = true; comboStep = 1;
+            triggerFlipAnimation(() => { renderFactKamus(); if (currentData.translation) playFactAudio(currentData.translation, true); });
+          } else {
+            isFlipped = false; comboStep = 0;
+            currentFactIndex = (currentFactIndex + 1) % allFacts.length;
+            localStorage.setItem('istigfar_fact_index_' + activeGlobalTopicId, currentFactIndex);
+            triggerFlipAnimation(() => { renderFactKamus(); playFactAudio(allFacts[currentFactIndex].text, false); });
+          }
+        }
+      } 
+      else {
+        updateTasbihUI();
       }
     }
 
+
     // ==========================================
-    // HISTORY & NOTES LOGIC (ASAL)
+    // RENDER UI KOTAK FAKTA / RUTIN
     // ==========================================
-    function subscribeHistory() {
-      if (!currentUser) return;
-      if (historyUnsub) historyUnsub();
-      const q = query(
-        collection(db, "users", currentUser.uid, "tasbih"),
-        orderBy("dateKey", "desc")
-      );
-      historyUnsub = onSnapshot(q, (snap) => {
-        historyList.innerHTML = "";
-        if (snap.empty) {
-          historyList.innerHTML = `<div class="empty-state">Belum ada rekod tasbih.</div>`;
-          return;
+    function renderRoutineFact() {
+      if (routineFacts.length === 0) return;
+      if (currentRoutineIndex >= routineFacts.length) return; 
+      
+      const data = routineFacts[currentFactIndex];
+      const zikirText = routineFacts[currentRoutineIndex].text;
+      const zikirFadhilat = routineFacts[currentRoutineIndex].translation; 
+
+      if (!isFlipped) {
+        factTitleEl.textContent = `[ Rutin ${currentRoutineIndex + 1}/${routineFacts.length} ]`;
+        factContentEl.textContent = zikirText;
+      } else {
+        factTitleEl.textContent = `[ Maksud / Fadhilat ]`;
+        factContentEl.textContent = zikirFadhilat ? zikirFadhilat : "Tiada huraian disediakan.";
+      }
+      factHintEl.textContent = "(Tekan/Klik untuk lihat Maksud/Fadhilat)";
+      factHintEl.style.display = 'block';
+      btnSpeak.style.display = 'none'; 
+    }
+
+    function renderFactKamus() {
+      if (allFacts.length === 0) return;
+      const data = allFacts[currentFactIndex];
+      if (data.isTamat) {
+        factTitleEl.textContent = `[ ${data.title} ]`;
+        factContentEl.innerHTML = `<span style="color: #fca5a5; font-weight: bold;">${data.text}</span>`;
+        factHintEl.style.display = 'none'; btnSpeak.style.display = 'none';
+        return;
+      }
+      if (!isFlipped) {
+        factTitleEl.textContent = `[ ${data.title} ]`;
+        factContentEl.textContent = data.text;
+      } else {
+        factTitleEl.textContent = `[ ${data.title} ] (Maksud)`;
+        if (data.translation) {
+          factContentEl.textContent = data.translation;
+        } else {
+          factContentEl.textContent = "Menterjemah... ⏳";
+          const cleanTextForTranslate = data.text.replace(/^\s*\d+[\.\)]\s*/, ''); 
+          const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ms&dt=t&q=${encodeURIComponent(cleanTextForTranslate)}`;
+          fetch(url).then(res => res.json()).then(resData => {
+            const translatedText = resData[0][0][0];
+            data.translation = translatedText; 
+            if (isFlipped && allFacts[currentFactIndex] === data) factContentEl.textContent = translatedText;
+          }).catch(err => { if(isFlipped) factContentEl.textContent = "Gagal terjemah."; });
         }
-        snap.forEach(docSnap => {
-          const data = docSnap.data();
-          const key = data.dateKey || "";
-          const [y, m, d] = key.split("-");
-          const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
-          const { label, day } = formatDateLabel(dateObj);
-          const statusDone = !!data.done;
-          const remaining = data.remaining ?? 0;
-          const statusLabel = statusDone ? "Done" : "False";
-          const badgeClass = statusDone ? "badge-done" : "badge-false";
-          const html = `
-            <div class="list-item">
-              <div class="list-main">
-                <div class="list-title">${day} (${statusLabel})</div>
-                <div class="list-sub">${label} • Baki: ${remaining}</div>
-              </div>
-              <span class="badge-status ${badgeClass}">${statusLabel}</span>
-            </div>
-          `;
-          historyList.insertAdjacentHTML("beforeend", html);
-        });
-      });
+      }
+      factHintEl.style.display = 'block'; btnSpeak.style.display = 'flex';
+      if (learningMode === 2) factHintEl.textContent = "(Super Combo: Sapu/Enter = Audio+Maksud)";
+      else if (learningMode === 1) factHintEl.textContent = "(Combo: Sapu/Enter = Maksud)";
+      else factHintEl.textContent = "(Normal: Klik kotak = Maksud)";
     }
 
-    function subscribeNotes() {
-      if (!currentUser) return;
-      if (notesUnsub) notesUnsub();
-      const q = query(
-        collection(db, "users", currentUser.uid, "notes"),
-        orderBy("createdAt", "desc")
-      );
-      notesUnsub = onSnapshot(q, (snap) => {
-        notesList.innerHTML = "";
-        if (snap.empty) {
-          notesList.innerHTML = `<div class="empty-state">Belum ada nota. Tekan "Tambah Nota".</div>`;
-          return;
-        }
-        snap.forEach(docSnap => {
-          const data = docSnap.data();
-          const id = docSnap.id;
-          const text = data.text || "";
-          const createdAt = data.createdAt ? new Date(data.createdAt) : null;
-          const timeLabel = createdAt
-            ? `${String(createdAt.getDate()).padStart(2, "0")}/${String(createdAt.getMonth() + 1).padStart(2, "0")}/${createdAt.getFullYear()}`
-            : "";
-          const wrapper = document.createElement("div");
-          wrapper.className = "list-item";
-          wrapper.innerHTML = `
-            <div class="note-card" style="width:100%;">
-              <div class="row">
-                <span class="list-sub">${timeLabel}</span>
-                <div class="row" style="gap:6px;">
-                  <button class="btn-secondary btn-sm btn-delete-note" data-id="${id}">Delete</button>
-                </div>
-              </div>
-              <textarea class="note-textarea" data-id="${id}">${text}</textarea>
-            </div>
-          `;
-          notesList.appendChild(wrapper);
-        });
-
-        notesList.querySelectorAll(".note-textarea").forEach((ta) => {
-          ta.addEventListener("input", async (e) => {
-            const id = e.target.getAttribute("data-id");
-            const value = e.target.value;
-            if (!currentUser || !id) return;
-            const ref = doc(db, "users", currentUser.uid, "notes", id);
-            await updateDoc(ref, { text: value, updatedAt: Date.now() });
-          });
-        });
-
-        notesList.querySelectorAll(".btn-delete-note").forEach((btn) => {
-          btn.addEventListener("click", async (e) => {
-            const id = e.target.getAttribute("data-id");
-            if (!currentUser || !id) return;
-            const ref = doc(db, "users", currentUser.uid, "notes", id);
-            await deleteDoc(ref);
-          });
-        });
-      });
-    }
-
-    async function addNoteFunc() {
-      if (!currentUser) return;
-      await addDoc(collection(db, "users", currentUser.uid, "notes"), {
-        text: "",
-        createdAt: Date.now()
-      });
-    }
 
     // ==========================================
     // FUNGSI ANIMASI & AUDIO
@@ -954,229 +974,125 @@ async function decrementTasbih() {
 
     function playFactAudio(rawText, isMalay) {
       if (!rawText || rawText.includes("Menterjemah") || rawText.includes("Laci Tamat") || rawText.includes("Tiada terjemahan")) return;
-      
       const cleanText = rawText.replace(/^\s*\d+[\.\)]\s*/, '');
-      
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(cleanText);
       utterance.lang = isMalay ? 'ms-MY' : 'en-US'; 
       utterance.rate = 0.85; 
       utterance.pitch = 1.1; 
-      
       const voices = window.speechSynthesis.getVoices();
       const preferredVoice = voices.find(v => v.lang.includes(isMalay ? 'ms' : 'en') && (v.name.includes('Female') || v.name.includes('Google') || v.name.includes('Zira')));
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-      }
+      if (preferredVoice) utterance.voice = preferredVoice;
       window.speechSynthesis.speak(utterance);
     }
 
-// ==========================================
-    // FUNGSI RENDER CURRENT FACT (DENGAN TRANSLATE API)
     // ==========================================
-    function renderCurrentFact() {
-      const data = allFacts[currentFactIndex];
+    // TOGGLE BUTTONS BEHAVIOR
+    // ==========================================
+    btnToggleVibrate.addEventListener("click", () => {
+      vibrateMode = !vibrateMode;
+      btnToggleVibrate.textContent = `Getaran: ${vibrateMode ? 'ON' : 'OFF'}`;
+      btnToggleVibrate.classList.toggle("btn-active", vibrateMode);
+    });
+
+    btnToggleFact.addEventListener("click", () => {
+      factMode = !factMode;
+      btnToggleFact.textContent = `Fakta: ${factMode ? 'ON' : 'OFF'}`;
+      btnToggleFact.classList.toggle("btn-active", factMode);
       
-      if (data.isTamat) {
-        factTitleEl.textContent = `[ ${data.title} ]`;
-        factContentEl.innerHTML = `<span style="color: #fca5a5; font-weight: bold;">${data.text}</span>`;
-        factHintEl.style.display = 'none';
-        btnSpeak.style.display = 'none';
-        return;
+      if (factMode) { 
+        if (rutinMode) btnToggleRutin.click();
+        factDisplayBox.classList.add("show"); 
+        btnToggleMode.style.display = "inline-flex";
+        rebuildFactsKamus(); 
+      } else { 
+        factDisplayBox.classList.remove("show"); 
+        btnToggleMode.style.display = "none";
       }
+      updateTasbihUI();
+    });
 
-      if (!isFlipped) {
-        factTitleEl.textContent = `[ ${data.title} ]`;
-        factContentEl.textContent = data.text;
-      } else {
-        factTitleEl.textContent = `[ ${data.title} ] (Maksud)`;
-        if (data.translation) {
-          factContentEl.textContent = data.translation;
-        } else {
-          factContentEl.textContent = "Menterjemah... ⏳";
-          const cleanTextForTranslate = data.text.replace(/^\s*\d+[\.\)]\s*/, ''); 
-          const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ms&dt=t&q=${encodeURIComponent(cleanTextForTranslate)}`;
-          
-          fetch(url)
-            .then(res => res.json())
-            .then(resData => {
-              const translatedText = resData[0][0][0];
-              data.translation = translatedText; 
-              if (isFlipped && allFacts[currentFactIndex] === data) {
-                factContentEl.textContent = translatedText;
-                // Main audio automatik lepas terjemah dijumpai jika Mode Super
-                if (learningMode === 2) {
-                  playFactAudio(translatedText, true);
-                }
-              }
-            })
-            .catch(err => { 
-              if(isFlipped) factContentEl.textContent = "Gagal terjemah."; 
-            });
-        }
-      }
-
-      factHintEl.style.display = 'block';
-      btnSpeak.style.display = 'flex';
+    btnToggleRutin.addEventListener("click", () => {
+      rutinMode = !rutinMode;
+      btnToggleRutin.textContent = `Rutin: ${rutinMode ? 'ON' : 'OFF'}`;
+      btnToggleRutin.classList.toggle("btn-active-success", rutinMode);
       
-      if (learningMode === 2) {
-        factHintEl.textContent = "(Super Combo: Sapu/Enter untuk Audio & Maksud)";
-      } else if (learningMode === 1) {
-        factHintEl.textContent = "(Combo: Sapu/Enter untuk Maksud)";
+      if (rutinMode) {
+        if (factMode) btnToggleFact.click();
+        factDisplayBox.classList.add("show");
+        btnToggleMode.style.display = "none"; 
+        rebuildFactsRutin();
       } else {
-        factHintEl.textContent = "(Normal: Klik kotak untuk Maksud)";
+        factDisplayBox.classList.remove("show");
       }
-    }
+      updateTasbihUI();
+    });
 
-    // ==========================================
-    // LOGIK CYCLE FACT (NORMAL, COMBO, SUPER COMBO 2-STEP AUDIO)
-    // ==========================================
-    
-    // --- KOD BARU: Fungsi untuk tembak index terus ke Firestore ---
-    function syncIndexToFirestore(newIndex) {
-      if (activeGlobalTopicId !== 'default' && currentUser) {
-        updateDoc(doc(db, "users", currentUser.uid, "topics", activeGlobalTopicId), {
-          lastIndex: newIndex
-        }).catch(err => console.log("Gagal sync index ke Firestore:", err));
+    btnToggleMode.addEventListener("click", () => {
+      learningMode = (learningMode + 1) % 3; 
+      btnToggleMode.textContent = modeLabels[learningMode];
+      comboStep = 0; isFlipped = false;
+      renderFactKamus();
+      if (learningMode === 2 && allFacts.length > 0 && !allFacts[currentFactIndex].isTamat) {
+        playFactAudio(allFacts[currentFactIndex].text, false);
       }
-    }
-    // -------------------------------------------------------------
+    });
 
-    function cycleFact() {
-      if (!factMode || allFacts.length === 0) return;
+    factDisplayBox.addEventListener('click', (e) => {
+      e.stopPropagation(); 
+      if (rutinMode) {
+        if (routineFacts.length === 0 || currentRoutineIndex >= routineFacts.length) return;
+        isFlipped = !isFlipped;
+        triggerFlipAnimation(renderRoutineFact);
+      } else if (factMode) {
+        if (learningMode !== 0 || allFacts.length === 0 || allFacts[currentFactIndex].isTamat) return;
+        isFlipped = !isFlipped; 
+        triggerFlipAnimation(renderFactKamus);
+      }
+    });
+
+    btnSpeak.addEventListener('click', (e) => {
+      e.stopPropagation(); 
+      if (allFacts.length === 0 || allFacts[currentFactIndex].isTamat) return;
       const currentData = allFacts[currentFactIndex];
-
-      if (currentData.isTamat) {
-        comboStep = 0;
-        isFlipped = false;
-        currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-        syncIndexToFirestore(currentFactIndex); // <--- KOD BARU (Ganti localStorage)
-        triggerFadeAnimation(renderCurrentFact);
-        return;
-      }
-
-      if (learningMode === 0) {
-        // --- MODE NORMAL ---
-        comboStep = 0;
-        isFlipped = false;
-        currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-        syncIndexToFirestore(currentFactIndex); // <--- KOD BARU (Ganti localStorage)
-        triggerFadeAnimation(renderCurrentFact);
-      } 
-      else if (learningMode === 1) {
-        // --- MODE COMBO (2 Langkah Tanpa Audio Automatik) ---
-        if (comboStep === 0) {
-          isFlipped = true;
-          comboStep = 1;
-          triggerFlipAnimation(renderCurrentFact);
-        } else {
-          isFlipped = false;
-          comboStep = 0;
-          currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-          syncIndexToFirestore(currentFactIndex); // <--- KOD BARU (Ganti localStorage)
-          triggerFlipAnimation(renderCurrentFact);
-        }
-      }
-      else if (learningMode === 2) {
-        // --- MODE SUPER COMBO (2 Langkah + Audio Automatik) ---
-        if (comboStep === 0) {
-          isFlipped = true;
-          comboStep = 1;
-          triggerFlipAnimation(() => {
-            renderCurrentFact();
-            if (currentData.translation) {
-              playFactAudio(currentData.translation, true);
-            }
-          });
-        } else {
-          isFlipped = false;
-          comboStep = 0;
-          currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-          syncIndexToFirestore(currentFactIndex); // <--- KOD BARU (Ganti localStorage)
-          triggerFlipAnimation(() => {
-            renderCurrentFact();
-            const nextData = allFacts[currentFactIndex];
-            playFactAudio(nextData.text, false);
-          });
-        }
-      }
-    }
+      let rawTextToRead = isFlipped ? (currentData.translation ? currentData.translation : factContentEl.textContent) : currentData.text;
+      playFactAudio(rawTextToRead, isFlipped);
+    });
 
     // ==========================================
-    // RENDER & HIERARCHY (3-LEVEL)
+    // DATA SYNC & RENDER (KAMUS)
     // ==========================================
     function subscribeAllHierarchyData() {
       onSnapshot(query(collection(db, "users", currentUser.uid, "subjects")), snap => {
         allSubjects = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        if(sectionSubjects.classList.contains('active')) renderSubjects();
+        if(dom.subjects.classList.contains('active')) renderSubjects();
       });
-      
       onSnapshot(query(collection(db, "users", currentUser.uid, "topics")), snap => {
         allTopics = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        if(sectionTopics.classList.contains('active')) renderTopics();
-
-        // --- KOD BARU: Dengar perubahan lastIndex dari peranti lain ---
-        const activeTopic = allTopics.find(t => t.isActive);
-        if (activeTopic) {
-          activeGlobalTopicId = activeTopic.id;
-          const dbIndex = activeTopic.lastIndex || 0;
-          
-          if (currentFactIndex !== dbIndex) {
-            currentFactIndex = dbIndex;
-            comboStep = 0;
-            isFlipped = false;
-            
-            if (factMode && allFacts.length > 0) {
-              renderCurrentFact();
-              showToast("Indeks diselaraskan (Sync)"); 
-            }
-          }
-        } else {
-          activeGlobalTopicId = 'default';
-        }
-        // ---------------------------------------------------------------
-
-        rebuildFacts();
+        if(dom.topics.classList.contains('active')) renderTopics();
+        rebuildFactsKamus();
       });
-
       onSnapshot(query(collection(db, "users", currentUser.uid, "drawer")), snap => {
         allDrawers = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        if(sectionDrawer.classList.contains('active')) renderDrawers();
-        rebuildFacts();
+        if(dom.drawer.classList.contains('active')) renderDrawers();
+        rebuildFactsKamus();
       });
     }
 
     function renderSubjects() {
       subjectsList.innerHTML = "";
       const sortedSubjects = [...allSubjects].sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
-      
       sortedSubjects.forEach(data => {
         const div = document.createElement("div");
-        div.className = "drawer-card";
-        div.style.display = "flex"; 
-        div.style.gap = "8px"; 
-        div.style.alignItems = "center";
-        
+        div.className = "drawer-card"; div.style.display = "flex"; div.style.gap = "8px"; div.style.alignItems = "center";
         div.innerHTML = `
           <input class="subject-title" value="${data.name || ''}" placeholder="Nama Subjek..." style="flex: 1; border: none; background: transparent; color: white; border-bottom: 1px solid var(--border-mid); outline: none; padding: 4px;">
           <button class="btn btn-secondary btn-sm btn-buka-sub" data-id="${data.id}">Buka</button>
-          <button class="btn btn-secondary btn-sm btn-del-sub" data-id="${data.id}" style="color:var(--danger); border-color:var(--danger);">X</button>
+          <button class="btn btn-secondary btn-sm btn-del-sub" style="color:var(--danger); border-color:var(--danger);">X</button>
         `;
-        
-        div.querySelector(".subject-title").addEventListener("change", (e) => {
-          updateDoc(doc(db, "users", currentUser.uid, "subjects", data.id), { name: e.target.value });
-        });
-        
-        div.querySelector(".btn-buka-sub").addEventListener("click", () => { 
-          currentSubjectId = data.id; 
-          showSection(sectionTopics); 
-          renderTopics(); 
-        });
-        
-        div.querySelector(".btn-del-sub").addEventListener("click", () => {
-          deleteDoc(doc(db, "users", currentUser.uid, "subjects", data.id));
-        });
-        
+        div.querySelector(".subject-title").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "subjects", data.id), { name: e.target.value });
+        div.querySelector(".btn-buka-sub").onclick = () => { currentSubjectId = data.id; showSection(dom.topics); renderTopics(); };
+        div.querySelector(".btn-del-sub").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "subjects", data.id));
         subjectsList.appendChild(div);
       });
     }
@@ -1185,46 +1101,25 @@ async function decrementTasbih() {
       topicsList.innerHTML = "";
       const filteredTopics = allTopics.filter(t => t.subjectId === currentSubjectId);
       const sortedTopics = filteredTopics.sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
-      
       sortedTopics.forEach(data => {
         const div = document.createElement("div");
-        div.className = "drawer-card"; 
-        div.style.display = "flex"; 
-        div.style.gap = "8px"; 
-        div.style.alignItems = "center";
-        
+        div.className = "drawer-card"; div.style.display = "flex"; div.style.gap = "8px"; div.style.alignItems = "center";
         div.innerHTML = `
           <input type="checkbox" class="topic-active" ${data.isActive ? 'checked' : ''} style="width: 20px; height: 20px; accent-color: var(--grad1);">
           <input class="topic-title" value="${data.name || ''}" placeholder="Nama Topik..." style="flex: 1; border: none; background: transparent; color: white; border-bottom: 1px solid var(--border-mid); outline: none; padding: 4px;">
           <button class="btn btn-secondary btn-sm btn-buka-topik">Buka</button>
           <button class="btn btn-secondary btn-sm btn-del-topik" style="color:var(--danger); border-color:var(--danger);">X</button>
         `;
-        
-        div.querySelector(".topic-active").addEventListener("change", async (e) => { 
-          const isChecked = e.target.checked;
-          if (isChecked) {
+        div.querySelector(".topic-active").onchange = async (e) => { 
+          if (e.target.checked) {
             const others = allTopics.filter(t => t.isActive && t.id !== data.id);
-            for (let t of others) {
-              await updateDoc(doc(db, "users", currentUser.uid, "topics", t.id), { isActive: false });
-            }
+            for (let t of others) await updateDoc(doc(db, "users", currentUser.uid, "topics", t.id), { isActive: false });
           }
-          await updateDoc(doc(db, "users", currentUser.uid, "topics", data.id), { isActive: isChecked }); 
-        });
-        
-        div.querySelector(".topic-title").addEventListener("change", (e) => {
-          updateDoc(doc(db, "users", currentUser.uid, "topics", data.id), { name: e.target.value });
-        });
-        
-        div.querySelector(".btn-buka-topik").addEventListener("click", () => { 
-          currentTopicId = data.id; 
-          showSection(sectionDrawer); 
-          renderDrawers(); 
-        });
-        
-        div.querySelector(".btn-del-topik").addEventListener("click", () => {
-          deleteDoc(doc(db, "users", currentUser.uid, "topics", data.id));
-        });
-        
+          await updateDoc(doc(db, "users", currentUser.uid, "topics", data.id), { isActive: e.target.checked }); 
+        };
+        div.querySelector(".topic-title").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "topics", data.id), { name: e.target.value });
+        div.querySelector(".btn-buka-topik").onclick = () => { currentTopicId = data.id; showSection(dom.drawer); renderDrawers(); };
+        div.querySelector(".btn-del-topik").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "topics", data.id));
         topicsList.appendChild(div);
       });
     }
@@ -1233,7 +1128,6 @@ async function decrementTasbih() {
       drawerList.innerHTML = "";
       const filteredDrawers = allDrawers.filter(d => d.topicId === currentTopicId);
       const sortedDrawers = filteredDrawers.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, {numeric: true}));
-      
       sortedDrawers.forEach(data => {
         const div = document.createElement("div");
         div.className = "drawer-card";
@@ -1244,36 +1138,21 @@ async function decrementTasbih() {
             <button class="btn btn-secondary btn-sm btn-del-laci" style="color:var(--danger); border-color:var(--danger);">Padam</button>
           </div>
         `;
-        
-        div.querySelector(".drawer-title").addEventListener("change", (e) => {
-          updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { title: e.target.value });
-        });
-        
-        div.querySelector(".drawer-notes").addEventListener("change", (e) => {
-          updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { notes: e.target.value });
-        });
-        
-        div.querySelector(".btn-del-laci").addEventListener("click", () => {
-          deleteDoc(doc(db, "users", currentUser.uid, "drawer", data.id));
-        });
-        
+        div.querySelector(".drawer-title").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { title: e.target.value });
+        div.querySelector(".drawer-notes").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { notes: e.target.value });
+        div.querySelector(".btn-del-laci").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "drawer", data.id));
         drawerList.appendChild(div);
       });
     }
 
-    function rebuildFacts() {
+    function rebuildFactsKamus() {
+      if (!factMode) return;
       allFacts = [];
       const activeTopic = allTopics.find(t => t.isActive);
-      
       if (activeTopic) {
         activeGlobalTopicId = activeTopic.id;
-        if (!hasShownStartupToast) { 
-          showToast(`Topik Aktif: ${activeTopic.name || 'Tanpa Nama'}`); 
-          hasShownStartupToast = true; 
-        }
-        
+        if (!hasShownStartupToast) { showToast(`Topik Aktif: ${activeTopic.name || 'Tanpa Nama'}`); hasShownStartupToast = true; }
         const activeDrawers = allDrawers.filter(d => d.topicId === activeTopic.id).sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, {numeric: true}));
-        
         activeDrawers.forEach(data => {
           const tajukLaci = data.title || "Tiada Tajuk";
           if(data.notes) {
@@ -1281,208 +1160,262 @@ async function decrementTasbih() {
             if (lines.length > 0) {
               lines.forEach(line => {
                 const parts = line.split('=');
-                allFacts.push({ 
-                  title: tajukLaci, 
-                  text: parts[0].trim(), 
-                  translation: parts.length > 1 ? parts[1].trim() : null, 
-                  isTamat: false 
-                });
+                allFacts.push({ title: tajukLaci, text: parts[0].trim(), translation: parts.length > 1 ? parts[1].trim() : null, isTamat: false });
               });
-              allFacts.push({ 
-                title: tajukLaci, 
-                text: "✅ Laci Tamat. Sapu/tekan untuk seterusnya.", 
-                isTamat: true 
-              });
+              allFacts.push({ title: tajukLaci, text: "✅ Laci Tamat. Sapu/tekan untuk seterusnya.", isTamat: true });
             }
           }
         });
-      } else {
-        activeGlobalTopicId = 'default';
-      }
+      } else { activeGlobalTopicId = 'default'; }
 
-      // --- KOD BARU: Baca lastIndex dari Firestore ---
-      let savedIndex = 0;
-      if (activeTopic && activeTopic.lastIndex !== undefined) {
-        savedIndex = parseInt(activeTopic.lastIndex);
-      }
+      let savedIndex = parseInt(localStorage.getItem('istigfar_fact_index_' + activeGlobalTopicId)) || 0;
       if (savedIndex >= allFacts.length) savedIndex = 0;
-      // -----------------------------------------------
+      currentFactIndex = savedIndex; comboStep = 0; isFlipped = false;
       
-      currentFactIndex = savedIndex;
-      comboStep = 0;
-      isFlipped = false;
-      
-      if (factMode && allFacts.length > 0) {
-        renderCurrentFact();
-      } else if (allFacts.length === 0) {
-        factTitleEl.textContent = "";
-        factContentEl.textContent = "Tiada topik aktif. Sila tick SATU topik.";
-        factHintEl.style.display = 'none';
-        btnSpeak.style.display = 'none';
-      }
+      if (allFacts.length > 0) renderFactKamus();
+      else { factTitleEl.textContent = ""; factContentEl.textContent = "Sila tick SATU topik Kamus."; factHintEl.style.display = 'none'; btnSpeak.style.display = 'none'; }
     }
 
     // ==========================================
-    // INITIALIZATION & AUTH
+    // DATA SYNC & RENDER (RUTIN WIRID)
+    // ==========================================
+    function subscribeRoutinesData() {
+      onSnapshot(query(collection(db, "users", currentUser.uid, "routines")), snap => {
+        allRoutines = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        if(dom.routines.classList.contains('active')) renderRoutines();
+        rebuildFactsRutin();
+      });
+      onSnapshot(query(collection(db, "users", currentUser.uid, "routine_drawers")), snap => {
+        allRoutineDrawers = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        if(dom.routineDrawer.classList.contains('active')) renderRoutineDrawers();
+        rebuildFactsRutin();
+      });
+    }
+
+    function renderRoutines() {
+      const list = document.getElementById("routines-list");
+      list.innerHTML = "";
+      const sortedRoutines = [...allRoutines].sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
+      sortedRoutines.forEach(data => {
+        const div = document.createElement("div");
+        div.className = "drawer-card"; div.style.display = "flex"; div.style.gap = "8px"; div.style.alignItems = "center";
+        div.innerHTML = `
+          <input type="checkbox" class="routine-active" ${data.isActive ? 'checked' : ''} style="width: 20px; height: 20px; accent-color: var(--success);">
+          <input class="routine-title" value="${data.name || ''}" placeholder="Waktu (Cth: Lepas Zohor)" style="flex: 1; border: none; background: transparent; color: white; border-bottom: 1px solid var(--border-mid); outline: none; padding: 4px;">
+          <button class="btn btn-secondary btn-sm btn-buka-rutin">Zikir</button>
+          <button class="btn btn-secondary btn-sm btn-del-rutin" style="color:var(--danger); border-color:var(--danger);">X</button>
+        `;
+        div.querySelector(".routine-active").onchange = async (e) => { 
+          const isChecked = e.target.checked;
+          if (isChecked) {
+            const others = allRoutines.filter(t => t.isActive && t.id !== data.id);
+            for (let t of others) await updateDoc(doc(db, "users", currentUser.uid, "routines", t.id), { isActive: false });
+          }
+          await updateDoc(doc(db, "users", currentUser.uid, "routines", data.id), { isActive: isChecked }); 
+        };
+        div.querySelector(".routine-title").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "routines", data.id), { name: e.target.value });
+        div.querySelector(".btn-buka-rutin").onclick = () => { currentRoutineId = data.id; showSection(dom.routineDrawer); renderRoutineDrawers(); };
+        div.querySelector(".btn-del-rutin").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "routines", data.id));
+        list.appendChild(div);
+      });
+    }
+
+    function renderRoutineDrawers() {
+      const list = document.getElementById("routine-drawer-list");
+      list.innerHTML = "";
+      const filtered = allRoutineDrawers.filter(d => d.routineId === currentRoutineId).sort((a, b) => a.createdAt - b.createdAt);
+      filtered.forEach(data => {
+        const div = document.createElement("div");
+        div.className = "drawer-card";
+        div.innerHTML = `
+          <div style="font-size: 0.75rem; color: var(--grad2); margin-bottom: 6px;">Format: Teks Zikir = Jumlah Target = Maksud/Kelebihan</div>
+          
+          <div class="quran-toolbar">
+            <button class="quran-btn" onclick="insertSym(this, 'ّ')">ّ (Sabdu)</button>
+            <button class="quran-btn" onclick="insertSym(this, 'ٰ')">ٰ (Alif Kecil)</button>
+            <button class="quran-btn" onclick="insertSym(this, 'ٓ')">ٓ (Mad)</button>
+            <button class="quran-btn" onclick="insertSym(this, 'ْ')">ْ (Sukun)</button>
+            <button class="quran-btn" onclick="insertSym(this, 'ۚ')">ۚ</button>
+            <button class="quran-btn" onclick="insertSym(this, 'ۖ')">ۖ</button>
+            <button class="quran-btn" onclick="insertSym(this, 'ۗ')">ۗ</button>
+            <button class="quran-btn" onclick="insertSym(this, 'ۛ')">ۛ</button>
+            <button class="quran-btn" onclick="insertSym(this, '۞')">۞</button>
+          </div>
+          
+          <textarea class="drawer-notes" id="text-${data.id}" placeholder="Cth: Subhanallah = 33 = Maha Suci Allah. Fadhilat besar.">${data.notes || ''}</textarea>
+          <div style="text-align: right; margin-top: 6px;">
+            <button class="btn btn-secondary btn-sm btn-del-rutinlaci" style="color:var(--danger); border-color:var(--danger);">Padam</button>
+          </div>
+        `;
+        div.querySelector(".drawer-notes").onchange = (e) => updateDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id), { notes: e.target.value });
+        div.querySelector(".btn-del-rutinlaci").onclick = () => deleteDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id));
+        list.appendChild(div);
+      });
+    }
+
+    window.insertSym = function(btn, symbol) {
+      const textarea = btn.parentElement.nextElementSibling;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      const before = text.substring(0, start);
+      const after = text.substring(end, text.length);
+      textarea.value = (before + symbol + after);
+      textarea.selectionStart = textarea.selectionEnd = start + symbol.length;
+      textarea.focus();
+      textarea.dispatchEvent(new Event('change'));
+    };
+
+    document.getElementById("btn-add-routine").onclick = () => addDoc(collection(db, "users", currentUser.uid, "routines"), { name: "", isActive: false, createdAt: Date.now() });
+    document.getElementById("btn-add-routine-laci").onclick = () => { if(currentRoutineId) addDoc(collection(db, "users", currentUser.uid, "routine_drawers"), { notes: "", routineId: currentRoutineId, createdAt: Date.now() }); };
+
+    function rebuildFactsRutin() {
+      if (!rutinMode) return;
+      routineFacts = [];
+      const activeRoutine = allRoutines.find(t => t.isActive);
+      
+      if (activeRoutine) {
+        activeGlobalRoutineId = activeRoutine.id;
+        showToast(`Rutin: ${activeRoutine.name || 'Tanpa Nama'}`);
+        const activeDrawers = allRoutineDrawers.filter(d => d.routineId === activeRoutine.id).sort((a,b) => a.createdAt - b.createdAt);
+        
+        activeDrawers.forEach(data => {
+          if(data.notes) {
+            const lines = data.notes.split('\n').filter(l => l.trim() !== "");
+            lines.forEach(line => {
+              const parts = line.split('=');
+              if (parts.length >= 2) {
+                routineFacts.push({ 
+                  text: parts[0].trim(), 
+                  target: parseInt(parts[1].trim()) || 1, 
+                  translation: parts.length > 2 ? parts[2].trim() : "Tiada huraian"
+                });
+              } else {
+                 routineFacts.push({ text: parts[0].trim(), target: 1, translation: "" });
+              }
+            });
+          }
+        });
+      } else { activeGlobalRoutineId = 'default'; }
+
+      currentRoutineIndex = 0; isFlipped = false;
+      
+      if (routineFacts.length > 0) {
+        currentRoutineRemaining = routineFacts[0].target;
+        renderRoutineFact();
+      } else {
+        currentRoutineRemaining = 0;
+        factTitleEl.textContent = "";
+        factContentEl.textContent = "Tiada Rutin Aktif. Sila tambah dan tick waktu.";
+        factHintEl.style.display = 'none';
+      }
+      updateTasbihUI();
+    }
+
+    // ==========================================
+    // HISTORY & NOTES (ASAL)
+    // ==========================================
+    function subscribeHistory() {
+      if (!currentUser) return;
+      if (historyUnsub) historyUnsub();
+      const q = query(collection(db, "users", currentUser.uid, "tasbih"), orderBy("dateKey", "desc"));
+      historyUnsub = onSnapshot(q, (snap) => {
+        const list = document.getElementById("history-list");
+        list.innerHTML = "";
+        if (snap.empty) { list.innerHTML = `<div class="empty-state">Belum ada rekod tasbih.</div>`; return; }
+        snap.forEach(docSnap => {
+          const data = docSnap.data();
+          const key = data.dateKey || ""; const [y, m, d] = key.split("-"); const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
+          const { label, day } = formatDateLabel(dateObj);
+          const statusDone = !!data.done; const remaining = data.remaining ?? 0;
+          const statusLabel = statusDone ? "Done" : "False"; const badgeClass = statusDone ? "badge-done" : "badge-false";
+          const html = `<div class="list-item"><div class="list-main"><div class="list-title">${day} (${statusLabel})</div><div class="list-sub">${label} • Baki: ${remaining}</div></div><span class="badge-status ${badgeClass}">${statusLabel}</span></div>`;
+          list.insertAdjacentHTML("beforeend", html);
+        });
+      });
+    }
+
+    function subscribeNotes() {
+      if (!currentUser) return;
+      if (notesUnsub) notesUnsub();
+      const q = query(collection(db, "users", currentUser.uid, "notes"), orderBy("createdAt", "desc"));
+      notesUnsub = onSnapshot(q, (snap) => {
+        const list = document.getElementById("notes-list");
+        list.innerHTML = "";
+        if (snap.empty) { list.innerHTML = `<div class="empty-state">Belum ada nota. Tekan "Tambah Nota".</div>`; return; }
+        snap.forEach(docSnap => {
+          const data = docSnap.data(); const id = docSnap.id; const text = data.text || "";
+          const createdAt = data.createdAt ? new Date(data.createdAt) : null;
+          const timeLabel = createdAt ? `${String(createdAt.getDate()).padStart(2, "0")}/${String(createdAt.getMonth() + 1).padStart(2, "0")}/${createdAt.getFullYear()}` : "";
+          const wrapper = document.createElement("div"); wrapper.className = "list-item";
+          wrapper.innerHTML = `<div class="note-card" style="width:100%;"><div class="row"><span class="list-sub">${timeLabel}</span><div class="row" style="gap:6px;"><button class="btn-secondary btn-sm btn-delete-note" data-id="${id}">Delete</button></div></div><textarea class="note-textarea" data-id="${id}">${text}</textarea></div>`;
+          list.appendChild(wrapper);
+        });
+        list.querySelectorAll(".note-textarea").forEach((ta) => { ta.addEventListener("input", async (e) => { const id = e.target.getAttribute("data-id"); if (!currentUser || !id) return; await updateDoc(doc(db, "users", currentUser.uid, "notes", id), { text: e.target.value, updatedAt: Date.now() }); }); });
+        list.querySelectorAll(".btn-delete-note").forEach((btn) => { btn.addEventListener("click", async (e) => { const id = e.target.getAttribute("data-id"); if (!currentUser || !id) return; await deleteDoc(doc(db, "users", currentUser.uid, "notes", id)); }); });
+      });
+    }
+
+    async function addNoteFunc() {
+      if (!currentUser) return;
+      await addDoc(collection(db, "users", currentUser.uid, "notes"), { text: "", createdAt: Date.now() });
+    }
+
+    // ==========================================
+    // INIT & SWIPE LOGIC
     // ==========================================
     setPersistence(auth, browserLocalPersistence);
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
       if (user) {
         homeUserEmail.textContent = user.email || "";
-        showSection(sectionTasbih);
+        showSection(dom.tasbih);
         await ensureTodayTasbih();
         subscribeHistory();
         subscribeNotes();
         subscribeAllHierarchyData();
+        subscribeRoutinesData();
       } else {
         homeUserEmail.textContent = "";
         if (notesUnsub) notesUnsub();
         if (historyUnsub) historyUnsub();
-        showSection(sectionLogin);
+        showSection(dom.login);
       }
     });
 
-    // ==========================================
-    // EVENT LISTENERS (UI NAVIGASI ASAL & BARU)
-    // ==========================================
-    btnLoginGoogle.addEventListener("click", () => signInWithPopup(auth, provider));
-    btnLogout.addEventListener("click", () => signOut(auth));
-    
-    btnGoTasbih.addEventListener("click", () => { showSection(sectionTasbih); ensureTodayTasbih(); });
-    btnBackHomeFromTasbih.addEventListener("click", () => showSection(sectionHome));
-    
-    btnGoNotes.addEventListener("click", () => showSection(sectionNotes));
-    btnBackHomeFromNotes.addEventListener("click", () => showSection(sectionHome));
-    btnAddNote.addEventListener("click", addNoteFunc);
-
-    btnGoHistory.addEventListener("click", () => showSection(sectionHistory));
-    btnBackTasbihFromHistory.addEventListener("click", () => showSection(sectionTasbih));
-
-    btnGoSubjects.addEventListener("click", () => { showSection(sectionSubjects); renderSubjects(); });
-    btnBackTasbihSubj.addEventListener("click", () => showSection(sectionTasbih));
-    btnBackSubjTopics.addEventListener("click", () => { showSection(sectionSubjects); renderSubjects(); });
-    btnBackTopicsDrawer.addEventListener("click", () => { showSection(sectionTopics); renderTopics(); });
-
-    btnAddSubject.addEventListener("click", () => {
-      addDoc(collection(db, "users", currentUser.uid, "subjects"), { name: "", createdAt: Date.now() });
-    });
-    btnAddTopic.addEventListener("click", () => { 
-      if(currentSubjectId) {
-        addDoc(collection(db, "users", currentUser.uid, "topics"), { name: "", subjectId: currentSubjectId, isActive: false, createdAt: Date.now() }); 
-      }
-    });
-    btnAddLaci.addEventListener("click", () => { 
-      if(currentTopicId) {
-        addDoc(collection(db, "users", currentUser.uid, "drawer"), { title: "", notes: "", topicId: currentTopicId, createdAt: Date.now() }); 
-      }
-    });
-
-    // ==========================================
-    // LOGIK TOGGLE BUTTONS (FAKTA & 3 MODE)
-    // ==========================================
-    btnToggleFact.addEventListener("click", () => {
-      factMode = !factMode;
-      btnToggleFact.textContent = `Fakta: ${factMode ? 'ON' : 'OFF'}`;
-      btnToggleFact.classList.toggle("btn-active", factMode);
-      if (factMode) { 
-        factDisplayBox.classList.add("show"); 
-        btnToggleMode.style.display = "inline-flex";
-        rebuildFacts(); 
-      } else { 
-        factDisplayBox.classList.remove("show"); 
-        btnToggleMode.style.display = "none";
-      }
-    });
-
-    btnToggleMode.addEventListener("click", () => {
-      learningMode = (learningMode + 1) % 3; 
-      btnToggleMode.textContent = modeLabels[learningMode];
-      comboStep = 0;
-      isFlipped = false;
-      renderCurrentFact();
-      
-      // Auto-play audio on initial load mode Super if user toggles to it
-      if (learningMode === 2 && allFacts.length > 0 && !allFacts[currentFactIndex].isTamat) {
-        playFactAudio(allFacts[currentFactIndex].text, false);
-      }
-    });
-
-    // KLIK MANUAL HANYA UNTUK MODE NORMAL
-    factDisplayBox.addEventListener('click', (e) => {
-      e.stopPropagation(); 
-      if (learningMode !== 0) return; 
-      
-      if (allFacts.length === 0 || allFacts[currentFactIndex].isTamat) return;
-      isFlipped = !isFlipped; 
-      triggerFlipAnimation(renderCurrentFact);
-    });
-
-    // BUTANG SUARA MANUAL
-    btnSpeak.addEventListener('click', (e) => {
-      e.stopPropagation(); 
-      if (allFacts.length === 0 || allFacts[currentFactIndex].isTamat) return;
-      const currentData = allFacts[currentFactIndex];
-      let rawTextToRead = isFlipped ? (currentData.translation ? currentData.translation : factContentEl.textContent) : currentData.text;
-      playFactAudio(rawTextToRead, isFlipped);
-    });
-
-    // ==========================================
-    // LOGIK FULL SCREEN CLICK, SWIPE (5px) & KEYBOARD
-    // ==========================================
-    let touchY = 0;
-    let lastDir = null;
-    let isSwiping = false;
-    const GAP = 5;
+    let touchY = 0; let lastDir = null; let isSwiping = false; const GAP = 5;
 
     document.addEventListener("touchstart", (e) => {
-      if(!sectionTasbih.classList.contains('active')) return;
+      if(!dom.tasbih.classList.contains('active')) return;
       if(e.target.closest('button') || e.target.closest('.topbar') || e.target.closest('#fact-display-box')) return;
       touchY = e.touches[0].clientY;
       isSwiping = false;
     }, {passive:true});
 
     document.addEventListener("touchmove", (e) => {
-      if(!sectionTasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box')) return;
+      if(!dom.tasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box')) return;
       const currentY = e.touches[0].clientY;
       const diff = currentY - touchY;
       if(Math.abs(diff) > 3) isSwiping = true;
-      
-      if(diff < -GAP && lastDir !== 'UP') { 
-        decrementTasbih(); 
-        lastDir = 'UP'; 
-        touchY = currentY; 
-        if(navigator.vibrate) navigator.vibrate(25); 
-      } 
-      else if(diff > GAP && lastDir !== 'DOWN') { 
-        decrementTasbih(); 
-        lastDir = 'DOWN'; 
-        touchY = currentY; 
-        if(navigator.vibrate) navigator.vibrate(25); 
-      }
+      if(diff < -GAP && lastDir !== 'UP') { triggerAction(); lastDir = 'UP'; touchY = currentY; } 
+      else if(diff > GAP && lastDir !== 'DOWN') { triggerAction(); lastDir = 'DOWN'; touchY = currentY; }
     }, {passive:true});
 
     document.addEventListener("click", (e) => {
-      if(!sectionTasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box') || isSwiping) return;
-      decrementTasbih();
+      if(!dom.tasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box') || isSwiping) return;
+      triggerAction();
     });
 
     document.addEventListener("keydown", (e) => {
-      if (!sectionTasbih.classList.contains('active')) return;
+      if (!dom.tasbih.classList.contains('active')) return;
       if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-      
       if (e.code === "NumpadEnter" || e.key === "Enter") {
-        e.preventDefault();
-        decrementTasbih();
-        if(navigator.vibrate) navigator.vibrate(25);
+        e.preventDefault(); triggerAction();
       }
     });
 
-    // PWA SERVICE WORKER
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => { 
-        navigator.serviceWorker.register("./service-worker.js").catch(console.error); 
-      });
+      window.addEventListener("load", () => { navigator.serviceWorker.register("./service-worker.js").catch(console.error); });
     }
   </script>
 </body>
