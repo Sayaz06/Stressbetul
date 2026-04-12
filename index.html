@@ -924,12 +924,18 @@
     async function decrementTasbih() {
       if (!currentUser || !currentTasbihDocRef || !currentTasbihData) return;
       
+      let isSempadan = false;
+      let didDecrement = false;
+
       // 1. Tolak Baki Harian 10,000 Secara Serentak
       if (!currentTasbihData.done) {
         let remaining = currentTasbihData.remaining ?? 10000;
         if (remaining > 0) {
           remaining -= 1;
+          didDecrement = true;
           const done = remaining <= 0;
+          if (done) isSempadan = true; // Sempadan Harian capai 0
+          
           currentTasbihData.remaining = remaining;
           currentTasbihData.done = done;
           await setDoc(currentTasbihDocRef, {
@@ -941,13 +947,14 @@
 
       // 2. Tolak Target Mini Rutin Jika Aktif
       if (routineMode && allRoutines.length > 0) {
+        didDecrement = true; // Boleh jalan walaupun baki harian habis
         if (currentRoutineTarget > 0) {
           currentRoutineTarget -= 1;
         }
 
         // Logic Auto-Next Apabila Target Mini = 0
         if (currentRoutineTarget <= 0) {
-          if (navigator.vibrate) navigator.vibrate([200, 100, 200]); // Getar Panjang
+          isSempadan = true; // Sempadan Target Mini capai 0
           
           currentRoutineIndex = (currentRoutineIndex + 1) % allRoutines.length;
           const nextRtn = allRoutines[currentRoutineIndex];
@@ -956,14 +963,22 @@
           isFlipped = false;
           comboStep = 0;
           triggerFadeAnimation(renderCurrentFact); // Kitaran ke zikir seterusnya
-        } else {
-          if (navigator.vibrate) navigator.vibrate(25); // Getar biasa
         }
       } else {
         // Mode Fakta / Biasa
-        if (navigator.vibrate) navigator.vibrate(25);
-        if (!currentTasbihData.done) {
+        if (didDecrement) {
             cycleFact(); 
+        }
+      }
+      
+      // TRIGGER GETARAN UNIFIED UNTUK SEMUA JENIS COUNTDOWN
+      if (didDecrement) {
+        if (isSempadan) {
+          // Getaran berganda untuk sempadan (10,000 capai 0 ATAU Target Rutin capai 0)
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]); 
+        } else {
+          // Getaran biasa (40ms) untuk klik normal
+          if (navigator.vibrate) navigator.vibrate(40); 
         }
       }
       
@@ -1192,14 +1207,13 @@
     }
 
     function cycleFact() {
-      // Nota: Dalam Mode Rutin, pertukaran ke zikir seterusnya (next index) 
-      // diuruskan murni oleh Target Mini di dalam decrementTasbih.
       if (routineMode) return; 
 
       if (!factMode || allFacts.length === 0) return;
       const currentData = allFacts[currentFactIndex];
 
       if (currentData.isTamat) {
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]); // Getaran Sempadan Laci Fakta
         comboStep = 0;
         isFlipped = false;
         currentFactIndex = (currentFactIndex + 1) % allFacts.length;
