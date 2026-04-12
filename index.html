@@ -443,7 +443,7 @@
       outline: none; 
     }
     
-    /* ARABIC TOOLBAR CSS */
+    /* ARABIC TOOLBAR & NEW DRAWER INPUTS CSS */
     .arabic-toolbar {
       display: flex; 
       flex-wrap: wrap; 
@@ -466,6 +466,16 @@
     }
     .arabic-btn:active { 
       background: var(--grad1); 
+    }
+    .drawer-input-box {
+      width: 100%; 
+      background: rgba(0,0,0,0.2); 
+      border: 1px solid var(--border-soft); 
+      color: var(--text); 
+      border-radius: 8px; 
+      padding: 8px; 
+      outline: none; 
+      margin-bottom: 10px;
     }
 
     .footer { 
@@ -649,9 +659,9 @@
           <div style="font-size:0.95rem; font-weight:bold; color:var(--grad1); margin-bottom:4px;">📘 Panduan Pengguna</div>
           <div style="font-size:0.8rem; line-height:1.5; color:var(--text);">
             <strong>• Format Kamus (Laci Fakta):</strong><br>
-            <span style="color:var(--subtext);">Perkataan = Maksud (Cth: Alhamdulillah = Segala Puji Bagi Allah)</span><br><br>
+            <span style="color:var(--subtext);">Guna format <code>Perkataan = Maksud</code> dalam satu kotak.<br>(Cth: Alhamdulillah = Segala Puji Bagi Allah)</span><br><br>
             <strong>• Format Rutin Wirid:</strong><br>
-            <span style="color:var(--subtext);">Zikir = Target = Maksud (Cth: Subhanallah = 33 = Maha Suci Allah)</span><br><br>
+            <span style="color:var(--subtext);">Zikir, Target Mini, dan Maksud kini telah <b>diasingkan ke dalam 3 kotak berbeza</b> untuk mengelakkan ralat tulisan Arab ke Melayu.</span><br><br>
             <strong>• 3 Mode Pembelajaran:</strong><br>
             <span style="color:var(--subtext);">1. Normal: Klik kotak paparan untuk lihat terjemahan.<br>
             2. Combo: Sapu/Enter paparkan maksud. Sapu/Enter sekali lagi ke laci baru.<br>
@@ -1474,7 +1484,7 @@
     }
 
 
-    // FUNGSI RENDER RUTIN WIRID
+    // FUNGSI RENDER RUTIN WIRID (DIKEMASKINI DENGAN 3 KOTAK)
     function renderRoutineTimes() {
       routineTimesList.innerHTML = "";
       const sortedTimes = [...allRoutineTimes].sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
@@ -1536,12 +1546,21 @@
         let symbolsHtml = arabicSymbols.map(sym => `<button class="arabic-btn">${sym}</button>`).join('');
 
         div.innerHTML = `
-          <input class="drawer-title" value="${data.title || ''}" placeholder="Tajuk Rutin (Cth: Istighfar)" style="width:100%; margin-bottom:8px;">
+          <input class="drawer-title" value="${data.title || ''}" placeholder="Tajuk Laci Zikir (Cth: Istighfar)" style="width:100%; margin-bottom:12px; font-size:1.05rem;">
+          
+          <div style="font-size: 0.75rem; color: var(--grad1); margin-bottom: 4px; font-weight:bold;">1. Teks Zikir (RTL / Arab)</div>
           <div class="arabic-toolbar">
             ${symbolsHtml}
           </div>
-          <textarea class="drawer-notes" placeholder="Format: Teks Zikir = Target Mini = Maksud">${data.notes || ''}</textarea>
-          <div style="text-align: right; margin-top:8px;">
+          <textarea class="drawer-input-box drawer-zikir" dir="rtl" placeholder="Masukkan teks zikir di sini..." style="text-align: right; font-size: 1.15rem; min-height: 70px; resize: none;">${data.zikir || ''}</textarea>
+          
+          <div style="font-size: 0.75rem; color: var(--grad1); margin-bottom: 4px; font-weight:bold;">2. Target Mini</div>
+          <input type="number" class="drawer-input-box drawer-target" placeholder="Cth: 33" value="${data.target || ''}" style="font-size: 1rem;">
+          
+          <div style="font-size: 0.75rem; color: var(--grad1); margin-bottom: 4px; font-weight:bold;">3. Maksud / Fadhilat</div>
+          <textarea class="drawer-input-box drawer-maksud" placeholder="Masukkan terjemahan/maksud..." style="font-size: 0.85rem; color: var(--subtext); min-height: 60px; resize: none;">${data.maksud || ''}</textarea>
+
+          <div style="text-align: right; margin-top:4px;">
             <button class="btn btn-secondary btn-sm btn-del-laci" style="color:var(--danger); border-color:var(--danger);">Padam</button>
           </div>
         `;
@@ -1550,23 +1569,33 @@
           updateDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id), { title: e.target.value });
         });
         
-        const textarea = div.querySelector(".drawer-notes");
-        textarea.addEventListener("change", (e) => {
-          updateDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id), { notes: e.target.value });
+        const textareaZikir = div.querySelector(".drawer-zikir");
+        textareaZikir.addEventListener("change", (e) => {
+          updateDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id), { zikir: e.target.value });
         });
 
-        // Event listener Toolbar Arab
+        const inputTarget = div.querySelector(".drawer-target");
+        inputTarget.addEventListener("change", (e) => {
+          updateDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id), { target: e.target.value });
+        });
+
+        const textareaMaksud = div.querySelector(".drawer-maksud");
+        textareaMaksud.addEventListener("change", (e) => {
+          updateDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id), { maksud: e.target.value });
+        });
+
+        // Event listener Toolbar Arab HANYA fokus pada textarea Zikir
         const btns = div.querySelectorAll(".arabic-btn");
         btns.forEach(btn => {
           btn.addEventListener("click", () => {
              const sym = btn.textContent;
-             const start = textarea.selectionStart;
-             const end = textarea.selectionEnd;
-             const val = textarea.value;
-             textarea.value = val.substring(0, start) + sym + val.substring(end);
-             textarea.selectionStart = textarea.selectionEnd = start + sym.length;
-             textarea.focus();
-             updateDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id), { notes: textarea.value });
+             const start = textareaZikir.selectionStart;
+             const end = textareaZikir.selectionEnd;
+             const val = textareaZikir.value;
+             textareaZikir.value = val.substring(0, start) + sym + val.substring(end);
+             textareaZikir.selectionStart = textareaZikir.selectionEnd = start + sym.length;
+             textareaZikir.focus();
+             updateDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id), { zikir: textareaZikir.value });
           });
         });
 
@@ -1587,7 +1616,9 @@
         
         activeDrawers.forEach(data => {
           const tajukLaci = data.title || "Tiada Tajuk";
-          if(data.notes) {
+          
+          // Backwards compatibility untuk data lama yang guna "notes" (Format lama)
+          if(data.notes && !data.zikir) {
             const lines = data.notes.split('\n').filter(l => l.trim() !== "");
             if (lines.length > 0) {
               lines.forEach(line => {
@@ -1605,6 +1636,20 @@
                 });
               });
             }
+          } 
+          // Data baru guna kotak berasingan (zikir, target, maksud)
+          else if (data.zikir || data.target || data.maksud) {
+             const zikirText = data.zikir ? data.zikir.trim() : "Kosong";
+             const targetVal = parseInt(data.target);
+             const maksudText = data.maksud ? data.maksud.trim() : null;
+
+             allRoutines.push({ 
+                  title: tajukLaci, 
+                  text: zikirText, 
+                  target: isNaN(targetVal) ? 1 : targetVal,
+                  translation: maksudText, 
+                  isTamat: false 
+             });
           }
         });
 
@@ -1705,7 +1750,7 @@
     });
     btnAddRoutineDrawer.addEventListener("click", () => { 
       if(currentRoutineTimeId) {
-        addDoc(collection(db, "users", currentUser.uid, "routine_drawers"), { title: "", notes: "", timeId: currentRoutineTimeId, createdAt: Date.now() }); 
+        addDoc(collection(db, "users", currentUser.uid, "routine_drawers"), { title: "", zikir: "", target: "", maksud: "", timeId: currentRoutineTimeId, createdAt: Date.now() }); 
       }
     });
 
