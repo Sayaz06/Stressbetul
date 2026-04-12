@@ -583,6 +583,10 @@
           <div id="tasbih-status" class="counter-sub">Tekan / Sapu Skrin / Enter</div>
         </div>
 
+        <div style="font-size: 0.65rem; color: var(--subtext); text-align: center; margin-top: 4px; font-style: italic; opacity: 0.8;">
+          * Kemajuan disimpan ke awan setiap 10 zikir.
+        </div>
+
         <div id="fact-display-box">
           <button id="btn-speak" class="btn-speak" style="display: none;" aria-label="Bunyikan Suara">🔊</button>
           <div id="fact-title" class="fact-title-label"></div>
@@ -742,7 +746,7 @@
     // Panggil getVoices lebih awal
     window.speechSynthesis.getVoices();
 
-    // DOM ELEMENTS ASAL & BARU 
+    // DOM ELEMENTS
     const sectionLogin = document.getElementById("section-login");
     const sectionHome = document.getElementById("section-home");
     const sectionTasbih = document.getElementById("section-tasbih");
@@ -1758,7 +1762,7 @@
     });
 
     // ==========================================
-    // EVENT LISTENERS (UI NAVIGASI ASAL & BARU)
+    // EVENT LISTENERS
     // ==========================================
     btnLoginGoogle.addEventListener("click", () => signInWithPopup(auth, provider));
     btnLogout.addEventListener("click", () => signOut(auth));
@@ -1864,7 +1868,6 @@
       isFlipped = false;
       renderCurrentFact();
       
-      // Auto-play audio on initial load mode Super if user toggles to it
       const dataSource = routineMode ? allRoutines : allFacts;
       const currentIndex = routineMode ? currentRoutineIndex : currentFactIndex;
       if (learningMode === 2 && dataSource.length > 0 && !dataSource[currentIndex].isTamat) {
@@ -1875,16 +1878,11 @@
     // KLIK MANUAL FLIP BOX 
     factDisplayBox.addEventListener('click', (e) => {
       e.stopPropagation(); 
-      
-      triggerVibration([50]); // Getaran manual
-      
+      triggerVibration([50]); 
       const dataSource = routineMode ? allRoutines : allFacts;
       const currentIndex = routineMode ? currentRoutineIndex : currentFactIndex;
 
-      // Dalam mode Rutin, kita benarkan klik flip walau dalam mode combo/super
-      // kerana swipe sudah dipintas untuk menolak Target Mini
       if (!routineMode && learningMode !== 0) return; 
-      
       if (dataSource.length === 0 || dataSource[currentIndex].isTamat) return;
       isFlipped = !isFlipped; 
       triggerFlipAnimation(renderCurrentFact);
