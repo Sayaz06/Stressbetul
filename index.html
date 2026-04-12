@@ -892,6 +892,9 @@
 
     // FUNGSI GETARAN SELARAS (TIRU "LACI TAMAT")
     function triggerVibration(pattern) {
+      // PERUBAHAN: Block getaran jika Mode Super (learningMode === 2) aktif
+      if (learningMode === 2) return; 
+
       if ("vibrate" in navigator) {
         navigator.vibrate(pattern);
       }
@@ -989,8 +992,7 @@
         if (isSempadan) {
           triggerVibration([200, 100, 200]); // Getaran Panjang & Berganda
         } else {
-          // PERUBAHAN DI SINI: Dua kali getaran dan lebih panjang (120ms getar, 60ms rehat, 120ms getar)
-          triggerVibration([120, 60, 120]); 
+          triggerVibration([120, 60, 120]); // Dua kali getaran panjang untuk rasa lebih kuat
         }
       }
 
