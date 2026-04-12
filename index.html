@@ -944,9 +944,6 @@
       let remaining = currentTasbihData.remaining ?? 10000;
       let done = !!currentTasbihData.done;
       
-      // Jika dah tamat (baki 0) dan bukan dalam mode rutin, abaikan klik
-      if (done && !routineMode) return;
-
       let isSempadan = false;
       let didDecrement = false;
       let needFirebaseUpdate = false;
@@ -971,18 +968,22 @@
         didDecrement = true;
         needFirebaseUpdate = true;
         if (done) isSempadan = true; // Sempadan Harian
+      } else if (!routineMode) {
+        // PERUBAHAN: Jika baki dah 0 dan dalam mode biasa, tetap benarkan getaran & pertukaran laci!
+        didDecrement = true; 
       }
 
-      // 3. TRIGGER GETARAN SEGERA (SANGAT PENTING: Mesti sebelum `setDoc` Firebase)
+      // 3. TRIGGER GETARAN SEGERA (SANGAT PENTING: Mesti sebelum logik lain jalan)
       if (didDecrement) {
         if (isSempadan) {
           if (navigator.vibrate) navigator.vibrate([200, 100, 200]); 
         } else {
-          if (navigator.vibrate) navigator.vibrate(40); 
+          // PERUBAHAN: Masa getaran dinaikkan kepada 80ms supaya OS telefon tidak abaikannya
+          if (navigator.vibrate) navigator.vibrate([80]); 
         }
       }
 
-      // 4. KEMASKINI FIREBASE SECARA ASYNCHRONOUS (Tanpa `await` untuk elak block getaran)
+      // 4. KEMASKINI FIREBASE SECARA ASYNCHRONOUS
       if (needFirebaseUpdate) {
         currentTasbihData.remaining = remaining;
         currentTasbihData.done = done;
@@ -1005,7 +1006,7 @@
           triggerFadeAnimation(renderCurrentFact); 
         }
       } else {
-        if (didDecrement && !done) {
+        if (didDecrement) {
             cycleFact(); 
         }
       }
@@ -1865,6 +1866,10 @@
     // KLIK MANUAL FLIP BOX 
     factDisplayBox.addEventListener('click', (e) => {
       e.stopPropagation(); 
+      
+      // PERUBAHAN: Letak getaran pendek manual bila flip kotak
+      if (navigator.vibrate) navigator.vibrate([50]); 
+      
       const dataSource = routineMode ? allRoutines : allFacts;
       const currentIndex = routineMode ? currentRoutineIndex : currentFactIndex;
 
