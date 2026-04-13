@@ -682,11 +682,12 @@
             <strong>• Format Kamus (Laci Fakta):</strong><br>
             <span style="color:var(--subtext);">Guna format <code>Perkataan = Maksud</code> dalam satu kotak.<br>(Cth: Alhamdulillah = Segala Puji Bagi Allah)</span><br><br>
             <strong>• Format Rutin Wirid:</strong><br>
-            <span style="color:var(--subtext);">Zikir, Target Mini, dan Maksud kini telah <b>diasingkan ke dalam 3 kotak berbeza</b> untuk mengelakkan ralat tulisan Arab ke Melayu.</span><br><br>
-            <strong>• 3 Mode Pembelajaran:</strong><br>
+            <span style="color:var(--subtext);">Zikir, Target Mini, dan Maksud kini telah <b>diasingkan ke dalam 3 kotak berbeza</b>.</span><br><br>
+            <strong>• 4 Mode Pembelajaran (Fakta):</strong><br>
             <span style="color:var(--subtext);">1. Normal: Klik kotak paparan untuk lihat terjemahan.<br>
-            2. Combo: Sapu/Enter paparkan maksud. Sapu/Enter sekali lagi ke laci baru.<br>
-            3. Super: Sama seperti Combo, tapi bacaan audio dimainkan secara automatik.</span><br><br>
+            2. Repeat: Ulang 33 kali sebelum ke fakta seterusnya.<br>
+            3. Combo: Sapu/Enter paparkan maksud. Sekali lagi ke laci baru.<br>
+            4. Super: Sama seperti Combo, tapi bacaan audio dimainkan.</span><br><br>
             <strong>• Shortcut:</strong><br>
             <span style="color:var(--subtext);">Tekan <b>Enter / NumpadEnter</b> atau <b>Sapu Skrin (Swipe) atas/bawah</b> untuk zikir pantas tanpa menyentuh bulatan tengah.</span>
           </div>
@@ -822,9 +823,12 @@
     
     let factMode = false;
     let routineMode = false;
-    let learningMode = 0; // 0=Normal, 1=Combo, 2=SuperCombo
-    const modeLabels = ["Mode: Normal", "Mode: Combo", "Mode: Super"];
+    
+    // PERUBAHAN: Mode kini 0=Normal, 1=Repeat, 2=Combo, 3=Super
+    let learningMode = 0; 
+    const modeLabels = ["Mode: Normal", "Mode: Repeat", "Mode: Combo", "Mode: Super"];
     let comboStep = 0; 
+    let currentRepeatCount = 33; // Kounter khas untuk Mode Repeat
     
     let allSubjects = [];
     let allTopics = [];
@@ -847,7 +851,6 @@
     let isFlipped = false; 
     let hasShownStartupToast = false;
     
-    // PEMBOLEHUBAH BARU: Untuk halang klik semasa getaran panjang
     let isBlocked = false;
 
     // ==========================================
@@ -893,9 +896,8 @@
       return `${yyyy}-${mm}-${dd}`;
     }
 
-    // FUNGSI GETARAN SELARAS
     function triggerVibration(pattern) {
-      if (learningMode === 2) return; // Block getaran jika Mode Super aktif
+      if (learningMode === 3) return; // Block getaran jika Mode Super (indeks 3) aktif
       if ("vibrate" in navigator) {
         navigator.vibrate(pattern);
       }
@@ -952,7 +954,6 @@
     }
 
     function decrementTasbih() {
-      // HALANG SEMUA INPUT JIKA GETARAN PANJANG SEDANG BERLAKU
       if (isBlocked) return; 
 
       if (!currentUser || !currentTasbihDocRef || !currentTasbihData) return;
@@ -964,8 +965,9 @@
       let didDecrement = false;
       let needFirebaseUpdate = false;
 
-      // 1. Semak Target Mini Rutin Jika Aktif
       let routineAutoNext = false;
+      
+      // 1. Semak Target Mini Rutin / Sempadan Repeat Fakta
       if (routineMode && allRoutines.length > 0) {
         didDecrement = true; 
         if (currentRoutineTarget > 0) {
@@ -975,7 +977,12 @@
           isSempadan = true; 
           routineAutoNext = true;
         }
-      } 
+      } else if (factMode && !routineMode && learningMode === 1 && allFacts.length > 0) {
+        // Logik trigger sempadan untuk Laci Fakta "Mode Repeat" (pada kiraan ke-33 / baki 1)
+        if (!allFacts[currentFactIndex].isTamat && currentRepeatCount === 1) {
+             isSempadan = true; 
+        }
+      }
 
       // 2. Semak Baki Harian 10,000
       if (!done && remaining > 0) {
@@ -991,7 +998,6 @@
       // 3. TRIGGER GETARAN
       if (didDecrement) {
         if (isSempadan) {
-          // CORAK BARU & AUTO-BLOCK (2.6 SAAT)
           triggerVibration([200, 100, 200, 100, 2000]); 
           isBlocked = true;
           setTimeout(() => { isBlocked = false; }, 2600);
@@ -1227,7 +1233,7 @@
               data.translation = translatedText; 
               if (isFlipped && dataSource[currentIndex] === data) {
                 factContentEl.textContent = translatedText;
-                if (learningMode === 2) {
+                if (learningMode === 3) { // SUPER
                   playFactAudio(translatedText, true);
                 }
               }
@@ -1241,10 +1247,13 @@
       factHintEl.style.display = 'block';
       btnSpeak.style.display = 'flex';
       
-      if (learningMode === 2) {
+      // HINT DIKEMASKINI DENGAN 4 MODE
+      if (learningMode === 3) {
         factHintEl.textContent = routineMode ? "(Super Combo: Sapu/Enter audio & maksud)" : "(Super Combo: Sapu/Enter untuk Audio & Maksud)";
-      } else if (learningMode === 1) {
+      } else if (learningMode === 2) {
         factHintEl.textContent = routineMode ? "(Combo: Sapu/Enter untuk Maksud)" : "(Combo: Sapu/Enter untuk Maksud)";
+      } else if (learningMode === 1) {
+        factHintEl.textContent = routineMode ? "(Normal: Klik kotak untuk Maksud)" : `(Repeat: Baki ${currentRepeatCount} - Sapu/Enter)`;
       } else {
         factHintEl.textContent = "(Normal: Klik kotak untuk Maksud)";
       }
@@ -1270,27 +1279,41 @@
       const currentData = allFacts[currentFactIndex];
 
       if (currentData.isTamat) {
-        // CORAK BARU & AUTO-BLOCK (2.6 SAAT)
         triggerVibration([200, 100, 200, 100, 2000]); 
         isBlocked = true;
         setTimeout(() => { isBlocked = false; }, 2600);
         
         comboStep = 0;
         isFlipped = false;
+        currentRepeatCount = 33; 
         currentFactIndex = (currentFactIndex + 1) % allFacts.length;
         syncIndexToFirestore(currentFactIndex); 
         triggerFadeAnimation(renderCurrentFact);
         return;
       }
 
-      if (learningMode === 0) {
+      if (learningMode === 0) { // NORMAL
         comboStep = 0;
         isFlipped = false;
         currentFactIndex = (currentFactIndex + 1) % allFacts.length;
         syncIndexToFirestore(currentFactIndex); 
         triggerFadeAnimation(renderCurrentFact);
       } 
-      else if (learningMode === 1) {
+      else if (learningMode === 1) { // REPEAT (33x)
+        currentRepeatCount--;
+        if (currentRepeatCount <= 0) {
+           // Bila dah habis 33 kali
+           currentRepeatCount = 33;
+           isFlipped = false;
+           currentFactIndex = (currentFactIndex + 1) % allFacts.length;
+           syncIndexToFirestore(currentFactIndex);
+           triggerFadeAnimation(renderCurrentFact);
+        } else {
+           // Sedang mengulang
+           renderCurrentFact(); 
+        }
+      }
+      else if (learningMode === 2) { // COMBO
         if (comboStep === 0) {
           isFlipped = true;
           comboStep = 1;
@@ -1303,7 +1326,7 @@
           triggerFlipAnimation(renderCurrentFact);
         }
       }
-      else if (learningMode === 2) {
+      else if (learningMode === 3) { // SUPER
         if (comboStep === 0) {
           isFlipped = true;
           comboStep = 1;
@@ -1350,6 +1373,7 @@
             currentFactIndex = dbIndex;
             comboStep = 0;
             isFlipped = false;
+            currentRepeatCount = 33;
             
             if (factMode && allFacts.length > 0) {
               renderCurrentFact();
@@ -1566,6 +1590,7 @@
       currentFactIndex = savedIndex;
       comboStep = 0;
       isFlipped = false;
+      currentRepeatCount = 33; // reset bila rebuild
       
       if (!routineMode && factMode && allFacts.length > 0) {
         renderCurrentFact();
@@ -1862,7 +1887,7 @@
 
 
     // ==========================================
-    // LOGIK TOGGLE BUTTONS (FAKTA, RUTIN & 3 MODE)
+    // LOGIK TOGGLE BUTTONS (FAKTA, RUTIN & 4 MODE)
     // ==========================================
     btnToggleFact.addEventListener("click", () => {
       factMode = !factMode;
@@ -1908,16 +1933,18 @@
       updateTasbihUI();
     });
 
+    // BUTANG TUKAR MODE (Kini % 4)
     btnToggleMode.addEventListener("click", () => {
-      learningMode = (learningMode + 1) % 3; 
+      learningMode = (learningMode + 1) % 4; 
       btnToggleMode.textContent = modeLabels[learningMode];
       comboStep = 0;
       isFlipped = false;
+      currentRepeatCount = 33; // reset bila tukar mode
       renderCurrentFact();
       
       const dataSource = routineMode ? allRoutines : allFacts;
       const currentIndex = routineMode ? currentRoutineIndex : currentFactIndex;
-      if (learningMode === 2 && dataSource.length > 0 && !dataSource[currentIndex].isTamat) {
+      if (learningMode === 3 && dataSource.length > 0 && !dataSource[currentIndex].isTamat) { // Super mode
         playFactAudio(dataSource[currentIndex].text, false);
       }
     });
@@ -1929,7 +1956,8 @@
       const dataSource = routineMode ? allRoutines : allFacts;
       const currentIndex = routineMode ? currentRoutineIndex : currentFactIndex;
 
-      if (!routineMode && learningMode !== 0) return; 
+      // Mode 1 (Repeat) dibenarkan untuk manual flip supaya boleh intai jawapan
+      if (!routineMode && learningMode !== 0 && learningMode !== 1) return; 
       if (dataSource.length === 0 || dataSource[currentIndex].isTamat) return;
       isFlipped = !isFlipped; 
       triggerFlipAnimation(renderCurrentFact);
