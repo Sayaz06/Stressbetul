@@ -846,6 +846,9 @@
 
     let isFlipped = false; 
     let hasShownStartupToast = false;
+    
+    // PEMBOLEHUBAH BARU: Untuk halang klik semasa getaran panjang
+    let isBlocked = false;
 
     // ==========================================
     // UTILITIES & VIBRATION HANDLER
@@ -890,7 +893,7 @@
       return `${yyyy}-${mm}-${dd}`;
     }
 
-    // FUNGSI GETARAN SELARAS (TIRU "LACI TAMAT")
+    // FUNGSI GETARAN SELARAS
     function triggerVibration(pattern) {
       if (learningMode === 2) return; // Block getaran jika Mode Super aktif
       if ("vibrate" in navigator) {
@@ -930,14 +933,12 @@
       tasbihDateLabel.textContent = label;
 
       if (routineMode && allRoutines.length > 0) {
-        // UI Untuk Mode Rutin
         const curRtn = allRoutines[currentRoutineIndex];
         document.querySelector(".counter-label").textContent = curRtn.isTamat ? "Rutin Tamat" : "Target Mini Zikir";
         tasbihCountEl.textContent = currentRoutineTarget;
         tasbihStatusEl.textContent = `Sapu/Enter (Baki Harian: ${remaining})`;
         tasbihStatusChip.textContent = `Mode Rutin Aktif`;
       } else {
-        // UI Untuk Mode Biasa
         document.querySelector(".counter-label").textContent = "Baki hari ini";
         tasbihCountEl.textContent = remaining;
         if (done) {
@@ -951,6 +952,9 @@
     }
 
     function decrementTasbih() {
+      // HALANG SEMUA INPUT JIKA GETARAN PANJANG SEDANG BERLAKU
+      if (isBlocked) return; 
+
       if (!currentUser || !currentTasbihDocRef || !currentTasbihData) return;
       
       let remaining = currentTasbihData.remaining ?? 10000;
@@ -968,7 +972,7 @@
           currentRoutineTarget -= 1;
         }
         if (currentRoutineTarget <= 0) {
-          isSempadan = true; // Sempadan Rutin
+          isSempadan = true; 
           routineAutoNext = true;
         }
       } 
@@ -979,23 +983,24 @@
         done = remaining <= 0;
         didDecrement = true;
         needFirebaseUpdate = true;
-        if (done) isSempadan = true; // Sempadan Harian
+        if (done) isSempadan = true; 
       } else if (!routineMode) {
-        // Jika baki dah 0 dan dalam mode biasa, tetap benarkan getaran & pertukaran laci
         didDecrement = true; 
       }
 
-      // 3. TRIGGER GETARAN SEGERA MENGGUNAKAN FUNGSI STANDARD
+      // 3. TRIGGER GETARAN
       if (didDecrement) {
         if (isSempadan) {
-          // CORAK BARU: Bip-Bip-Biiiiip
-          triggerVibration([200, 100, 200, 100, 500]); 
+          // CORAK BARU & AUTO-BLOCK (2.6 SAAT)
+          triggerVibration([200, 100, 200, 100, 2000]); 
+          isBlocked = true;
+          setTimeout(() => { isBlocked = false; }, 2600);
         } else {
           triggerVibration([120, 60, 120]); 
         }
       }
 
-      // 4. KEMASKINI FIREBASE SECARA ASYNCHRONOUS (HANYA SIFIR 10 ATAU TAMAT)
+      // 4. KEMASKINI FIREBASE 
       if (needFirebaseUpdate) {
         currentTasbihData.remaining = remaining;
         currentTasbihData.done = done;
@@ -1193,7 +1198,6 @@
 
       const data = dataSource[currentIndex];
       
-      // RESET SKROL KE ATAS SETIAP KALI RENDER BARU
       factContentEl.scrollTop = 0;
       
       if (data.isTamat) {
@@ -1266,8 +1270,11 @@
       const currentData = allFacts[currentFactIndex];
 
       if (currentData.isTamat) {
-        // CORAK BARU: Bip-Bip-Biiiiip
-        triggerVibration([200, 100, 200, 100, 500]); 
+        // CORAK BARU & AUTO-BLOCK (2.6 SAAT)
+        triggerVibration([200, 100, 200, 100, 2000]); 
+        isBlocked = true;
+        setTimeout(() => { isBlocked = false; }, 2600);
+        
         comboStep = 0;
         isFlipped = false;
         currentFactIndex = (currentFactIndex + 1) % allFacts.length;
@@ -1367,7 +1374,6 @@
         allRoutineTimes = snap.docs.map(d => ({id: d.id, ...d.data()}));
         if(sectionRoutineTimes.classList.contains('active')) renderRoutineTimes();
         
-        // PINTASAN: Tarik data Index Rutin yang disave di Cloud
         const activeTime = allRoutineTimes.find(t => t.isActive);
         if (activeTime) {
           activeGlobalRoutineId = activeTime.id;
@@ -1572,7 +1578,7 @@
     }
 
 
-    // FUNGSI RENDER RUTIN WIRID (DIKEMASKINI DENGAN 3 KOTAK)
+    // FUNGSI RENDER RUTIN WIRID
     function renderRoutineTimes() {
       routineTimesList.innerHTML = "";
       const sortedTimes = [...allRoutineTimes].sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
@@ -1672,7 +1678,6 @@
           updateDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id), { maksud: e.target.value });
         });
 
-        // Event listener Toolbar Arab HANYA fokus pada textarea Zikir
         const btns = div.querySelectorAll(".arabic-btn");
         btns.forEach(btn => {
           btn.addEventListener("click", () => {
@@ -1752,7 +1757,6 @@
         activeGlobalRoutineId = 'default';
       }
 
-      // KUNCI PENTING: Baca index terakhir dari Cloud
       let savedIndex = 0;
       if (activeTime && activeTime.lastIndex !== undefined) {
         savedIndex = parseInt(activeTime.lastIndex);
@@ -1762,7 +1766,6 @@
       const isIndexChanged = currentRoutineIndex !== savedIndex;
       currentRoutineIndex = savedIndex;
 
-      // Fail-safe untuk setup initial / refresh
       if (isIndexChanged) {
           comboStep = 0;
           isFlipped = false;
@@ -1772,7 +1775,6 @@
               currentRoutineTarget = 0;
           }
       } else {
-          // Jika aplikasi baru di-load dan target masih 0, paksa ia ambil target asal laci (bukan tamat)
           if (allRoutines.length > 0 && currentRoutineTarget === 0 && !allRoutines[currentRoutineIndex].isTamat) {
               currentRoutineTarget = allRoutines[currentRoutineIndex].target;
           }
