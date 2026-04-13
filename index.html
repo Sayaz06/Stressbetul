@@ -988,9 +988,10 @@
       // 3. TRIGGER GETARAN SEGERA MENGGUNAKAN FUNGSI STANDARD
       if (didDecrement) {
         if (isSempadan) {
-          triggerVibration([200, 100, 200]); // Getaran Panjang & Berganda
+          // CORAK BARU: Bip-Bip-Biiiiip
+          triggerVibration([200, 100, 200, 100, 500]); 
         } else {
-          triggerVibration([120, 60, 120]); // Dua kali getaran panjang untuk rasa lebih kuat
+          triggerVibration([120, 60, 120]); 
         }
       }
 
@@ -999,7 +1000,6 @@
         currentTasbihData.remaining = remaining;
         currentTasbihData.done = done;
         
-        // OPTIMASI: Hanya simpan ke Firestore jika nombor gandaan 10 (cth: 9990, 9980) atau sudah Done (0)
         if (remaining % 10 === 0 || done) {
           setDoc(currentTasbihDocRef, {
             ...currentTasbihData,
@@ -1015,7 +1015,6 @@
           const nextRtn = allRoutines[currentRoutineIndex];
           currentRoutineTarget = nextRtn.target;
           
-          // KUNCI UTAMA: Simpan Index Rutin ke Firebase apabila bertukar laci
           syncIndexToFirestore(currentRoutineIndex);
           
           isFlipped = false;
@@ -1247,7 +1246,6 @@
       }
     }
 
-    // FUNGSI DIKEMASKINI: Menyimpan index Laci Fakta DAN Laci Rutin ke Cloud
     function syncIndexToFirestore(newIndex) {
       if (!currentUser) return;
       if (!routineMode && activeGlobalTopicId !== 'default') {
@@ -1268,7 +1266,8 @@
       const currentData = allFacts[currentFactIndex];
 
       if (currentData.isTamat) {
-        triggerVibration([200, 100, 200]); // Getaran Sempadan Laci Fakta
+        // CORAK BARU: Bip-Bip-Biiiiip
+        triggerVibration([200, 100, 200, 100, 500]); 
         comboStep = 0;
         isFlipped = false;
         currentFactIndex = (currentFactIndex + 1) % allFacts.length;
