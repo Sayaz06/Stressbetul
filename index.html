@@ -638,29 +638,31 @@
         <div class="topbar">
           <button id="btn-back-jogging" class="btn btn-secondary btn-sm">← Laci</button>
           <div class="topbar-title" style="color: var(--grad1);">Mode Jogging</div>
-          <button id="btn-toggle-scroll" class="btn btn-secondary btn-sm">Lock Scroll: OFF</button>
+          <button id="btn-toggle-scroll" class="btn btn-secondary btn-sm">Mode Berlari: OFF</button>
         </div>
         
         <div style="font-size: 0.7rem; color: var(--subtext); text-align: center; margin-bottom: 10px;">
-          *Hidupkan "Lock Scroll" untuk gesel skrin tanpa menggerakkan page ke bawah.
+          *Bila "Mode Berlari: ON", SATU SKRIN akan detect geselan & skrol dimatikan.
         </div>
 
-        <div id="jogging-container" style="flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 20px;">
+        <div id="jogging-tap-overlay" style="display:none; position:absolute; top: 80px; left:0; right:0; bottom:0; z-index:20;"></div>
+
+        <div id="jogging-container" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; padding-bottom: 10px; position: relative;">
           
           <div class="drawer-card" style="margin-bottom: 10px; flex-shrink: 0;">
             <div style="font-size: 0.85rem; color: var(--grad1); margin-bottom: 6px; font-weight:bold;">Ayat Hafalan Baharu</div>
             <input id="jogging-new-input" class="drawer-input-box" placeholder="Cth: Sabar = Kesabaran" style="margin-bottom: 0; font-size: 1.1rem; padding: 12px;">
           </div>
 
-          <div id="jogging-circle" class="counter-circle" style="margin: 20px auto; flex-shrink: 0;">
+          <div id="jogging-circle" class="counter-circle" style="margin: 15px auto; flex-shrink: 0;">
             <div class="counter-label">Baki Hafalan</div>
             <div id="jogging-count" class="counter-value">33</div>
             <div class="counter-sub">Sapu / Tekan</div>
           </div>
 
-          <div class="drawer-card" style="flex: 1; display: flex; flex-direction: column; min-height: 200px;">
+          <div class="drawer-card" style="flex: 1; display: flex; flex-direction: column; min-height: 0; margin-bottom: 0;">
             <div style="font-size: 0.85rem; color: var(--grad1); margin-bottom: 6px; font-weight:bold;">Nota Laci Terkini</div>
-            <textarea id="jogging-main-textarea" class="drawer-notes" style="flex: 1; font-size: 1rem; border-color: var(--grad2);"></textarea>
+            <textarea id="jogging-main-textarea" class="drawer-notes" style="flex: 1; min-height: 0; overflow-y: auto; font-size: 1rem; border-color: var(--grad2);"></textarea>
           </div>
           
         </div>
@@ -850,6 +852,7 @@
     // DOM JOGGING
     const btnBackJogging = document.getElementById("btn-back-jogging");
     const btnToggleScroll = document.getElementById("btn-toggle-scroll");
+    const joggingTapOverlay = document.getElementById("jogging-tap-overlay");
     const joggingContainer = document.getElementById("jogging-container");
     const joggingNewInput = document.getElementById("jogging-new-input");
     const joggingCount = document.getElementById("jogging-count");
@@ -898,7 +901,8 @@
     // STATE JOGGING
     let currentJoggingDrawerId = null;
     let joggingTapCount = 33;
-    let isJoggingScrollLocked = false;
+    let isFullScreenJogging = false; // Mengawal overlay dan fungsi tap satu skrin
+    let isJoggingBlocked = false; // KUNCI COOLDOWN UNTUK ELAK SPAM TEKAN
 
     // ==========================================
     // UTILITIES & VIBRATION HANDLER
@@ -914,7 +918,7 @@
       sectionDrawer.classList.remove("active");
       sectionRoutineTimes.classList.remove("active");
       sectionRoutineDrawers.classList.remove("active");
-      sectionJogging.classList.remove("active"); // TAMBAHAN
+      sectionJogging.classList.remove("active"); 
       
       section.classList.add("active");
     }
@@ -1094,29 +1098,29 @@
     }
 
     // ==========================================
-    // LOGIK MODE JOGGING (HAFAL & TAMBAH) BERSAIZ PENUH
+    // LOGIK MODE JOGGING (HAFAL & TAMBAH) FULL SCREEN
     // ==========================================
     btnBackJogging.addEventListener("click", () => {
       showSection(sectionDrawer);
     });
 
+    // Butang Toggle Mode Berlari (ON/OFF)
     btnToggleScroll.addEventListener("click", () => {
-      isJoggingScrollLocked = !isJoggingScrollLocked;
-      btnToggleScroll.textContent = `Lock Scroll: ${isJoggingScrollLocked ? 'ON' : 'OFF'}`;
-      btnToggleScroll.classList.toggle("btn-active", isJoggingScrollLocked);
+      isFullScreenJogging = !isFullScreenJogging;
+      btnToggleScroll.textContent = `Mode Berlari: ${isFullScreenJogging ? 'ON' : 'OFF'}`;
+      btnToggleScroll.classList.toggle("btn-active", isFullScreenJogging);
       
-      if (isJoggingScrollLocked) {
-        joggingContainer.style.overflowY = 'hidden';
-        joggingContainer.style.overscrollBehaviorY = 'none';
+      if (isFullScreenJogging) {
+        joggingTapOverlay.style.display = "block"; // Overlay muncul, cover textarea & input
       } else {
-        joggingContainer.style.overflowY = 'auto';
-        joggingContainer.style.overscrollBehaviorY = 'auto';
+        joggingTapOverlay.style.display = "none";  // Overlay hilang, boleh menaip & scroll textarea
       }
     });
 
     function openJoggingMode(data) {
       currentJoggingDrawerId = data.id;
       joggingTapCount = 33;
+      isJoggingBlocked = false; // Reset lock bila masuk page
       joggingNewInput.value = '';
       joggingCount.textContent = joggingTapCount;
       joggingMainTextarea.value = data.notes || '';
@@ -1129,8 +1133,12 @@
     }
 
     function decrementJogging() {
+      // 1. SEMAK LOCK SEBELUM APA-APA HAL!
+      if (isJoggingBlocked) return; // Kalau tengah vibrate panjang, abaikan ketukan
+
+      // 2. TUKAR ALERT KEPADA TOAST
       if (!joggingNewInput.value.trim()) {
-        alert("Sila taip nota baharu dahulu di ruangan Ayat Hafalan Baharu.");
+        showToast("Sila taip nota baharu dahulu di ruangan Ayat Hafalan Baharu.");
         return;
       }
 
@@ -1142,11 +1150,18 @@
         joggingCircle.style.transform = "scale(0.95)";
         setTimeout(() => joggingCircle.style.transform = "scale(1)", 100);
       } else {
-        // Cukup kiraan
+        // CUKUP KIRAAN 33 KALI
+        isJoggingBlocked = true; // KUNCI SISTEM SEGERA
+
         triggerVibration([200, 100, 200, 100, 2000]);
         joggingTapCount = 33;
         joggingCount.textContent = "Ditambah!";
-        setTimeout(() => joggingCount.textContent = joggingTapCount, 1500);
+
+        // Set timeout selama 2.6 saat untuk buka semula kunci
+        setTimeout(() => {
+          joggingCount.textContent = joggingTapCount;
+          isJoggingBlocked = false; // BUKA KUNCI
+        }, 2600);
 
         // Append ayat baru
         const currentNotes = joggingMainTextarea.value;
@@ -1164,14 +1179,6 @@
         joggingNewInput.value = "";
       }
     }
-
-    joggingCircle.addEventListener("click", decrementJogging);
-
-    joggingMainTextarea.addEventListener('change', (e) => {
-      if (currentJoggingDrawerId && currentUser) {
-        updateDoc(doc(db, "users", currentUser.uid, "drawer", currentJoggingDrawerId), { notes: e.target.value });
-      }
-    });
 
 
     // ==========================================
@@ -2169,7 +2176,7 @@
         }
       }
       
-      // Jogging Mode Keyboard Enter (Boleh guna Enter dari keyboard juga)
+      // Jogging Mode Keyboard Enter
       if (sectionJogging.classList.contains('active')) {
         if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
         if (e.code === "NumpadEnter" || e.key === "Enter") {
@@ -2180,26 +2187,23 @@
     });
 
     // ==========================================
-    // LOGIK FULL SCREEN CLICK & SWIPE UNTUK JOGGING MODE
+    // LOGIK FULL SCREEN CLICK & SWIPE UNTUK JOGGING MODE OVERLAY
     // ==========================================
     let jogTouchY = 0;
     let jogLastDir = null;
     let jogIsSwiping = false;
 
-    document.addEventListener("touchstart", (e) => {
-      if(!sectionJogging.classList.contains('active')) return;
-      if(e.target.closest('button') || e.target.closest('.topbar')) return;
+    // Detect klik pada overlay lutsinar
+    joggingTapOverlay.addEventListener("click", (e) => {
+      decrementJogging();
+    });
+
+    joggingTapOverlay.addEventListener("touchstart", (e) => {
       jogTouchY = e.touches[0].clientY;
       jogIsSwiping = false;
     }, {passive:true});
 
-    document.addEventListener("touchmove", (e) => {
-      if(!sectionJogging.classList.contains('active')) return;
-      if(e.target.closest('button')) return;
-      
-      // Kalau Lock Scroll OFF, kita anggap user nak scroll list nota
-      if (!isJoggingScrollLocked) return;
-
+    joggingTapOverlay.addEventListener("touchmove", (e) => {
       const currentY = e.touches[0].clientY;
       const diff = currentY - jogTouchY;
       if(Math.abs(diff) > 3) jogIsSwiping = true;
@@ -2216,15 +2220,11 @@
       }
     }, {passive:true});
 
-    document.addEventListener("click", (e) => {
-      if(!sectionJogging.classList.contains('active')) return;
-      if(e.target.closest('button') || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || jogIsSwiping) return;
-      
-      // Kalau Lock Scroll ON, klik kat mana-mana pun akan decrement
-      if (isJoggingScrollLocked && !e.target.closest('#jogging-circle')) {
-        decrementJogging();
-      }
+    // Klik/Swipe untuk bulatan kecil masa Mode Berlari: OFF
+    joggingCircle.addEventListener("click", (e) => {
+       if (!isFullScreenJogging) decrementJogging();
     });
+
 
     // PWA SERVICE WORKER
     if ("serviceWorker" in navigator) {
