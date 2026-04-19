@@ -1134,6 +1134,7 @@
 
         notesList.querySelectorAll(".btn-delete-note").forEach((btn) => {
           btn.addEventListener("click", async (e) => {
+            if (!confirm("Adakah anda pasti mahu memadam nota ini?")) return; // PENGESAHAN DITAMBAH
             const id = e.target.getAttribute("data-id");
             if (!currentUser || !id) return;
             const ref = doc(db, "users", currentUser.uid, "notes", id);
@@ -1455,6 +1456,7 @@
         });
         
         div.querySelector(".btn-del-sub").addEventListener("click", () => {
+          if (!confirm("Adakah anda pasti mahu memadam subjek ini? Semua data di dalamnya mungkin tidak lagi dipaparkan.")) return; // PENGESAHAN DITAMBAH
           deleteDoc(doc(db, "users", currentUser.uid, "subjects", data.id));
         });
         
@@ -1503,6 +1505,7 @@
         });
         
         div.querySelector(".btn-del-topik").addEventListener("click", () => {
+          if (!confirm("Adakah anda pasti mahu memadam topik ini?")) return; // PENGESAHAN DITAMBAH
           deleteDoc(doc(db, "users", currentUser.uid, "topics", data.id));
         });
         
@@ -1510,6 +1513,7 @@
       });
     }
 
+    // MODIFIKASI TERBESAR: RENDER DRAWERS KINI ADA FUNGSI JOGGING MODE
     function renderDrawers() {
       drawerList.innerHTML = "";
       const filteredDrawers = allDrawers.filter(d => d.topicId === currentTopicId);
@@ -1521,7 +1525,14 @@
         div.innerHTML = `
           <input class="drawer-title" value="${data.title || ''}" placeholder="Tajuk Laci">
           <textarea class="drawer-notes" placeholder="Format: Perkataan = Terjemahan">${data.notes || ''}</textarea>
-          <div style="text-align: right;">
+          
+          <div style="margin-top: 10px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px dashed var(--grad1);">
+            <div style="font-size: 0.75rem; color: var(--grad1); margin-bottom: 6px; font-weight:bold;">🏃‍♂️ Mode Jogging (Hafal & Tambah)</div>
+            <input class="jogging-input drawer-input-box" placeholder="Baris baru (Cth: Sabar = Kesabaran)" style="margin-bottom: 8px;">
+            <button class="btn btn-secondary btn-jogging-tap" style="height: 60px; font-size: 1.1rem; width: 100%; border-color: var(--grad1); transition: all 0.1s;">Ketik Hafalan (33)</button>
+          </div>
+
+          <div style="text-align: right; margin-top: 10px;">
             <button class="btn btn-secondary btn-sm btn-del-laci" style="color:var(--danger); border-color:var(--danger);">Padam</button>
           </div>
         `;
@@ -1530,11 +1541,63 @@
           updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { title: e.target.value });
         });
         
-        div.querySelector(".drawer-notes").addEventListener("change", (e) => {
+        const textareaNotes = div.querySelector(".drawer-notes");
+        textareaNotes.addEventListener("change", (e) => {
           updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { notes: e.target.value });
+        });
+
+        // Autoscroll ke bawah masa mula-mula render
+        setTimeout(() => {
+          textareaNotes.scrollTop = textareaNotes.scrollHeight;
+        }, 50);
+
+        // LOGIK JOGGING MODE DITAMBAH DI SINI
+        const joggingInput = div.querySelector(".jogging-input");
+        const btnJoggingTap = div.querySelector(".btn-jogging-tap");
+        let tapCount = 33;
+
+        btnJoggingTap.addEventListener("click", () => {
+          if (!joggingInput.value.trim()) {
+            alert("Sila taip nota baharu dahulu di ruangan atas butang ini.");
+            return;
+          }
+
+          tapCount--;
+
+          if (tapCount > 0) {
+            // Getar pendek macam tasbih biasa
+            if ("vibrate" in navigator) navigator.vibrate([120, 60, 120]);
+            btnJoggingTap.innerHTML = `<span style="color: var(--grad1);">Baki Hafalan: ${tapCount}</span>`;
+            
+            // Efek klik interaktif
+            btnJoggingTap.style.transform = "scale(0.96)";
+            setTimeout(() => { btnJoggingTap.style.transform = "scale(1)"; }, 100);
+          } else {
+            // Getar panjang macam cukup pusingan
+            if ("vibrate" in navigator) navigator.vibrate([200, 100, 200, 100, 2000]);
+            btnJoggingTap.textContent = "Ditambah! Mula baru (33)";
+
+            // Masukkan teks ke dalam textarea utama secara automatik
+            const currentNotes = textareaNotes.value;
+            const newNote = joggingInput.value.trim();
+            const updatedNotes = currentNotes ? currentNotes + '\n' + newNote : newNote;
+
+            textareaNotes.value = updatedNotes;
+            
+            // Autoscroll textarea ke bahagian paling bawah
+            textareaNotes.scrollTop = textareaNotes.scrollHeight;
+
+            // Update ke Firebase
+            updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { notes: updatedNotes });
+
+            // Reset keadaan asal supaya sedia untuk ayat seterusnya
+            joggingInput.value = "";
+            tapCount = 33;
+          }
         });
         
         div.querySelector(".btn-del-laci").addEventListener("click", () => {
+          if (!confirm("Adakah anda pasti mahu memadam laci ini?")) return; // PENGESAHAN DITAMBAH
           deleteDoc(doc(db, "users", currentUser.uid, "drawer", data.id));
         });
         
@@ -1644,6 +1707,7 @@
         });
         
         div.querySelector(".btn-del-rtn").addEventListener("click", () => {
+          if (!confirm("Adakah anda pasti mahu memadam waktu rutin ini?")) return; // PENGESAHAN DITAMBAH
           deleteDoc(doc(db, "users", currentUser.uid, "routine_times", data.id));
         });
         
@@ -1718,6 +1782,7 @@
         });
 
         div.querySelector(".btn-del-laci").addEventListener("click", () => {
+          if (!confirm("Adakah anda pasti mahu memadam laci zikir ini?")) return; // PENGESAHAN DITAMBAH
           deleteDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id));
         });
         
