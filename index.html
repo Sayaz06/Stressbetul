@@ -248,7 +248,6 @@
       background: rgba(30, 41, 59, 0.8);
       border: 1px solid rgba(99, 102, 241, 0.4);
       border-radius: 14px;
-      /* Padding diubah: Atas Kanan Bawah Kiri. Kanan di kurangkan jadi 4px supaya scrollbar touch tepi */
       padding: 12px 4px 12px 12px; 
       text-align: center;
       color: #fff;
@@ -256,9 +255,9 @@
       flex-direction: column;
       align-items: center;
       min-height: 110px;
-      max-height: 35vh; /* WAJIB: Supaya kotak tak mengembang melepasi skrin telefon */
-      flex-shrink: 1; /* membenarkan kotak jadi kecil dan menghasilkan scrollbar */
-      overflow: hidden; /* pastikan content tak terkeluar dari kotak border */
+      max-height: 35vh; 
+      flex-shrink: 1; 
+      overflow: hidden; 
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
       cursor: pointer; 
       user-select: none;
@@ -282,11 +281,11 @@
       font-size: 1.1rem; 
       font-weight: 600; 
       line-height: 1.4; 
-      padding: 0 40px 0 10px; /* Kanan 40px untuk elak bertembung dengan butang Suara */
+      padding: 0 40px 0 10px; 
       width: 100%;
       flex: 1; 
-      min-height: 0; /* WAJIB untuk flexbox scrolling berfungsi */
-      overflow-y: auto; /* Aktifkan fungsi scroll kursor */
+      min-height: 0; 
+      overflow-y: auto; 
       margin-top: 8px; 
       margin-bottom: 8px;
       pointer-events: auto; 
@@ -317,7 +316,7 @@
       position: absolute; 
       top: 50%; 
       transform: translateY(-50%); 
-      right: 8px; /* Dekatkan sikit butang ke dinding kanan */
+      right: 8px; 
       background: rgba(255, 255, 255, 0.15); 
       border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%; 
@@ -683,7 +682,7 @@
       </section>
 
       <section id="section-jogging" class="section">
-        <div class="topbar">
+        <div class="topbar" style="position: relative; z-index: 30;">
           <button id="btn-back-jogging" class="btn btn-secondary btn-sm">← Laci</button>
           
           <div class="topbar-title" style="color: var(--grad1); display: flex; align-items: center; gap: 8px;">
@@ -694,11 +693,11 @@
           <button id="btn-toggle-scroll" class="btn btn-secondary btn-sm">Mode Berlari: OFF</button>
         </div>
         
-        <div style="font-size: 0.7rem; color: var(--subtext); text-align: center; margin-bottom: 10px;">
+        <div style="font-size: 0.7rem; color: var(--subtext); text-align: center; margin-bottom: 10px; position: relative; z-index: 30;">
           *Bila "Mode Berlari: ON", SATU SKRIN akan detect geselan & skrol dimatikan.
         </div>
 
-        <div id="jogging-tap-overlay" style="display:none; position:absolute; top: 65px; left:0; right:0; bottom:0; z-index:20;"></div>
+        <div id="jogging-tap-overlay" style="display:none; position:absolute; top: 0; left:0; right:0; bottom:0; z-index:20;"></div>
 
         <div id="jogging-container" class="scrollable-container" style="flex: 1; display: flex; flex-direction: column; padding-bottom: 10px; position: relative;">
           
@@ -714,7 +713,7 @@
             <button id="btn-add-jogging-after" class="btn btn-secondary btn-sm" style="width: 100%; border-color: var(--border-mid); font-size: 0.75rem;">+ Tambah Maksud Selepas "="</button>
           </div>
 
-          <div id="jogging-circle" class="counter-circle" style="margin: 5px auto 15px auto; flex-shrink: 0; width: 180px; height: 180px;">
+          <div id="jogging-circle" class="counter-circle" style="margin: 5px auto 15px auto; flex-shrink: 0; width: 180px; height: 180px; position: relative; z-index: 30;">
             <div class="counter-label">Baki Hafalan</div>
             <div id="jogging-count" class="counter-value" style="font-size: 2.2rem;">33</div>
             <div class="counter-sub">Sapu / Tekan</div>
