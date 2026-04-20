@@ -437,7 +437,7 @@
       border: 1px solid var(--border-soft); 
     }
     
-    /* PENAMBAHBAIKAN: STYLE BARU UNTUK INPUT LACI & BADGE ULANGAN */
+    /* STYLE UNTUK INPUT LACI & BADGE ULANGAN */
     .drawer-title-wrapper {
       display: flex;
       align-items: center;
@@ -467,7 +467,7 @@
       resize: none; 
       outline: none; 
     }
-    /* PENAMBAHBAIKAN: Khas untuk readonly textarea (lock mode) */
+    /* Khas untuk readonly textarea (lock mode) */
     textarea.drawer-notes[readonly] {
       opacity: 0.7;
       cursor: not-allowed;
@@ -506,6 +506,20 @@
       padding: 8px; 
       outline: none; 
       margin-bottom: 10px;
+    }
+
+    /* Khas untuk Input Bahagian Jogging Yang Berlapis */
+    .jogging-input-before {
+      font-size: 1.1rem; 
+      padding: 12px; 
+      font-weight: bold; 
+      color: var(--grad2);
+      border-color: var(--grad1);
+    }
+    .jogging-input-after {
+      font-size: 1rem; 
+      padding: 10px; 
+      margin-bottom: 0 !important;
     }
 
     .footer { 
@@ -663,13 +677,20 @@
         <div id="jogging-container" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; padding-bottom: 10px; position: relative;">
           
           <div class="drawer-card" style="margin-bottom: 10px; flex-shrink: 0;">
-            <div style="font-size: 0.85rem; color: var(--grad1); margin-bottom: 6px; font-weight:bold;">Ayat Hafalan Baharu</div>
-            <input id="jogging-new-input" class="drawer-input-box" placeholder="Cth: Sabar = Kesabaran" style="margin-bottom: 0; font-size: 1.1rem; padding: 12px;">
+            <div style="font-size: 0.85rem; color: var(--grad1); margin-bottom: 6px; font-weight:bold;">Ayat Hafalan Baharu (Sebelum & Selepas "=")</div>
+            
+            <input id="jogging-input-before" class="drawer-input-box jogging-input-before" placeholder="Perkataan (Sebelum '=')" style="margin-bottom: 8px;">
+            
+            <div id="jogging-after-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
+              <input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas '=')">
+            </div>
+            
+            <button id="btn-add-jogging-after" class="btn btn-secondary btn-sm" style="width: 100%; border-color: var(--border-mid); font-size: 0.75rem;">+ Tambah Maksud Selepas "="</button>
           </div>
 
-          <div id="jogging-circle" class="counter-circle" style="margin: 15px auto; flex-shrink: 0;">
+          <div id="jogging-circle" class="counter-circle" style="margin: 5px auto 15px auto; flex-shrink: 0; width: 180px; height: 180px;">
             <div class="counter-label">Baki Hafalan</div>
-            <div id="jogging-count" class="counter-value">33</div>
+            <div id="jogging-count" class="counter-value" style="font-size: 2.2rem;">33</div>
             <div class="counter-sub">Sapu / Tekan</div>
           </div>
 
@@ -807,7 +828,7 @@
     const sectionSubjects = document.getElementById("section-subjects");
     const sectionTopics = document.getElementById("section-topics");
     const sectionDrawer = document.getElementById("section-drawer");
-    const sectionJogging = document.getElementById("section-jogging"); // TAMBAHAN JOGGING
+    const sectionJogging = document.getElementById("section-jogging"); 
 
     const sectionRoutineTimes = document.getElementById("section-routine-times");
     const sectionRoutineDrawers = document.getElementById("section-routine-drawers");
@@ -870,11 +891,15 @@
     const btnToggleScroll = document.getElementById("btn-toggle-scroll");
     const joggingTapOverlay = document.getElementById("jogging-tap-overlay");
     const joggingContainer = document.getElementById("jogging-container");
-    const joggingNewInput = document.getElementById("jogging-new-input");
     const joggingCount = document.getElementById("jogging-count");
     const joggingCircle = document.getElementById("jogging-circle");
     const joggingMainTextarea = document.getElementById("jogging-main-textarea");
-    const btnLockJoggingNota = document.getElementById("btn-lock-jogging-nota"); // PENAMBAHBAIKAN LOCK
+    const btnLockJoggingNota = document.getElementById("btn-lock-jogging-nota");
+
+    // NEW DOM ELEMENTS UNTUK JOGGING MULTI-INPUT
+    const joggingInputBefore = document.getElementById("jogging-input-before");
+    const joggingAfterContainer = document.getElementById("jogging-after-container");
+    const btnAddJoggingAfter = document.getElementById("btn-add-jogging-after");
 
     // VARIABLES
     let currentUser = null;
@@ -886,11 +911,10 @@
     let factMode = false;
     let routineMode = false;
     
-    // PERUBAHAN: Mode kini 0=Normal, 1=Repeat, 2=Combo, 3=Super
     let learningMode = 0; 
     const modeLabels = ["Mode: Normal", "Mode: Repeat", "Mode: Combo", "Mode: Super"];
     let comboStep = 0; 
-    let currentRepeatCount = 33; // Kounter khas untuk Mode Repeat
+    let currentRepeatCount = 33; 
     
     let allSubjects = [];
     let allTopics = [];
@@ -918,19 +942,18 @@
     // STATE JOGGING
     let currentJoggingDrawerId = null;
     let joggingTapCount = 33;
-    let isFullScreenJogging = false; // Mengawal overlay dan fungsi tap satu skrin
-    let isJoggingBlocked = false; // KUNCI COOLDOWN UNTUK ELAK SPAM TEKAN
-    let isJoggingNotaLocked = true; // PENAMBAHBAIKAN: Default lock
+    let isFullScreenJogging = false; 
+    let isJoggingBlocked = false; 
+    let isJoggingNotaLocked = true; 
 
     // ==========================================
-    // PENAMBAHBAIKAN: FUNGSI PERSISTENCE (STATE MEMORY) BARU
+    // PERSISTENCE (STATE MEMORY) 
     // ==========================================
     function saveAppState() {
        const activeSection = document.querySelector('.section.active');
        if(!activeSection || activeSection.id === 'section-login') return;
        
        let secId = activeSection.id;
-       // Jika tutup masa tengah Jogging, kita buka terus ke Laci untuk keselamatan render
        if (secId === 'section-jogging') secId = 'section-drawer'; 
        
        const state = {
@@ -959,7 +982,7 @@
       sectionJogging.classList.remove("active"); 
       
       section.classList.add("active");
-      saveAppState(); // PENAMBAHBAIKAN: Simpan state setiap kali section bertukar
+      saveAppState(); 
     }
 
     function showToast(message) {
@@ -988,7 +1011,7 @@
     }
 
     function triggerVibration(pattern) {
-      if (learningMode === 3 && sectionTasbih.classList.contains('active')) return; // Block getaran jika Mode Super aktif dan di tasbih
+      if (learningMode === 3 && sectionTasbih.classList.contains('active')) return; 
       if ("vibrate" in navigator) {
         navigator.vibrate(pattern);
       }
@@ -1058,7 +1081,6 @@
 
       let routineAutoNext = false;
       
-      // 1. Semak Target Mini Rutin / Sempadan Repeat Fakta
       if (routineMode && allRoutines.length > 0) {
         didDecrement = true; 
         if (currentRoutineTarget > 0) {
@@ -1069,13 +1091,11 @@
           routineAutoNext = true;
         }
       } else if (factMode && !routineMode && learningMode === 1 && allFacts.length > 0) {
-        // Logik trigger sempadan untuk Laci Fakta "Mode Repeat" (pada kiraan ke-33 / baki 1)
         if (!allFacts[currentFactIndex].isTamat && currentRepeatCount === 1) {
              isSempadan = true; 
         }
       }
 
-      // 2. Semak Baki Harian 10,000
       if (!done && remaining > 0) {
         remaining -= 1;
         done = remaining <= 0;
@@ -1086,7 +1106,6 @@
         didDecrement = true; 
       }
 
-      // 3. TRIGGER GETARAN
       if (didDecrement) {
         if (isSempadan) {
           triggerVibration([200, 100, 200, 100, 2000]); 
@@ -1097,7 +1116,6 @@
         }
       }
 
-      // 4. KEMASKINI FIREBASE 
       if (needFirebaseUpdate) {
         currentTasbihData.remaining = remaining;
         currentTasbihData.done = done;
@@ -1110,7 +1128,6 @@
         }
       }
 
-      // 5. UPDATE UI & LOGIK ANIMASI CYCLE/AUTO-NEXT
       if (routineMode && allRoutines.length > 0) {
         if (routineAutoNext) {
           currentRoutineIndex = (currentRoutineIndex + 1) % allRoutines.length;
@@ -1137,26 +1154,24 @@
     }
 
     // ==========================================
-    // LOGIK MODE JOGGING (HAFAL & TAMBAH) FULL SCREEN
+    // LOGIK JOGGING MODE (MULTI INPUT)
     // ==========================================
     btnBackJogging.addEventListener("click", () => {
       showSection(sectionDrawer);
     });
 
-    // Butang Toggle Mode Berlari (ON/OFF)
     btnToggleScroll.addEventListener("click", () => {
       isFullScreenJogging = !isFullScreenJogging;
       btnToggleScroll.textContent = `Mode Berlari: ${isFullScreenJogging ? 'ON' : 'OFF'}`;
       btnToggleScroll.classList.toggle("btn-active", isFullScreenJogging);
       
       if (isFullScreenJogging) {
-        joggingTapOverlay.style.display = "block"; // Overlay muncul, cover textarea & input
+        joggingTapOverlay.style.display = "block"; 
       } else {
-        joggingTapOverlay.style.display = "none";  // Overlay hilang, boleh menaip & scroll textarea
+        joggingTapOverlay.style.display = "none";  
       }
     });
 
-    // PENAMBAHBAIKAN: TOGGLE BUTANG LOCK NOTA
     btnLockJoggingNota.addEventListener("click", () => {
       isJoggingNotaLocked = !isJoggingNotaLocked;
       btnLockJoggingNota.textContent = `Lock Nota: ${isJoggingNotaLocked ? 'ON' : 'OFF'}`;
@@ -1164,18 +1179,30 @@
       joggingMainTextarea.readOnly = isJoggingNotaLocked;
     });
 
+    // FUNGSI TAMBAH KOTAK "SELEPAS ="
+    btnAddJoggingAfter.addEventListener("click", () => {
+      const count = joggingAfterContainer.querySelectorAll('.jogging-input-after').length + 1;
+      const input = document.createElement("input");
+      input.className = "drawer-input-box jogging-input-after";
+      input.placeholder = `Maksud ${count} (Selepas '=')`;
+      joggingAfterContainer.appendChild(input);
+      input.focus();
+    });
+
     function openJoggingMode(data) {
       currentJoggingDrawerId = data.id;
       joggingTapCount = 33;
-      isJoggingBlocked = false; // Reset lock bila masuk page
+      isJoggingBlocked = false; 
       
-      // PENAMBAHBAIKAN: Setup Lock Default
       isJoggingNotaLocked = true;
       btnLockJoggingNota.textContent = "Lock Nota: ON";
       btnLockJoggingNota.classList.add("btn-active");
       joggingMainTextarea.readOnly = true;
 
-      joggingNewInput.value = '';
+      // Reset Inputs
+      joggingInputBefore.value = '';
+      joggingAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
+      
       joggingCount.textContent = joggingTapCount;
       joggingMainTextarea.value = data.notes || '';
       
@@ -1187,12 +1214,16 @@
     }
 
     function decrementJogging() {
-      // 1. SEMAK LOCK SEBELUM APA-APA HAL!
-      if (isJoggingBlocked) return; // Kalau tengah vibrate panjang, abaikan ketukan
+      if (isJoggingBlocked) return; 
 
-      // 2. TUKAR ALERT KEPADA TOAST
-      if (!joggingNewInput.value.trim()) {
-        showToast("Sila taip nota baharu dahulu di ruangan Ayat Hafalan Baharu.");
+      // VALIDASI: Pastikan 'Sebelum =' ada isi, dan sekurang-kurangnya 1 kotak 'Selepas =' ada isi.
+      const beforeVal = joggingInputBefore.value.trim();
+      const afterInputs = Array.from(joggingAfterContainer.querySelectorAll('.jogging-input-after'))
+                               .map(inp => inp.value.trim())
+                               .filter(val => val !== "");
+
+      if (!beforeVal || afterInputs.length === 0) {
+        showToast("Sila isikan Perkataan (Sebelum '=') dan sekurang-kurangnya 1 Maksud.");
         return;
       }
 
@@ -1205,36 +1236,38 @@
         setTimeout(() => joggingCircle.style.transform = "scale(1)", 100);
       } else {
         // CUKUP KIRAAN 33 KALI
-        isJoggingBlocked = true; // KUNCI SISTEM SEGERA
+        isJoggingBlocked = true; 
 
         triggerVibration([200, 100, 200, 100, 2000]);
         joggingTapCount = 33;
         joggingCount.textContent = "Ditambah!";
 
-        // Set timeout selama 2.6 saat untuk buka semula kunci
         setTimeout(() => {
           joggingCount.textContent = joggingTapCount;
-          isJoggingBlocked = false; // BUKA KUNCI
+          isJoggingBlocked = false; 
         }, 2600);
 
-        // Append ayat baru
+        // GABUNGKAN AYAT (Contoh: "Sabar = Menahan Diri, Tenang")
+        const combinedNewNote = beforeVal + " = " + afterInputs.join(", ");
+        
+        // Append ayat gabungan ke textarea bawah
         const currentNotes = joggingMainTextarea.value;
-        const newNote = joggingNewInput.value.trim();
-        const updatedNotes = currentNotes ? currentNotes + '\n' + newNote : newNote;
+        const updatedNotes = currentNotes ? currentNotes + '\n' + combinedNewNote : combinedNewNote;
         
         joggingMainTextarea.value = updatedNotes;
         joggingMainTextarea.scrollTop = joggingMainTextarea.scrollHeight;
 
         // Save ke Firestore
         if (currentJoggingDrawerId && currentUser) {
-          // PENAMBAHBAIKAN: RESET ULANGAN KE 0 BILA TAMBAH AYAT BARU
           updateDoc(doc(db, "users", currentUser.uid, "drawer", currentJoggingDrawerId), { 
             notes: updatedNotes,
             repeatCount: 0 
           });
         }
 
-        joggingNewInput.value = "";
+        // Kosongkan semula input untuk mula hafalan baru
+        joggingInputBefore.value = "";
+        joggingAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
       }
     }
 
@@ -1328,7 +1361,7 @@
 
         notesList.querySelectorAll(".btn-delete-note").forEach((btn) => {
           btn.addEventListener("click", async (e) => {
-            if (!confirm("Adakah anda pasti mahu memadam nota ini?")) return; // PENGESAHAN DITAMBAH
+            if (!confirm("Adakah anda pasti mahu memadam nota ini?")) return; 
             const id = e.target.getAttribute("data-id");
             if (!currentUser || !id) return;
             const ref = doc(db, "users", currentUser.uid, "notes", id);
@@ -1428,7 +1461,7 @@
               data.translation = translatedText; 
               if (isFlipped && dataSource[currentIndex] === data) {
                 factContentEl.textContent = translatedText;
-                if (learningMode === 3) { // SUPER
+                if (learningMode === 3) { 
                   playFactAudio(translatedText, true);
                 }
               }
@@ -1442,7 +1475,6 @@
       factHintEl.style.display = 'block';
       btnSpeak.style.display = 'flex';
       
-      // HINT DIKEMASKINI DENGAN 4 MODE
       if (learningMode === 3) {
         factHintEl.textContent = routineMode ? "(Super Combo: Sapu/Enter audio & maksud)" : "(Super Combo: Sapu/Enter untuk Audio & Maksud)";
       } else if (learningMode === 2) {
@@ -1474,7 +1506,6 @@
       const currentData = allFacts[currentFactIndex];
 
       if (currentData.isTamat) {
-        // PENAMBAHBAIKAN: LOGIK ULANGAN (MASTERY COUNTER)
         if (currentData.drawerId && currentUser) {
           const dObj = allDrawers.find(d => d.id === currentData.drawerId);
           if (dObj) {
@@ -1483,7 +1514,6 @@
             });
           }
         }
-        // ----------------------------------------
 
         triggerVibration([200, 100, 200, 100, 2000]); 
         isBlocked = true;
@@ -1498,28 +1528,26 @@
         return;
       }
 
-      if (learningMode === 0) { // NORMAL
+      if (learningMode === 0) { 
         comboStep = 0;
         isFlipped = false;
         currentFactIndex = (currentFactIndex + 1) % allFacts.length;
         syncIndexToFirestore(currentFactIndex); 
         triggerFadeAnimation(renderCurrentFact);
       } 
-      else if (learningMode === 1) { // REPEAT (33x)
+      else if (learningMode === 1) { 
         currentRepeatCount--;
         if (currentRepeatCount <= 0) {
-           // Bila dah habis 33 kali
            currentRepeatCount = 33;
            isFlipped = false;
            currentFactIndex = (currentFactIndex + 1) % allFacts.length;
            syncIndexToFirestore(currentFactIndex);
            triggerFadeAnimation(renderCurrentFact);
         } else {
-           // Sedang mengulang
            renderCurrentFact(); 
         }
       }
-      else if (learningMode === 2) { // COMBO
+      else if (learningMode === 2) { 
         if (comboStep === 0) {
           isFlipped = true;
           comboStep = 1;
@@ -1532,7 +1560,7 @@
           triggerFlipAnimation(renderCurrentFact);
         }
       }
-      else if (learningMode === 3) { // SUPER
+      else if (learningMode === 3) { 
         if (comboStep === 0) {
           isFlipped = true;
           comboStep = 1;
@@ -1632,7 +1660,6 @@
       });
     }
 
-    // FUNGSI RENDER FAKTA
     function renderSubjects() {
       subjectsList.innerHTML = "";
       const sortedSubjects = [...allSubjects].sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
@@ -1661,7 +1688,7 @@
         });
         
         div.querySelector(".btn-del-sub").addEventListener("click", () => {
-          if (!confirm("Adakah anda pasti mahu memadam subjek ini? Semua data di dalamnya mungkin tidak lagi dipaparkan.")) return; // PENGESAHAN DITAMBAH
+          if (!confirm("Adakah anda pasti mahu memadam subjek ini? Semua data di dalamnya mungkin tidak lagi dipaparkan.")) return; 
           deleteDoc(doc(db, "users", currentUser.uid, "subjects", data.id));
         });
         
@@ -1710,7 +1737,7 @@
         });
         
         div.querySelector(".btn-del-topik").addEventListener("click", () => {
-          if (!confirm("Adakah anda pasti mahu memadam topik ini?")) return; // PENGESAHAN DITAMBAH
+          if (!confirm("Adakah anda pasti mahu memadam topik ini?")) return; 
           deleteDoc(doc(db, "users", currentUser.uid, "topics", data.id));
         });
         
@@ -1727,7 +1754,6 @@
         const div = document.createElement("div");
         div.className = "drawer-card";
         
-        // PENAMBAHBAIKAN: Title di dalam wrapper untuk tambah Badge Ulang
         div.innerHTML = `
           <div class="drawer-title-wrapper">
              <input class="drawer-title" value="${data.title || ''}" placeholder="Tajuk Laci">
@@ -1750,20 +1776,18 @@
         
         const textareaNotes = div.querySelector(".drawer-notes");
         textareaNotes.addEventListener("change", (e) => {
-          // PENAMBAHBAIKAN: BILA EDIT LACI, RESET ULANGAN KEPADA 0!
           updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { 
             notes: e.target.value,
             repeatCount: 0 
           });
         });
 
-        // BUKA SKRIN JOGGING BERSAIZ PENUH
         div.querySelector(".btn-open-jogging").addEventListener("click", () => {
           openJoggingMode(data);
         });
         
         div.querySelector(".btn-del-laci").addEventListener("click", () => {
-          if (!confirm("Adakah anda pasti mahu memadam laci ini?")) return; // PENGESAHAN DITAMBAH
+          if (!confirm("Adakah anda pasti mahu memadam laci ini?")) return; 
           deleteDoc(doc(db, "users", currentUser.uid, "drawer", data.id));
         });
         
@@ -1792,7 +1816,7 @@
               lines.forEach(line => {
                 const parts = line.split('=');
                 allFacts.push({ 
-                  drawerId: data.id, // Untuk update repeat counter
+                  drawerId: data.id, 
                   title: tajukLaci, 
                   text: parts[0].trim(), 
                   translation: parts.length > 1 ? parts[1].trim() : null, 
@@ -1800,7 +1824,7 @@
                 });
               });
               allFacts.push({ 
-                drawerId: data.id, // Untuk update repeat counter bila tamat
+                drawerId: data.id, 
                 title: tajukLaci, 
                 text: "✅ Laci Tamat. Sapu/tekan untuk seterusnya.", 
                 isTamat: true 
@@ -1821,7 +1845,7 @@
       currentFactIndex = savedIndex;
       comboStep = 0;
       isFlipped = false;
-      currentRepeatCount = 33; // reset bila rebuild
+      currentRepeatCount = 33; 
       
       if (!routineMode && factMode && allFacts.length > 0) {
         renderCurrentFact();
@@ -1834,7 +1858,6 @@
     }
 
 
-    // FUNGSI RENDER RUTIN WIRID
     function renderRoutineTimes() {
       routineTimesList.innerHTML = "";
       const sortedTimes = [...allRoutineTimes].sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
@@ -1875,7 +1898,7 @@
         });
         
         div.querySelector(".btn-del-rtn").addEventListener("click", () => {
-          if (!confirm("Adakah anda pasti mahu memadam waktu rutin ini?")) return; // PENGESAHAN DITAMBAH
+          if (!confirm("Adakah anda pasti mahu memadam waktu rutin ini?")) return; 
           deleteDoc(doc(db, "users", currentUser.uid, "routine_times", data.id));
         });
         
@@ -1950,7 +1973,7 @@
         });
 
         div.querySelector(".btn-del-laci").addEventListener("click", () => {
-          if (!confirm("Adakah anda pasti mahu memadam laci zikir ini?")) return; // PENGESAHAN DITAMBAH
+          if (!confirm("Adakah anda pasti mahu memadam laci zikir ini?")) return; 
           deleteDoc(doc(db, "users", currentUser.uid, "routine_drawers", data.id));
         });
         
@@ -2046,7 +2069,7 @@
 
 
     // ==========================================
-    // INITIALIZATION & AUTH (PENAMBAHBAIKAN STATE RESTORE)
+    // INITIALIZATION & AUTH 
     // ==========================================
     setPersistence(auth, browserLocalPersistence);
     onAuthStateChanged(auth, async (user) => {
@@ -2054,8 +2077,7 @@
       if (user) {
         homeUserEmail.textContent = user.email || "";
         
-        // PENAMBAHBAIKAN: RESTORE PREVIOUS STATE
-        let secToShow = sectionTasbih; // Default kalau takde memory
+        let secToShow = sectionTasbih; 
         const savedStateStr = localStorage.getItem('istigfarAppState');
         if (savedStateStr) {
             try {
@@ -2071,7 +2093,7 @@
             }
         }
         
-        showSection(secToShow); // Pergi ke page terakhir
+        showSection(secToShow); 
         await ensureTodayTasbih();
         subscribeHistory();
         subscribeNotes();
@@ -2143,7 +2165,7 @@
     btnToggleFact.addEventListener("click", () => {
       factMode = !factMode;
       if (factMode && routineMode) {
-         routineMode = false; // Matikan Rutin jika Fakta aktif
+         routineMode = false; 
          btnToggleRutin.textContent = "Rutin: OFF";
          btnToggleRutin.classList.remove("btn-active");
       }
@@ -2165,7 +2187,7 @@
     btnToggleRutin.addEventListener("click", () => {
       routineMode = !routineMode;
       if (routineMode && factMode) {
-         factMode = false; // Matikan Fakta jika Rutin aktif
+         factMode = false; 
          btnToggleFact.textContent = "Fakta: OFF";
          btnToggleFact.classList.remove("btn-active");
       }
@@ -2184,37 +2206,33 @@
       updateTasbihUI();
     });
 
-    // BUTANG TUKAR MODE (Kini % 4)
     btnToggleMode.addEventListener("click", () => {
       learningMode = (learningMode + 1) % 4; 
       btnToggleMode.textContent = modeLabels[learningMode];
       comboStep = 0;
       isFlipped = false;
-      currentRepeatCount = 33; // reset bila tukar mode
+      currentRepeatCount = 33; 
       renderCurrentFact();
       
       const dataSource = routineMode ? allRoutines : allFacts;
       const currentIndex = routineMode ? currentRoutineIndex : currentFactIndex;
-      if (learningMode === 3 && dataSource.length > 0 && !dataSource[currentIndex].isTamat) { // Super mode
+      if (learningMode === 3 && dataSource.length > 0 && !dataSource[currentIndex].isTamat) { 
         playFactAudio(dataSource[currentIndex].text, false);
       }
     });
 
-    // KLIK MANUAL FLIP BOX 
     factDisplayBox.addEventListener('click', (e) => {
       e.stopPropagation(); 
       triggerVibration([50]); 
       const dataSource = routineMode ? allRoutines : allFacts;
       const currentIndex = routineMode ? currentRoutineIndex : currentFactIndex;
 
-      // Mode 1 (Repeat) dibenarkan untuk manual flip supaya boleh intai jawapan
       if (!routineMode && learningMode !== 0 && learningMode !== 1) return; 
       if (dataSource.length === 0 || dataSource[currentIndex].isTamat) return;
       isFlipped = !isFlipped; 
       triggerFlipAnimation(renderCurrentFact);
     });
 
-    // BUTANG SUARA MANUAL
     btnSpeak.addEventListener('click', (e) => {
       e.stopPropagation(); 
       const dataSource = routineMode ? allRoutines : allFacts;
@@ -2265,7 +2283,6 @@
     });
 
     document.addEventListener("keydown", (e) => {
-      // Tasbih Keyboard Enter
       if (sectionTasbih.classList.contains('active')) {
         if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
         if (e.code === "NumpadEnter" || e.key === "Enter") {
@@ -2274,7 +2291,6 @@
         }
       }
       
-      // Jogging Mode Keyboard Enter
       if (sectionJogging.classList.contains('active')) {
         if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
         if (e.code === "NumpadEnter" || e.key === "Enter") {
@@ -2291,7 +2307,6 @@
     let jogLastDir = null;
     let jogIsSwiping = false;
 
-    // Detect klik pada overlay lutsinar
     joggingTapOverlay.addEventListener("click", (e) => {
       decrementJogging();
     });
@@ -2318,13 +2333,10 @@
       }
     }, {passive:true});
 
-    // Klik/Swipe untuk bulatan kecil masa Mode Berlari: OFF
     joggingCircle.addEventListener("click", (e) => {
        if (!isFullScreenJogging) decrementJogging();
     });
 
-
-    // PWA SERVICE WORKER
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => { 
         navigator.serviceWorker.register("./service-worker.js").catch(console.error); 
