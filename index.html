@@ -253,9 +253,9 @@
       color: #fff;
       display: none; 
       flex-direction: column;
-      justify-content: center;
+      /* Dibuang justify-content:center supaya text tak dipotong di atas masa overflow */
       align-items: center;
-      min-height: 90px;
+      min-height: 110px;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
       cursor: pointer; 
       user-select: none;
@@ -273,7 +273,7 @@
       font-weight: 700; 
       text-transform: uppercase; 
       letter-spacing: 0.05em; 
-      margin-bottom: 6px; 
+      margin-bottom: 8px; 
       flex-shrink: 0;
     }
     .fact-content-text { 
@@ -284,6 +284,10 @@
       width: 100%;
       max-height: 30vh; 
       overflow-y: auto; 
+      margin-top: auto;   /* Untuk auto-center vertikal */
+      margin-bottom: auto;/* Untuk auto-center vertikal */
+      pointer-events: auto; /* Pastikan boleh disentuh/scroll */
+      overscroll-behavior-y: contain; /* Halang scroll badan belakang */
     }
     /* Scrollbar cantik */
     .fact-content-text::-webkit-scrollbar, .scrollable-container::-webkit-scrollbar {
@@ -294,7 +298,7 @@
       border-radius: 8px;
     }
     .fact-content-text::-webkit-scrollbar-thumb, .scrollable-container::-webkit-scrollbar-thumb {
-      background: rgba(99, 102, 241, 0.5); 
+      background: rgba(99, 102, 241, 0.7); 
       border-radius: 8px;
     }
 
@@ -650,7 +654,7 @@
       <section id="section-topics" class="section">
         <div class="topbar">
           <button id="btn-back-subj-topics" class="btn btn-secondary btn-sm">← Subjek</button>
-          <div class="topbar-title">Senarai Topik</div>
+          <div class="topbar-title" id="header-topics">Senarai Topik</div>
         </div>
         <div style="font-size: 0.75rem; color: var(--subtext); text-align: center; margin-bottom: 8px;">
           Tanda (tick) SATU kotak sahaja untuk aktifkan.
@@ -662,7 +666,7 @@
       <section id="section-drawer" class="section">
         <div class="topbar">
           <button id="btn-back-topics-drawer" class="btn btn-secondary btn-sm">← Topik</button>
-          <div class="topbar-title">Isi Laci</div>
+          <div class="topbar-title" id="header-drawer">Isi Laci</div>
         </div>
         <button id="btn-add-laci" class="btn btn-sm mt-8">Tambah Laci</button>
         <div class="list mt-8" id="drawer-list" style="padding: 10px;"></div>
@@ -732,12 +736,11 @@
       <section id="section-routine-drawers" class="section">
         <div class="topbar">
           <button id="btn-back-routine-drawer" class="btn btn-secondary btn-sm">← Waktu Rutin</button>
-          <div class="topbar-title">Laci Zikir Rutin</div>
+          <div class="topbar-title" id="header-routine-drawer">Laci Zikir Rutin</div>
         </div>
         <button id="btn-add-routine-drawer" class="btn btn-sm mt-8">Tambah Laci Zikir</button>
         <div class="list mt-8" id="routine-drawers-list" style="padding: 10px;"></div>
       </section>
-
 
       <section id="section-history" class="section">
         <div class="topbar">
@@ -1037,7 +1040,8 @@
       if (!text) return "";
       // Cari perkataan yang bermula dengan (Nombor + Titik) dan pecahkan jadi baris baru (<br>)
       // Corak regex: /(?:\s+|^)(\d+\.)/g  -> cari ruang kosong atau mula ayat, diikuti 'Nombor.'
-      return text.replace(/(?:\s+|^)(\d+\.)/g, '<br><br>$1').replace(/^(<br>)+/, '');
+      // Fix: Guna 1 kali <br> sahaja untuk rapatkan baris
+      return text.replace(/(?:\s+|^)(\d+\.)/g, '<br>$1').replace(/^(<br>)+/, '');
     }
 
     // ==========================================
@@ -1730,6 +1734,10 @@
     }
 
     function renderTopics() {
+      // SET TAJUK IBU PAGE
+      const subj = allSubjects.find(s => s.id === currentSubjectId);
+      document.getElementById("header-topics").textContent = subj && subj.name ? `Topik: ${subj.name}` : "Senarai Topik";
+
       topicsList.innerHTML = "";
       const filteredTopics = allTopics.filter(t => t.subjectId === currentSubjectId);
       const sortedTopics = filteredTopics.sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, {numeric: true}));
@@ -1779,6 +1787,10 @@
     }
 
     function renderDrawers() {
+      // SET TAJUK IBU PAGE
+      const topic = allTopics.find(t => t.id === currentTopicId);
+      document.getElementById("header-drawer").textContent = topic && topic.name ? `Laci: ${topic.name}` : "Isi Laci";
+
       drawerList.innerHTML = "";
       const filteredDrawers = allDrawers.filter(d => d.topicId === currentTopicId);
       const sortedDrawers = filteredDrawers.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, {numeric: true}));
@@ -1940,6 +1952,10 @@
     }
 
     function renderRoutineDrawers() {
+      // SET TAJUK IBU PAGE
+      const rtn = allRoutineTimes.find(t => t.id === currentRoutineTimeId);
+      document.getElementById("header-routine-drawer").textContent = rtn && rtn.name ? `Zikir: ${rtn.name}` : "Laci Zikir Rutin";
+
       routineDrawersList.innerHTML = "";
       const filteredDrawers = allRoutineDrawers.filter(d => d.timeId === currentRoutineTimeId);
       const sortedDrawers = filteredDrawers.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, {numeric: true}));
