@@ -436,15 +436,23 @@
       margin-bottom: 10px; 
       border: 1px solid var(--border-soft); 
     }
+    
+    /* PENAMBAHBAIKAN: STYLE BARU UNTUK INPUT LACI & BADGE ULANGAN */
+    .drawer-title-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
     input.drawer-title { 
-      width: 100%; 
+      flex: 1;
+      min-width: 0;
       background: transparent; 
       border: none; 
       border-bottom: 1px solid var(--border-mid); 
       color: #fff; 
       font-weight: 700; 
       padding: 4px; 
-      margin-bottom: 8px; 
       outline: none; 
     }
     textarea.drawer-notes { 
@@ -458,6 +466,11 @@
       min-height: 80px; 
       resize: none; 
       outline: none; 
+    }
+    /* PENAMBAHBAIKAN: Khas untuk readonly textarea (lock mode) */
+    textarea.drawer-notes[readonly] {
+      opacity: 0.7;
+      cursor: not-allowed;
     }
     
     /* ARABIC TOOLBAR */
@@ -661,7 +674,10 @@
           </div>
 
           <div class="drawer-card" style="flex: 1; display: flex; flex-direction: column; min-height: 0; margin-bottom: 0;">
-            <div style="font-size: 0.85rem; color: var(--grad1); margin-bottom: 6px; font-weight:bold;">Nota Laci Terkini</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+              <div style="font-size: 0.85rem; color: var(--grad1); font-weight:bold;">Nota Laci Terkini</div>
+              <button id="btn-lock-jogging-nota" class="btn btn-secondary btn-sm" style="padding: 2px 10px; font-size: 0.7rem;">Lock Nota: ON</button>
+            </div>
             <textarea id="jogging-main-textarea" class="drawer-notes" style="flex: 1; min-height: 0; overflow-y: auto; font-size: 1rem; border-color: var(--grad2);"></textarea>
           </div>
           
@@ -858,6 +874,7 @@
     const joggingCount = document.getElementById("jogging-count");
     const joggingCircle = document.getElementById("jogging-circle");
     const joggingMainTextarea = document.getElementById("jogging-main-textarea");
+    const btnLockJoggingNota = document.getElementById("btn-lock-jogging-nota"); // PENAMBAHBAIKAN LOCK
 
     // VARIABLES
     let currentUser = null;
@@ -903,6 +920,27 @@
     let joggingTapCount = 33;
     let isFullScreenJogging = false; // Mengawal overlay dan fungsi tap satu skrin
     let isJoggingBlocked = false; // KUNCI COOLDOWN UNTUK ELAK SPAM TEKAN
+    let isJoggingNotaLocked = true; // PENAMBAHBAIKAN: Default lock
+
+    // ==========================================
+    // PENAMBAHBAIKAN: FUNGSI PERSISTENCE (STATE MEMORY) BARU
+    // ==========================================
+    function saveAppState() {
+       const activeSection = document.querySelector('.section.active');
+       if(!activeSection || activeSection.id === 'section-login') return;
+       
+       let secId = activeSection.id;
+       // Jika tutup masa tengah Jogging, kita buka terus ke Laci untuk keselamatan render
+       if (secId === 'section-jogging') secId = 'section-drawer'; 
+       
+       const state = {
+           section: secId,
+           subjectId: currentSubjectId,
+           topicId: currentTopicId,
+           routineTimeId: currentRoutineTimeId
+       };
+       localStorage.setItem('istigfarAppState', JSON.stringify(state));
+    }
 
     // ==========================================
     // UTILITIES & VIBRATION HANDLER
@@ -921,6 +959,7 @@
       sectionJogging.classList.remove("active"); 
       
       section.classList.add("active");
+      saveAppState(); // PENAMBAHBAIKAN: Simpan state setiap kali section bertukar
     }
 
     function showToast(message) {
@@ -1117,10 +1156,25 @@
       }
     });
 
+    // PENAMBAHBAIKAN: TOGGLE BUTANG LOCK NOTA
+    btnLockJoggingNota.addEventListener("click", () => {
+      isJoggingNotaLocked = !isJoggingNotaLocked;
+      btnLockJoggingNota.textContent = `Lock Nota: ${isJoggingNotaLocked ? 'ON' : 'OFF'}`;
+      btnLockJoggingNota.classList.toggle("btn-active", isJoggingNotaLocked);
+      joggingMainTextarea.readOnly = isJoggingNotaLocked;
+    });
+
     function openJoggingMode(data) {
       currentJoggingDrawerId = data.id;
       joggingTapCount = 33;
       isJoggingBlocked = false; // Reset lock bila masuk page
+      
+      // PENAMBAHBAIKAN: Setup Lock Default
+      isJoggingNotaLocked = true;
+      btnLockJoggingNota.textContent = "Lock Nota: ON";
+      btnLockJoggingNota.classList.add("btn-active");
+      joggingMainTextarea.readOnly = true;
+
       joggingNewInput.value = '';
       joggingCount.textContent = joggingTapCount;
       joggingMainTextarea.value = data.notes || '';
@@ -1173,7 +1227,11 @@
 
         // Save ke Firestore
         if (currentJoggingDrawerId && currentUser) {
-          updateDoc(doc(db, "users", currentUser.uid, "drawer", currentJoggingDrawerId), { notes: updatedNotes });
+          // PENAMBAHBAIKAN: RESET ULANGAN KE 0 BILA TAMBAH AYAT BARU
+          updateDoc(doc(db, "users", currentUser.uid, "drawer", currentJoggingDrawerId), { 
+            notes: updatedNotes,
+            repeatCount: 0 
+          });
         }
 
         joggingNewInput.value = "";
@@ -1416,6 +1474,17 @@
       const currentData = allFacts[currentFactIndex];
 
       if (currentData.isTamat) {
+        // PENAMBAHBAIKAN: LOGIK ULANGAN (MASTERY COUNTER)
+        if (currentData.drawerId && currentUser) {
+          const dObj = allDrawers.find(d => d.id === currentData.drawerId);
+          if (dObj) {
+            updateDoc(doc(db, "users", currentUser.uid, "drawer", currentData.drawerId), { 
+              repeatCount: (dObj.repeatCount || 0) + 1 
+            });
+          }
+        }
+        // ----------------------------------------
+
         triggerVibration([200, 100, 200, 100, 2000]); 
         isBlocked = true;
         setTimeout(() => { isBlocked = false; }, 2600);
@@ -1657,8 +1726,13 @@
       sortedDrawers.forEach(data => {
         const div = document.createElement("div");
         div.className = "drawer-card";
+        
+        // PENAMBAHBAIKAN: Title di dalam wrapper untuk tambah Badge Ulang
         div.innerHTML = `
-          <input class="drawer-title" value="${data.title || ''}" placeholder="Tajuk Laci">
+          <div class="drawer-title-wrapper">
+             <input class="drawer-title" value="${data.title || ''}" placeholder="Tajuk Laci">
+             <span class="badge-status badge-done">Ulang: ${data.repeatCount || 0}</span>
+          </div>
           <textarea class="drawer-notes" placeholder="Format: Perkataan = Terjemahan">${data.notes || ''}</textarea>
           
           <div style="margin-top: 10px; text-align: center;">
@@ -1676,7 +1750,11 @@
         
         const textareaNotes = div.querySelector(".drawer-notes");
         textareaNotes.addEventListener("change", (e) => {
-          updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { notes: e.target.value });
+          // PENAMBAHBAIKAN: BILA EDIT LACI, RESET ULANGAN KEPADA 0!
+          updateDoc(doc(db, "users", currentUser.uid, "drawer", data.id), { 
+            notes: e.target.value,
+            repeatCount: 0 
+          });
         });
 
         // BUKA SKRIN JOGGING BERSAIZ PENUH
@@ -1714,6 +1792,7 @@
               lines.forEach(line => {
                 const parts = line.split('=');
                 allFacts.push({ 
+                  drawerId: data.id, // Untuk update repeat counter
                   title: tajukLaci, 
                   text: parts[0].trim(), 
                   translation: parts.length > 1 ? parts[1].trim() : null, 
@@ -1721,6 +1800,7 @@
                 });
               });
               allFacts.push({ 
+                drawerId: data.id, // Untuk update repeat counter bila tamat
                 title: tajukLaci, 
                 text: "✅ Laci Tamat. Sapu/tekan untuk seterusnya.", 
                 isTamat: true 
@@ -1966,14 +2046,32 @@
 
 
     // ==========================================
-    // INITIALIZATION & AUTH
+    // INITIALIZATION & AUTH (PENAMBAHBAIKAN STATE RESTORE)
     // ==========================================
     setPersistence(auth, browserLocalPersistence);
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
       if (user) {
         homeUserEmail.textContent = user.email || "";
-        showSection(sectionTasbih);
+        
+        // PENAMBAHBAIKAN: RESTORE PREVIOUS STATE
+        let secToShow = sectionTasbih; // Default kalau takde memory
+        const savedStateStr = localStorage.getItem('istigfarAppState');
+        if (savedStateStr) {
+            try {
+                const state = JSON.parse(savedStateStr);
+                if (state.subjectId) currentSubjectId = state.subjectId;
+                if (state.topicId) currentTopicId = state.topicId;
+                if (state.routineTimeId) currentRoutineTimeId = state.routineTimeId;
+                
+                const el = document.getElementById(state.section);
+                if (el) secToShow = el;
+            } catch(e) { 
+                console.error("Error parsing memory state"); 
+            }
+        }
+        
+        showSection(secToShow); // Pergi ke page terakhir
         await ensureTodayTasbih();
         subscribeHistory();
         subscribeNotes();
@@ -2024,7 +2122,7 @@
     });
     btnAddLaci.addEventListener("click", () => { 
       if(currentTopicId) {
-        addDoc(collection(db, "users", currentUser.uid, "drawer"), { title: "", notes: "", topicId: currentTopicId, createdAt: Date.now() }); 
+        addDoc(collection(db, "users", currentUser.uid, "drawer"), { title: "", notes: "", repeatCount: 0, topicId: currentTopicId, createdAt: Date.now() }); 
       }
     });
 
