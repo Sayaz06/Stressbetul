@@ -286,15 +286,16 @@
       overflow-y: auto; 
     }
     /* Scrollbar cantik */
-    .fact-content-text::-webkit-scrollbar {
-      width: 4px;
+    .fact-content-text::-webkit-scrollbar, .scrollable-container::-webkit-scrollbar {
+      width: 6px;
     }
-    .fact-content-text::-webkit-scrollbar-track {
-      background: transparent; 
+    .fact-content-text::-webkit-scrollbar-track, .scrollable-container::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.1); 
+      border-radius: 8px;
     }
-    .fact-content-text::-webkit-scrollbar-thumb {
+    .fact-content-text::-webkit-scrollbar-thumb, .scrollable-container::-webkit-scrollbar-thumb {
       background: rgba(99, 102, 241, 0.5); 
-      border-radius: 4px;
+      border-radius: 8px;
     }
 
     .fact-hint { 
@@ -522,6 +523,12 @@
       margin-bottom: 0 !important;
     }
 
+    /* KELAS BARU UNTUK CONTAINER JOGGING SUPAYA BOLEH SCROLL */
+    .scrollable-container {
+      overflow-y: auto;
+      padding-right: 4px; /* Supaya scrollbar tak kacau border */
+    }
+
     .footer { 
       margin-top: auto; 
       padding-top: 10px; 
@@ -672,9 +679,9 @@
           *Bila "Mode Berlari: ON", SATU SKRIN akan detect geselan & skrol dimatikan.
         </div>
 
-        <div id="jogging-tap-overlay" style="display:none; position:absolute; top: 80px; left:0; right:0; bottom:0; z-index:20;"></div>
+        <div id="jogging-tap-overlay" style="display:none; position:absolute; top: 65px; left:0; right:0; bottom:0; z-index:20;"></div>
 
-        <div id="jogging-container" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; padding-bottom: 10px; position: relative;">
+        <div id="jogging-container" class="scrollable-container" style="flex: 1; display: flex; flex-direction: column; padding-bottom: 10px; position: relative;">
           
           <div class="drawer-card" style="margin-bottom: 10px; flex-shrink: 0;">
             <div style="font-size: 0.85rem; color: var(--grad1); margin-bottom: 6px; font-weight:bold;">Ayat Hafalan Baharu (Sebelum & Selepas "=")</div>
@@ -694,12 +701,12 @@
             <div class="counter-sub">Sapu / Tekan</div>
           </div>
 
-          <div class="drawer-card" style="flex: 1; display: flex; flex-direction: column; min-height: 0; margin-bottom: 0;">
+          <div class="drawer-card" style="flex-shrink: 0; display: flex; flex-direction: column; min-height: 250px; margin-bottom: 0;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
               <div style="font-size: 0.85rem; color: var(--grad1); font-weight:bold;">Nota Laci Terkini</div>
               <button id="btn-lock-jogging-nota" class="btn btn-secondary btn-sm" style="padding: 2px 10px; font-size: 0.7rem;">Lock Nota: ON</button>
             </div>
-            <textarea id="jogging-main-textarea" class="drawer-notes" style="flex: 1; min-height: 0; overflow-y: auto; font-size: 1rem; border-color: var(--grad2);"></textarea>
+            <textarea id="jogging-main-textarea" class="drawer-notes" style="flex: 1; min-height: 200px; overflow-y: auto; font-size: 1rem; border-color: var(--grad2);"></textarea>
           </div>
           
         </div>
