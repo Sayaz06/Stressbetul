@@ -242,23 +242,26 @@
       gap: 6px;
     }
     
-    /* KOTAK FAKTA & RUTIN KEKAL (Flashcard) */
+    /* ======== KOTAK FAKTA & RUTIN KEKAL (Flashcard) ======== */
     #fact-display-box {
       margin-top: 15px;
       background: rgba(30, 41, 59, 0.8);
       border: 1px solid rgba(99, 102, 241, 0.4);
       border-radius: 14px;
-      padding: 16px 40px 16px 16px; 
+      /* Padding diubah: Atas Kanan Bawah Kiri. Kanan di kurangkan jadi 4px supaya scrollbar touch tepi */
+      padding: 12px 4px 12px 12px; 
       text-align: center;
       color: #fff;
       display: none; 
       flex-direction: column;
       align-items: center;
       min-height: 110px;
+      max-height: 35vh; /* WAJIB: Supaya kotak tak mengembang melepasi skrin telefon */
+      flex-shrink: 1; /* membenarkan kotak jadi kecil dan menghasilkan scrollbar */
+      overflow: hidden; /* pastikan content tak terkeluar dari kotak border */
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
       cursor: pointer; 
       user-select: none;
-      flex-shrink: 0;
       position: relative;
       transition: all 0.3s ease;
     }
@@ -275,32 +278,32 @@
       margin-bottom: 8px; 
       flex-shrink: 0;
     }
-    /* SCROLL UNTUK KOTAK FAKTA DIBETULKAN DI SINI */
     .fact-content-text { 
       font-size: 1.1rem; 
       font-weight: 600; 
       line-height: 1.4; 
-      padding: 0 10px; 
+      padding: 0 40px 0 10px; /* Kanan 40px untuk elak bertembung dengan butang Suara */
       width: 100%;
-      max-height: 30vh; 
-      overflow-y: auto; 
-      margin-top: auto; 
-      margin-bottom: auto;
+      flex: 1; 
+      min-height: 0; /* WAJIB untuk flexbox scrolling berfungsi */
+      overflow-y: auto; /* Aktifkan fungsi scroll kursor */
+      margin-top: 8px; 
+      margin-bottom: 8px;
       pointer-events: auto; 
       overscroll-behavior-y: contain; 
       -webkit-overflow-scrolling: touch;
     }
-    /* Scrollbar cantik */
+    
+    /* Scrollbar Design untuk Tepi Kotak */
     .fact-content-text::-webkit-scrollbar, .scrollable-container::-webkit-scrollbar {
-      width: 6px;
+      width: 5px;
     }
     .fact-content-text::-webkit-scrollbar-track, .scrollable-container::-webkit-scrollbar-track {
-      background: rgba(0,0,0,0.1); 
-      border-radius: 8px;
+      background: transparent; 
     }
     .fact-content-text::-webkit-scrollbar-thumb, .scrollable-container::-webkit-scrollbar-thumb {
-      background: rgba(99, 102, 241, 0.5); 
-      border-radius: 8px;
+      background: rgba(99, 102, 241, 0.8); 
+      border-radius: 10px;
     }
 
     .fact-hint { 
@@ -314,7 +317,7 @@
       position: absolute; 
       top: 50%; 
       transform: translateY(-50%); 
-      right: 12px;
+      right: 8px; /* Dekatkan sikit butang ke dinding kanan */
       background: rgba(255, 255, 255, 0.15); 
       border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%; 
