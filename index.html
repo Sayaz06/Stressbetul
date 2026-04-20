@@ -253,7 +253,6 @@
       color: #fff;
       display: none; 
       flex-direction: column;
-      /* Dibuang justify-content:center supaya text tak dipotong di atas masa overflow */
       align-items: center;
       min-height: 110px;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
@@ -276,6 +275,7 @@
       margin-bottom: 8px; 
       flex-shrink: 0;
     }
+    /* SCROLL UNTUK KOTAK FAKTA DIBETULKAN DI SINI */
     .fact-content-text { 
       font-size: 1.1rem; 
       font-weight: 600; 
@@ -284,10 +284,11 @@
       width: 100%;
       max-height: 30vh; 
       overflow-y: auto; 
-      margin-top: auto;   /* Untuk auto-center vertikal */
-      margin-bottom: auto;/* Untuk auto-center vertikal */
-      pointer-events: auto; /* Pastikan boleh disentuh/scroll */
-      overscroll-behavior-y: contain; /* Halang scroll badan belakang */
+      margin-top: auto; 
+      margin-bottom: auto;
+      pointer-events: auto; 
+      overscroll-behavior-y: contain; 
+      -webkit-overflow-scrolling: touch;
     }
     /* Scrollbar cantik */
     .fact-content-text::-webkit-scrollbar, .scrollable-container::-webkit-scrollbar {
@@ -298,7 +299,7 @@
       border-radius: 8px;
     }
     .fact-content-text::-webkit-scrollbar-thumb, .scrollable-container::-webkit-scrollbar-thumb {
-      background: rgba(99, 102, 241, 0.7); 
+      background: rgba(99, 102, 241, 0.5); 
       border-radius: 8px;
     }
 
@@ -654,7 +655,10 @@
       <section id="section-topics" class="section">
         <div class="topbar">
           <button id="btn-back-subj-topics" class="btn btn-secondary btn-sm">← Subjek</button>
-          <div class="topbar-title" id="header-topics">Senarai Topik</div>
+          <div style="text-align: right;">
+            <div class="topbar-title">Senarai Topik</div>
+            <div class="topbar-sub" id="parent-subject-name" style="color:var(--grad2); font-weight:bold;"></div>
+          </div>
         </div>
         <div style="font-size: 0.75rem; color: var(--subtext); text-align: center; margin-bottom: 8px;">
           Tanda (tick) SATU kotak sahaja untuk aktifkan.
@@ -666,7 +670,10 @@
       <section id="section-drawer" class="section">
         <div class="topbar">
           <button id="btn-back-topics-drawer" class="btn btn-secondary btn-sm">← Topik</button>
-          <div class="topbar-title" id="header-drawer">Isi Laci</div>
+          <div style="text-align: right;">
+            <div class="topbar-title">Isi Laci</div>
+            <div class="topbar-sub" id="parent-topic-name" style="color:var(--grad2); font-weight:bold;"></div>
+          </div>
         </div>
         <button id="btn-add-laci" class="btn btn-sm mt-8">Tambah Laci</button>
         <div class="list mt-8" id="drawer-list" style="padding: 10px;"></div>
@@ -736,7 +743,10 @@
       <section id="section-routine-drawers" class="section">
         <div class="topbar">
           <button id="btn-back-routine-drawer" class="btn btn-secondary btn-sm">← Waktu Rutin</button>
-          <div class="topbar-title" id="header-routine-drawer">Laci Zikir Rutin</div>
+          <div style="text-align: right;">
+            <div class="topbar-title">Laci Zikir Rutin</div>
+            <div class="topbar-sub" id="parent-routine-time-name" style="color:var(--grad2); font-weight:bold;"></div>
+          </div>
         </div>
         <button id="btn-add-routine-drawer" class="btn btn-sm mt-8">Tambah Laci Zikir</button>
         <div class="list mt-8" id="routine-drawers-list" style="padding: 10px;"></div>
@@ -912,7 +922,6 @@
     const joggingMainTextarea = document.getElementById("jogging-main-textarea");
     const btnLockJoggingNota = document.getElementById("btn-lock-jogging-nota");
 
-    // NEW DOM ELEMENTS UNTUK JOGGING MULTI-INPUT
     const joggingInputBefore = document.getElementById("jogging-input-before");
     const joggingAfterContainer = document.getElementById("jogging-after-container");
     const btnAddJoggingAfter = document.getElementById("btn-add-jogging-after");
@@ -1034,13 +1043,10 @@
     }
 
     // ==========================================
-    // FUNGSI BANTUAN TUKAR FORMAT 'NOMBOR.' KEPADA BARIS BARU
+    // FUNGSI BANTUAN TUKAR FORMAT 'NOMBOR.' KEPADA BARIS BARU (Hanya 1 Selang Baris)
     // ==========================================
     function formatTextToHtmlList(text) {
       if (!text) return "";
-      // Cari perkataan yang bermula dengan (Nombor + Titik) dan pecahkan jadi baris baru (<br>)
-      // Corak regex: /(?:\s+|^)(\d+\.)/g  -> cari ruang kosong atau mula ayat, diikuti 'Nombor.'
-      // Fix: Guna 1 kali <br> sahaja untuk rapatkan baris
       return text.replace(/(?:\s+|^)(\d+\.)/g, '<br>$1').replace(/^(<br>)+/, '');
     }
 
@@ -1206,7 +1212,6 @@
       joggingMainTextarea.readOnly = isJoggingNotaLocked;
     });
 
-    // FUNGSI TAMBAH KOTAK "SELEPAS ="
     btnAddJoggingAfter.addEventListener("click", () => {
       const count = joggingAfterContainer.querySelectorAll('.jogging-input-after').length + 1;
       const input = document.createElement("input");
@@ -1226,12 +1231,11 @@
       btnLockJoggingNota.classList.add("btn-active");
       joggingMainTextarea.readOnly = true;
 
-      // Reset Inputs
       joggingInputBefore.value = '';
       joggingAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
       
       joggingCount.textContent = joggingTapCount;
-      joggingMiniCount.textContent = joggingTapCount; // Update Mini Meter
+      joggingMiniCount.textContent = joggingTapCount; 
       joggingMainTextarea.value = data.notes || '';
       
       showSection(sectionJogging);
@@ -1244,7 +1248,6 @@
     function decrementJogging() {
       if (isJoggingBlocked) return; 
 
-      // VALIDASI: Pastikan 'Sebelum =' ada isi, dan sekurang-kurangnya 1 kotak 'Selepas =' ada isi.
       const beforeVal = joggingInputBefore.value.trim();
       const afterInputs = Array.from(joggingAfterContainer.querySelectorAll('.jogging-input-after'))
                                .map(inp => inp.value.trim())
@@ -1258,40 +1261,35 @@
       if (joggingTapCount > 1) {
         joggingTapCount--;
         joggingCount.textContent = joggingTapCount;
-        joggingMiniCount.textContent = joggingTapCount; // Update Mini Meter
+        joggingMiniCount.textContent = joggingTapCount; 
 
         triggerVibration([120, 60, 120]);
         
         joggingCircle.style.transform = "scale(0.95)";
         setTimeout(() => joggingCircle.style.transform = "scale(1)", 100);
       } else {
-        // CUKUP KIRAAN 33 KALI
         isJoggingBlocked = true; 
 
         triggerVibration([200, 100, 200, 100, 2000]);
         joggingTapCount = 33;
         joggingCount.textContent = "Ditambah!";
-        joggingMiniCount.textContent = "✓"; // Update Mini Meter Sementara
+        joggingMiniCount.textContent = "✓"; 
 
         setTimeout(() => {
           joggingCount.textContent = joggingTapCount;
-          joggingMiniCount.textContent = joggingTapCount; // Kembali ke 33
+          joggingMiniCount.textContent = joggingTapCount; 
           isJoggingBlocked = false; 
         }, 2600);
 
-        // GABUNGKAN AYAT DENGAN AUTO NUMBERING (Tanpa Koma)
-        // Contoh Output: "1.Keyword p1 Ayat 1: Marketing 2.Keyword p2 Ayat 1: All around you"
         const afterStr = afterInputs.map((val, index) => `${index + 1}.${val}`).join(" ");
         const combinedNewNote = beforeVal + " = " + afterStr;
         
-        // Append ayat gabungan ke textarea bawah
         const currentNotes = joggingMainTextarea.value;
         const updatedNotes = currentNotes ? currentNotes + '\n' + combinedNewNote : combinedNewNote;
         
         joggingMainTextarea.value = updatedNotes;
         joggingMainTextarea.scrollTop = joggingMainTextarea.scrollHeight;
 
-        // Save ke Firestore
         if (currentJoggingDrawerId && currentUser) {
           updateDoc(doc(db, "users", currentUser.uid, "drawer", currentJoggingDrawerId), { 
             notes: updatedNotes,
@@ -1299,7 +1297,6 @@
           });
         }
 
-        // Kosongkan semula input untuk mula hafalan baru
         joggingInputBefore.value = "";
         joggingAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
       }
@@ -1478,12 +1475,10 @@
 
       if (!isFlipped) {
         factTitleEl.textContent = routineMode ? `[ Zikir: ${data.title} ]` : `[ ${data.title} ]`;
-        // Format Teks Utama (jika ada nombor)
         factContentEl.innerHTML = formatTextToHtmlList(data.text);
       } else {
         factTitleEl.textContent = routineMode ? `[ Zikir: ${data.title} ] (Maksud)` : `[ ${data.title} ] (Maksud)`;
         if (data.translation) {
-          // Format Terjemahan (Tukar nombor. jadi baris baru)
           factContentEl.innerHTML = formatTextToHtmlList(data.translation);
         } else {
           factContentEl.textContent = "Menterjemah... ⏳";
@@ -1496,7 +1491,6 @@
               const translatedText = resData[0][0][0];
               data.translation = translatedText; 
               if (isFlipped && dataSource[currentIndex] === data) {
-                // Update paparan selepas terjemah berjaya
                 factContentEl.innerHTML = formatTextToHtmlList(translatedText);
                 if (learningMode === 3) { 
                   playFactAudio(translatedText, true);
@@ -1734,9 +1728,9 @@
     }
 
     function renderTopics() {
-      // SET TAJUK IBU PAGE
+      // SET BREADCRUMB
       const subj = allSubjects.find(s => s.id === currentSubjectId);
-      document.getElementById("header-topics").textContent = subj && subj.name ? `Topik: ${subj.name}` : "Senarai Topik";
+      document.getElementById("parent-subject-name").textContent = subj && subj.name ? `Subjek: ${subj.name}` : "";
 
       topicsList.innerHTML = "";
       const filteredTopics = allTopics.filter(t => t.subjectId === currentSubjectId);
@@ -1787,9 +1781,9 @@
     }
 
     function renderDrawers() {
-      // SET TAJUK IBU PAGE
+      // SET BREADCRUMB
       const topic = allTopics.find(t => t.id === currentTopicId);
-      document.getElementById("header-drawer").textContent = topic && topic.name ? `Laci: ${topic.name}` : "Isi Laci";
+      document.getElementById("parent-topic-name").textContent = topic && topic.name ? `Topik: ${topic.name}` : "";
 
       drawerList.innerHTML = "";
       const filteredDrawers = allDrawers.filter(d => d.topicId === currentTopicId);
@@ -1952,9 +1946,9 @@
     }
 
     function renderRoutineDrawers() {
-      // SET TAJUK IBU PAGE
+      // SET BREADCRUMB
       const rtn = allRoutineTimes.find(t => t.id === currentRoutineTimeId);
-      document.getElementById("header-routine-drawer").textContent = rtn && rtn.name ? `Zikir: ${rtn.name}` : "Laci Zikir Rutin";
+      document.getElementById("parent-routine-time-name").textContent = rtn && rtn.name ? `Waktu: ${rtn.name}` : "";
 
       routineDrawersList.innerHTML = "";
       const filteredDrawers = allRoutineDrawers.filter(d => d.timeId === currentRoutineTimeId);
@@ -2270,8 +2264,30 @@
       }
     });
 
+    // ==========================================
+    // TOUCH TRACKER UNTUK KOTAK FAKTA (Supaya Scroll Tak Ter-Flip)
+    // ==========================================
+    let factTouchStartY = 0;
+    let factTouchIsScrolling = false;
+    
+    factDisplayBox.addEventListener('touchstart', (e) => {
+      factTouchStartY = e.touches[0].clientY;
+      factTouchIsScrolling = false;
+    }, {passive:true});
+
+    factDisplayBox.addEventListener('touchmove', (e) => {
+      // Jika gesel jari lebih 5 pixel = pengguna niat nak scroll
+      if (Math.abs(e.touches[0].clientY - factTouchStartY) > 5) {
+        factTouchIsScrolling = true;
+      }
+    }, {passive:true});
+
     factDisplayBox.addEventListener('click', (e) => {
       e.stopPropagation(); 
+      
+      // Jika pengguna sedang scroll, BATALKAN proses flip
+      if (factTouchIsScrolling) return; 
+
       triggerVibration([50]); 
       const dataSource = routineMode ? allRoutines : allFacts;
       const currentIndex = routineMode ? currentRoutineIndex : currentFactIndex;
