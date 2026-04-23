@@ -532,7 +532,7 @@
       padding-right: 4px; 
     }
 
-    /* ======== KOD BARU: MODE MEMANAH ======== */
+    /* ======== MODE MEMANAH ======== */
     #memanah-canvas {
       width: 100%;
       height: 100%;
@@ -767,7 +767,7 @@
             <canvas id="memanah-canvas"></canvas>
             <div id="memanah-big-count" style="position:absolute; top:10px; right:15px; font-size:3.5rem; font-weight:bold; color:rgba(255,255,255,0.15); pointer-events:none;">33</div>
             <div style="position:absolute; bottom:10px; left:0; right:0; text-align:center; font-size:0.75rem; color:var(--subtext); pointer-events:none; padding: 0 10px;">
-              Sentuh (Aim), Gesek Jari (Gerak Momentum), Lepas (Tembak)
+              Sentuh Tahan (Aim), Geser Jari (Tambah Momentum), Angkat Jari (Tembak)
             </div>
           </div>
         </div>
@@ -2535,15 +2535,26 @@
         crosshairX += vx;
         crosshairY += vy;
 
-        // Geseran sangat sedikit (0.98) supaya meluncur panjang, paksa user tahan (counter-swipe)
-        vx *= 0.98;
-        vy *= 0.98;
+        // TIADA LAGI GESERAN (Friction). vx dan vy tak didarab dengan 0.98.
+        // Ia akan meluncur berterusan selagi jari tak lepas.
 
-        // Lantunan kalau kena dinding
-        if (crosshairX < 20) { crosshairX = 20; vx *= -0.5; }
-        if (crosshairX > memanahCanvas.width - 20) { crosshairX = memanahCanvas.width - 20; vx *= -0.5; }
-        if (crosshairY < 20) { crosshairY = 20; vy *= -0.5; }
-        if (crosshairY > memanahCanvas.height - 20) { crosshairY = memanahCanvas.height - 20; vy *= -0.5; }
+        // Logic Sempadan (Bergeser, bukan melantun)
+        if (crosshairX < 20) { 
+            crosshairX = 20; 
+            if (vx < 0) vx = 0; // Mati momentum ke kiri, tapi vy masih jalan
+        }
+        if (crosshairX > memanahCanvas.width - 20) { 
+            crosshairX = memanahCanvas.width - 20; 
+            if (vx > 0) vx = 0; // Mati momentum ke kanan
+        }
+        if (crosshairY < 20) { 
+            crosshairY = 20; 
+            if (vy < 0) vy = 0; // Mati momentum ke atas
+        }
+        if (crosshairY > memanahCanvas.height - 20) { 
+            crosshairY = memanahCanvas.height - 20; 
+            if (vy > 0) vy = 0; // Mati momentum ke bawah
+        }
 
         // Efek Sway Tambahan (Goyang Nafas)
         let time = Date.now() / 300; 
@@ -2601,8 +2612,7 @@
       if(arrowFlying || isJoggingBlocked) return;
       isPulling = true;
       
-      // Reset kedudukan crosshair di tengah setiap kali mula tarik, atau biarkan ia sambung dari titik akhir?
-      // Kita set balik ke tengah untuk berlaku adil dan bina fokus baru setiap tembakan.
+      // Reset kedudukan crosshair di tengah setiap kali mula tarik
       crosshairX = memanahCanvas.width / 2;
       crosshairY = memanahCanvas.height / 2;
       vx = 0; vy = 0;
@@ -2622,10 +2632,10 @@
       let deltaX = curTouchX - lastTouchX;
       let deltaY = curTouchY - lastTouchY;
       
-      // TAMBAH ke halaju (bukan ke position terus). 
-      // Nilai 0.08 ini yang tentukan betapa "berat/licin" busur tersebut.
-      vx += deltaX * 0.08;
-      vy += deltaY * 0.08;
+      // TAMBAH ke halaju (momentum berterusan). 
+      // Nilai 0.05 ini mengawal betapa responsif/sensitif pertukaran momentum tu.
+      vx += deltaX * 0.05;
+      vy += deltaY * 0.05;
 
       lastTouchX = curTouchX;
       lastTouchY = curTouchY;
