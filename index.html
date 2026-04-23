@@ -530,10 +530,28 @@
       margin-bottom: 0 !important;
     }
 
-    /* KELAS BARU UNTUK CONTAINER JOGGING SUPAYA BOLEH SCROLL */
+    /* KELAS BARU UNTUK CONTAINER JOGGING & MEMANAH SUPAYA BOLEH SCROLL */
     .scrollable-container {
       overflow-y: auto;
       padding-right: 4px; 
+    }
+
+    /* ======== KOD BARU: MODE MEMANAH ======== */
+    #memanah-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: radial-gradient(circle at bottom, #1e293b 0%, #020617 100%);
+      touch-action: none; /* Penting untuk matikan scroll masa main game */
+    }
+    .memanah-game-container {
+      flex: 1;
+      position: relative;
+      border-radius: 14px;
+      border: 1px solid var(--border-mid);
+      overflow: hidden;
+      margin-bottom: 10px;
+      min-height: 250px;
     }
 
     .footer { 
@@ -730,6 +748,33 @@
         </div>
       </section>
 
+      <section id="section-memanah" class="section">
+        <div class="topbar" style="position: relative; z-index: 30;">
+          <button id="btn-back-memanah" class="btn btn-secondary btn-sm">← Laci</button>
+          <div class="topbar-title" style="color: var(--grad1); display: flex; align-items: center; gap: 8px;">
+            Mode Memanah 🏹
+            <span id="memanah-mini-count" style="background: var(--grad1); color: white; padding: 2px 10px; border-radius: 999px; font-size: 0.9rem; font-weight: bold; box-shadow: 0 2px 8px rgba(99,102,241,0.6);">33</span>
+          </div>
+        </div>
+
+        <div class="scrollable-container" style="flex: 1; display: flex; flex-direction: column; padding-bottom: 10px; position: relative;">
+          <div class="drawer-card" style="margin-bottom: 10px; flex-shrink: 0;">
+            <div style="font-size: 0.85rem; color: var(--grad1); margin-bottom: 6px; font-weight:bold;">Ayat Hafalan Baharu</div>
+            <input id="memanah-input-before" class="drawer-input-box jogging-input-before" placeholder="Perkataan (Sebelum '=')" style="margin-bottom: 8px;">
+            <div id="memanah-after-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
+              <input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas '=')">
+            </div>
+            <button id="btn-add-memanah-after" class="btn btn-secondary btn-sm" style="width: 100%; border-color: var(--border-mid); font-size: 0.75rem;">+ Tambah Maksud</button>
+          </div>
+
+          <div class="memanah-game-container">
+            <canvas id="memanah-canvas"></canvas>
+            <div id="memanah-big-count" style="position:absolute; top:10px; right:15px; font-size:3.5rem; font-weight:bold; color:rgba(255,255,255,0.15); pointer-events:none;">33</div>
+            <div style="position:absolute; bottom:10px; left:0; right:0; text-align:center; font-size:0.75rem; color:var(--subtext); pointer-events:none;">Tekan tahan (Aim), Geser (Fokus), Lepas (Tembak)</div>
+          </div>
+        </div>
+      </section>
+
       <section id="section-routine-times" class="section">
         <div class="topbar">
           <button id="btn-back-tasbih-routine" class="btn btn-secondary btn-sm">← Tasbih</button>
@@ -856,6 +901,7 @@
     const sectionTopics = document.getElementById("section-topics");
     const sectionDrawer = document.getElementById("section-drawer");
     const sectionJogging = document.getElementById("section-jogging"); 
+    const sectionMemanah = document.getElementById("section-memanah"); // KOD BARU
 
     const sectionRoutineTimes = document.getElementById("section-routine-times");
     const sectionRoutineDrawers = document.getElementById("section-routine-drawers");
@@ -966,7 +1012,7 @@
     
     let isBlocked = false;
 
-    // STATE JOGGING
+    // STATE JOGGING & MEMANAH
     let currentJoggingDrawerId = null;
     let joggingTapCount = 33;
     let isFullScreenJogging = false; 
@@ -981,7 +1027,7 @@
        if(!activeSection || activeSection.id === 'section-login') return;
        
        let secId = activeSection.id;
-       if (secId === 'section-jogging') secId = 'section-drawer'; 
+       if (secId === 'section-jogging' || secId === 'section-memanah') secId = 'section-drawer'; 
        
        const state = {
            section: secId,
@@ -1007,6 +1053,7 @@
       sectionRoutineTimes.classList.remove("active");
       sectionRoutineDrawers.classList.remove("active");
       sectionJogging.classList.remove("active"); 
+      sectionMemanah.classList.remove("active"); // KOD BARU
       
       section.classList.add("active");
       saveAppState(); 
@@ -1045,7 +1092,7 @@
     }
 
     // ==========================================
-    // FUNGSI BANTUAN TUKAR FORMAT 'NOMBOR.' KEPADA BARIS BARU (Hanya 1 Selang Baris)
+    // FUNGSI BANTUAN TUKAR FORMAT 'NOMBOR.' KEPADA BARIS BARU
     // ==========================================
     function formatTextToHtmlList(text) {
       if (!text) return "";
@@ -1127,7 +1174,7 @@
         }
       } else if (factMode && !routineMode && learningMode === 1 && allFacts.length > 0) {
         if (!allFacts[currentFactIndex].isTamat && currentRepeatCount === 1) {
-             isSempadan = true; 
+              isSempadan = true; 
         }
       }
 
@@ -1805,6 +1852,9 @@
           <div style="margin-top: 10px; text-align: center;">
             <button class="btn btn-secondary btn-open-jogging" style="width: 100%; border-color: var(--grad1);">🏃‍♂️ Buka Skrin Jogging (Hafal & Tambah)</button>
           </div>
+          <div style="margin-top: 6px; text-align: center;">
+            <button class="btn btn-secondary btn-open-memanah" style="width: 100%; border-color: var(--grad2);">🏹 Buka Mode Memanah (Hafal & Main)</button>
+          </div>
 
           <div style="text-align: right; margin-top: 10px;">
             <button class="btn btn-secondary btn-sm btn-del-laci" style="color:var(--danger); border-color:var(--danger);">Padam</button>
@@ -1823,9 +1873,8 @@
           });
         });
 
-        div.querySelector(".btn-open-jogging").addEventListener("click", () => {
-          openJoggingMode(data);
-        });
+        div.querySelector(".btn-open-jogging").addEventListener("click", () => { openJoggingMode(data); });
+        div.querySelector(".btn-open-memanah").addEventListener("click", () => { openMemanahMode(data); });
         
         div.querySelector(".btn-del-laci").addEventListener("click", () => {
           if (!confirm("Adakah anda pasti mahu memadam laci ini?")) return; 
@@ -2365,6 +2414,14 @@
           decrementJogging();
         }
       }
+
+      if (sectionMemanah.classList.contains('active')) {
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+        if (e.code === "NumpadEnter" || e.key === "Enter") {
+          e.preventDefault();
+          decrementMemanahAction();
+        }
+      }
     });
 
     // ==========================================
@@ -2403,6 +2460,226 @@
     joggingCircle.addEventListener("click", (e) => {
        if (!isFullScreenJogging) decrementJogging();
     });
+
+
+    // ==========================================
+    // KOD BARU: LOGIK MODE MEMANAH (GAME ENGINE)
+    // ==========================================
+    const btnBackMemanah = document.getElementById("btn-back-memanah");
+    const memanahMiniCount = document.getElementById("memanah-mini-count");
+    const memanahBigCount = document.getElementById("memanah-big-count");
+    const memanahInputBefore = document.getElementById("memanah-input-before");
+    const memanahAfterContainer = document.getElementById("memanah-after-container");
+    const btnAddMemanahAfter = document.getElementById("btn-add-memanah-after");
+    const memanahCanvas = document.getElementById("memanah-canvas");
+    const ctxMemanah = memanahCanvas.getContext("2d");
+
+    let memanahAnimationFrame;
+    let targetX = 0; let targetY = 0;
+    let targetSpeedMultiplier = 1; let targetDir = 1;
+    let crosshairX = 0; let crosshairY = 0;
+    let isPulling = false; let arrowFlying = false;
+    let arrowProgress = 0;
+    let startArrowX = 0; let startArrowY = 0;
+    let endArrowX = 0; let endArrowY = 0;
+    let lastTouchTime = 0; let lastTouchX = 0; let lastTouchY = 0;
+    let memanahTapCount = 33;
+    let currentMemanahDrawerId = null;
+    let memanahCurrentNotes = "";
+
+    btnBackMemanah.addEventListener("click", () => {
+      cancelAnimationFrame(memanahAnimationFrame);
+      showSection(sectionDrawer);
+    });
+
+    btnAddMemanahAfter.addEventListener("click", () => {
+      const count = memanahAfterContainer.querySelectorAll('.jogging-input-after').length + 1;
+      const input = document.createElement("input");
+      input.className = "drawer-input-box jogging-input-after";
+      input.placeholder = `Maksud ${count} (Selepas '=')`;
+      memanahAfterContainer.appendChild(input);
+      input.focus();
+    });
+
+    // Fungsi buka memanah
+    function openMemanahMode(data) {
+      currentMemanahDrawerId = data.id;
+      memanahTapCount = 33;
+      memanahCurrentNotes = data.notes || "";
+      memanahInputBefore.value = '';
+      memanahAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
+      memanahMiniCount.textContent = memanahTapCount;
+      memanahBigCount.textContent = memanahTapCount;
+
+      showSection(sectionMemanah);
+
+      // Setup Canvas
+      memanahCanvas.width = memanahCanvas.parentElement.clientWidth;
+      memanahCanvas.height = memanahCanvas.parentElement.clientHeight;
+      crosshairX = memanahCanvas.width / 2;
+      crosshairY = memanahCanvas.height / 2;
+      targetY = memanahCanvas.height * 0.35; // Target nampak jauh
+      targetX = memanahCanvas.width / 2;
+
+      cancelAnimationFrame(memanahAnimationFrame);
+      loopMemanah();
+    }
+
+    // Enjin Game 60FPS
+    function loopMemanah() {
+      ctxMemanah.clearRect(0, 0, memanahCanvas.width, memanahCanvas.height);
+
+      // Pergerakan Target
+      targetX += 1.8 * targetDir * targetSpeedMultiplier;
+      if (targetX < 30) { targetX = 30; targetDir = 1; }
+      if (targetX > memanahCanvas.width - 30) { targetX = memanahCanvas.width - 30; targetDir = -1; }
+      
+      // Kelajuan akan perlahan-lahan kembali normal jika tiada gesekan pantas
+      targetSpeedMultiplier += (1 - targetSpeedMultiplier) * 0.03;
+
+      // Lukis Target
+      ctxMemanah.fillStyle = "#ef4444";
+      ctxMemanah.beginPath(); ctxMemanah.arc(targetX, targetY, 15, 0, Math.PI * 2); ctxMemanah.fill();
+      ctxMemanah.fillStyle = "#ffffff";
+      ctxMemanah.beginPath(); ctxMemanah.arc(targetX, targetY, 10, 0, Math.PI * 2); ctxMemanah.fill();
+      ctxMemanah.fillStyle = "#ef4444";
+      ctxMemanah.beginPath(); ctxMemanah.arc(targetX, targetY, 5, 0, Math.PI * 2); ctxMemanah.fill();
+
+      // Lukis Crosshair & Busur
+      if (isPulling && !arrowFlying) {
+        ctxMemanah.strokeStyle = "rgba(99, 102, 241, 0.8)";
+        ctxMemanah.lineWidth = 2;
+        ctxMemanah.beginPath();
+        ctxMemanah.arc(crosshairX, crosshairY, 35, 0, Math.PI * 2);
+        ctxMemanah.moveTo(crosshairX - 45, crosshairY); ctxMemanah.lineTo(crosshairX + 45, crosshairY);
+        ctxMemanah.moveTo(crosshairX, crosshairY - 45); ctxMemanah.lineTo(crosshairX, crosshairY + 45);
+        ctxMemanah.stroke();
+        ctxMemanah.fillStyle = "white";
+        ctxMemanah.beginPath(); ctxMemanah.arc(crosshairX, crosshairY, 3, 0, Math.PI * 2); ctxMemanah.fill();
+      }
+
+      // Lukis Anak Panah Terbang
+      if (arrowFlying) {
+        arrowProgress += 0.08; 
+        let scale = 1 - (arrowProgress * 0.7); // Semakin kecil bila jauh
+        let curX = startArrowX + (endArrowX - startArrowX) * arrowProgress;
+        let curY = startArrowY + (endArrowY - startArrowY) * arrowProgress;
+
+        ctxMemanah.fillStyle = "#fde047";
+        ctxMemanah.beginPath(); ctxMemanah.arc(curX, curY, 6 * scale, 0, Math.PI * 2); ctxMemanah.fill();
+
+        if (arrowProgress >= 1) {
+          arrowFlying = false;
+          checkHitMemanah(endArrowX, endArrowY);
+        }
+      }
+      memanahAnimationFrame = requestAnimationFrame(loopMemanah);
+    }
+
+    // Logic Tepat Kena Sasaran
+    function checkHitMemanah(hitX, hitY) {
+      let dist = Math.hypot(hitX - targetX, hitY - targetY);
+      if (dist < 25) { // Hitbox toleransi
+        triggerVibration([100, 50, 100]);
+        // Visual letupan kecil
+        ctxMemanah.fillStyle = "rgba(255, 255, 255, 0.8)";
+        ctxMemanah.beginPath(); ctxMemanah.arc(targetX, targetY, 30, 0, Math.PI * 2); ctxMemanah.fill();
+        decrementMemanahAction();
+      } else {
+        triggerVibration([50]); // Miss
+      }
+    }
+
+    // Touch Event Untuk Memanah
+    memanahCanvas.addEventListener('touchstart', e => {
+      e.preventDefault();
+      if(arrowFlying || isJoggingBlocked) return;
+      isPulling = true;
+      let rect = memanahCanvas.getBoundingClientRect();
+      crosshairX = e.touches[0].clientX - rect.left;
+      crosshairY = e.touches[0].clientY - rect.top;
+      lastTouchX = crosshairX; lastTouchY = crosshairY;
+      lastTouchTime = Date.now();
+    }, {passive: false});
+
+    memanahCanvas.addEventListener('touchmove', e => {
+      e.preventDefault();
+      if (!isPulling) return;
+      let rect = memanahCanvas.getBoundingClientRect();
+      let now = Date.now();
+      let curX = e.touches[0].clientX - rect.left;
+      let curY = e.touches[0].clientY - rect.top;
+      
+      let dist = Math.hypot(curX - lastTouchX, curY - lastTouchY);
+      let dt = now - lastTouchTime;
+
+      // KIRA KELAJUAN GESEKAN: Laju gesek = Laju target. Sikit gesek = Perlahan
+      if (dt > 0) {
+        let speed = dist / dt;
+        targetSpeedMultiplier = 1 + (speed * 3.5); 
+      }
+
+      crosshairX = curX; crosshairY = curY;
+      lastTouchX = curX; lastTouchY = curY;
+      lastTouchTime = now;
+    }, {passive: false});
+
+    memanahCanvas.addEventListener('touchend', e => {
+      e.preventDefault();
+      if (isPulling) {
+        isPulling = false; arrowFlying = true; arrowProgress = 0;
+        startArrowX = memanahCanvas.width / 2;
+        startArrowY = memanahCanvas.height; // Tembak dari bawah tengah skrin
+        endArrowX = crosshairX; endArrowY = crosshairY;
+      }
+    }, {passive: false});
+
+    // Tolak Counter Macam Mode Jogging
+    function decrementMemanahAction() {
+      if (isJoggingBlocked) return;
+      const beforeVal = memanahInputBefore.value.trim();
+      const afterInputs = Array.from(memanahAfterContainer.querySelectorAll('.jogging-input-after'))
+                               .map(inp => inp.value.trim()).filter(val => val !== "");
+
+      if (!beforeVal || afterInputs.length === 0) {
+        showToast("Sila isi Perkataan & Maksud sebelum panah!");
+        return;
+      }
+
+      if (memanahTapCount > 1) {
+        memanahTapCount--;
+        memanahMiniCount.textContent = memanahTapCount;
+        memanahBigCount.textContent = memanahTapCount;
+      } else {
+        isJoggingBlocked = true;
+        triggerVibration([200, 100, 200, 100, 2000]);
+        memanahTapCount = 33;
+        memanahMiniCount.textContent = "✓";
+        memanahBigCount.textContent = "✓";
+
+        setTimeout(() => {
+          memanahMiniCount.textContent = memanahTapCount;
+          memanahBigCount.textContent = memanahTapCount;
+          isJoggingBlocked = false;
+        }, 2600);
+
+        const afterStr = afterInputs.map((val, index) => `${index + 1}.${val}`).join(" ");
+        const combinedNewNote = beforeVal + " = " + afterStr;
+        memanahCurrentNotes = memanahCurrentNotes ? memanahCurrentNotes + '\n' + combinedNewNote : combinedNewNote;
+
+        if (currentMemanahDrawerId && currentUser) {
+          updateDoc(doc(db, "users", currentUser.uid, "drawer", currentMemanahDrawerId), {
+            notes: memanahCurrentNotes,
+            repeatCount: 0
+          });
+        }
+
+        memanahInputBefore.value = "";
+        memanahAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
+        showToast("Ayat ditambah melalui panahan!");
+      }
+    }
+
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => { 
