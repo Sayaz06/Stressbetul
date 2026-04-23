@@ -475,7 +475,6 @@
       resize: none; 
       outline: none; 
     }
-    /* Khas untuk readonly textarea (lock mode) */
     textarea.drawer-notes[readonly] {
       opacity: 0.7;
       cursor: not-allowed;
@@ -516,7 +515,6 @@
       margin-bottom: 10px;
     }
 
-    /* Khas untuk Input Bahagian Jogging Yang Berlapis */
     .jogging-input-before {
       font-size: 1.1rem; 
       padding: 12px; 
@@ -530,7 +528,6 @@
       margin-bottom: 0 !important;
     }
 
-    /* KELAS BARU UNTUK CONTAINER JOGGING & MEMANAH SUPAYA BOLEH SCROLL */
     .scrollable-container {
       overflow-y: auto;
       padding-right: 4px; 
@@ -542,7 +539,7 @@
       height: 100%;
       display: block;
       background: radial-gradient(circle at bottom, #1e293b 0%, #020617 100%);
-      touch-action: none; /* Penting untuk matikan scroll masa main game */
+      touch-action: none; 
     }
     .memanah-game-container {
       flex: 1;
@@ -770,7 +767,9 @@
           <div class="memanah-game-container">
             <canvas id="memanah-canvas"></canvas>
             <div id="memanah-big-count" style="position:absolute; top:10px; right:15px; font-size:3.5rem; font-weight:bold; color:rgba(255,255,255,0.15); pointer-events:none;">33</div>
-            <div style="position:absolute; bottom:10px; left:0; right:0; text-align:center; font-size:0.75rem; color:var(--subtext); pointer-events:none;">Tekan tahan (Aim), Geser (Fokus), Lepas (Tembak)</div>
+            <div style="position:absolute; bottom:10px; left:0; right:0; text-align:center; font-size:0.75rem; color:var(--subtext); pointer-events:none; padding: 0 10px;">
+              Sentuh (Aim), Gesek Jari (Gerak Crosshair), Lepas (Tembak)
+            </div>
           </div>
         </div>
       </section>
@@ -901,7 +900,7 @@
     const sectionTopics = document.getElementById("section-topics");
     const sectionDrawer = document.getElementById("section-drawer");
     const sectionJogging = document.getElementById("section-jogging"); 
-    const sectionMemanah = document.getElementById("section-memanah"); // KOD BARU
+    const sectionMemanah = document.getElementById("section-memanah");
 
     const sectionRoutineTimes = document.getElementById("section-routine-times");
     const sectionRoutineDrawers = document.getElementById("section-routine-drawers");
@@ -1053,7 +1052,7 @@
       sectionRoutineTimes.classList.remove("active");
       sectionRoutineDrawers.classList.remove("active");
       sectionJogging.classList.remove("active"); 
-      sectionMemanah.classList.remove("active"); // KOD BARU
+      sectionMemanah.classList.remove("active");
       
       section.classList.add("active");
       saveAppState(); 
@@ -1091,9 +1090,6 @@
       }
     }
 
-    // ==========================================
-    // FUNGSI BANTUAN TUKAR FORMAT 'NOMBOR.' KEPADA BARIS BARU
-    // ==========================================
     function formatTextToHtmlList(text) {
       if (!text) return "";
       return text.replace(/(?:\s+|^)(\d+\.)/g, '<br>$1').replace(/^(<br>)+/, '');
@@ -2327,7 +2323,6 @@
     }, {passive:true});
 
     factDisplayBox.addEventListener('touchmove', (e) => {
-      // Jika gesel jari lebih 5 pixel = pengguna niat nak scroll
       if (Math.abs(e.touches[0].clientY - factTouchStartY) > 5) {
         factTouchIsScrolling = true;
       }
@@ -2335,8 +2330,6 @@
 
     factDisplayBox.addEventListener('click', (e) => {
       e.stopPropagation(); 
-      
-      // Jika pengguna sedang scroll, BATALKAN proses flip
       if (factTouchIsScrolling) return; 
 
       triggerVibration([50]); 
@@ -2463,7 +2456,7 @@
 
 
     // ==========================================
-    // KOD BARU: LOGIK MODE MEMANAH (GAME ENGINE)
+    // KOD BARU: LOGIK MODE MEMANAH (GAME ENGINE - SNIPER STYLE)
     // ==========================================
     const btnBackMemanah = document.getElementById("btn-back-memanah");
     const memanahMiniCount = document.getElementById("memanah-mini-count");
@@ -2475,8 +2468,7 @@
     const ctxMemanah = memanahCanvas.getContext("2d");
 
     let memanahAnimationFrame;
-    let targetX = 0; let targetY = 0;
-    let targetSpeedMultiplier = 1; let targetDir = 1;
+    let targetX = 0; let targetY = 0; let targetDir = 1;
     let crosshairX = 0; let crosshairY = 0;
     let isPulling = false; let arrowFlying = false;
     let arrowProgress = 0;
@@ -2529,13 +2521,18 @@
     function loopMemanah() {
       ctxMemanah.clearRect(0, 0, memanahCanvas.width, memanahCanvas.height);
 
-      // Pergerakan Target
-      targetX += 1.8 * targetDir * targetSpeedMultiplier;
-      if (targetX < 30) { targetX = 30; targetDir = 1; }
-      if (targetX > memanahCanvas.width - 30) { targetX = memanahCanvas.width - 30; targetDir = -1; }
+      // 1. Pergerakan Target (Malar / Steady)
+      targetX += 1.5 * targetDir;
+      if (targetX < 40) { targetX = 40; targetDir = 1; }
+      if (targetX > memanahCanvas.width - 40) { targetX = memanahCanvas.width - 40; targetDir = -1; }
+
+      // 2. Efek Sway / Adrenaline untuk Crosshair
+      let time = Date.now() / 300; 
+      let swayX = Math.sin(time) * 2.5; 
+      let swayY = Math.cos(time * 1.2) * 2.5;
       
-      // Kelajuan akan perlahan-lahan kembali normal jika tiada gesekan pantas
-      targetSpeedMultiplier += (1 - targetSpeedMultiplier) * 0.03;
+      let actualAimX = crosshairX + swayX;
+      let actualAimY = crosshairY + swayY;
 
       // Lukis Target
       ctxMemanah.fillStyle = "#ef4444";
@@ -2550,12 +2547,12 @@
         ctxMemanah.strokeStyle = "rgba(99, 102, 241, 0.8)";
         ctxMemanah.lineWidth = 2;
         ctxMemanah.beginPath();
-        ctxMemanah.arc(crosshairX, crosshairY, 35, 0, Math.PI * 2);
-        ctxMemanah.moveTo(crosshairX - 45, crosshairY); ctxMemanah.lineTo(crosshairX + 45, crosshairY);
-        ctxMemanah.moveTo(crosshairX, crosshairY - 45); ctxMemanah.lineTo(crosshairX, crosshairY + 45);
+        ctxMemanah.arc(actualAimX, actualAimY, 35, 0, Math.PI * 2);
+        ctxMemanah.moveTo(actualAimX - 45, actualAimY); ctxMemanah.lineTo(actualAimX + 45, actualAimY);
+        ctxMemanah.moveTo(actualAimX, actualAimY - 45); ctxMemanah.lineTo(actualAimX, actualAimY + 45);
         ctxMemanah.stroke();
         ctxMemanah.fillStyle = "white";
-        ctxMemanah.beginPath(); ctxMemanah.arc(crosshairX, crosshairY, 3, 0, Math.PI * 2); ctxMemanah.fill();
+        ctxMemanah.beginPath(); ctxMemanah.arc(actualAimX, actualAimY, 3, 0, Math.PI * 2); ctxMemanah.fill();
       }
 
       // Lukis Anak Panah Terbang
@@ -2579,7 +2576,7 @@
     // Logic Tepat Kena Sasaran
     function checkHitMemanah(hitX, hitY) {
       let dist = Math.hypot(hitX - targetX, hitY - targetY);
-      if (dist < 25) { // Hitbox toleransi
+      if (dist < 30) { // Hitbox toleransi
         triggerVibration([100, 50, 100]);
         // Visual letupan kecil
         ctxMemanah.fillStyle = "rgba(255, 255, 255, 0.8)";
@@ -2590,37 +2587,47 @@
       }
     }
 
-    // Touch Event Untuk Memanah
+    // Touch Event Untuk Memanah (Relative Aiming - Sniper Style)
     memanahCanvas.addEventListener('touchstart', e => {
       e.preventDefault();
       if(arrowFlying || isJoggingBlocked) return;
       isPulling = true;
-      let rect = memanahCanvas.getBoundingClientRect();
-      crosshairX = e.touches[0].clientX - rect.left;
-      crosshairY = e.touches[0].clientY - rect.top;
-      lastTouchX = crosshairX; lastTouchY = crosshairY;
+      
+      // JANGAN snap crosshair ke jari. Cuma rekod posisi mula jari untuk kira "gesekan"
+      lastTouchX = e.touches[0].clientX;
+      lastTouchY = e.touches[0].clientY;
       lastTouchTime = Date.now();
     }, {passive: false});
 
     memanahCanvas.addEventListener('touchmove', e => {
       e.preventDefault();
       if (!isPulling) return;
-      let rect = memanahCanvas.getBoundingClientRect();
-      let now = Date.now();
-      let curX = e.touches[0].clientX - rect.left;
-      let curY = e.touches[0].clientY - rect.top;
       
-      let dist = Math.hypot(curX - lastTouchX, curY - lastTouchY);
+      let now = Date.now();
+      let curTouchX = e.touches[0].clientX;
+      let curTouchY = e.touches[0].clientY;
+      
+      // Kira beza (delta) pergerakan jari
+      let deltaX = curTouchX - lastTouchX;
+      let deltaY = curTouchY - lastTouchY;
+      
+      let dist = Math.hypot(deltaX, deltaY);
       let dt = now - lastTouchTime;
+      let speed = dt > 0 ? dist / dt : 0;
+      
+      // Multiplier: Gesek perlahan = pergerakan halus. Gesek laju = pergerakan drastik
+      let sensitivityMultiplier = 0.6 + (speed * 0.8); 
 
-      // KIRA KELAJUAN GESEKAN: Laju gesek = Laju target. Sikit gesek = Perlahan
-      if (dt > 0) {
-        let speed = dist / dt;
-        targetSpeedMultiplier = 1 + (speed * 3.5); 
-      }
+      // Tambah pergerakan pada crosshair
+      crosshairX += deltaX * sensitivityMultiplier;
+      crosshairY += deltaY * sensitivityMultiplier;
 
-      crosshairX = curX; crosshairY = curY;
-      lastTouchX = curX; lastTouchY = curY;
+      // Pastikan crosshair tak terkeluar dari skrin canvas
+      crosshairX = Math.max(20, Math.min(memanahCanvas.width - 20, crosshairX));
+      crosshairY = Math.max(20, Math.min(memanahCanvas.height - 20, crosshairY));
+
+      lastTouchX = curTouchX;
+      lastTouchY = curTouchY;
       lastTouchTime = now;
     }, {passive: false});
 
@@ -2630,11 +2637,18 @@
         isPulling = false; arrowFlying = true; arrowProgress = 0;
         startArrowX = memanahCanvas.width / 2;
         startArrowY = memanahCanvas.height; // Tembak dari bawah tengah skrin
-        endArrowX = crosshairX; endArrowY = crosshairY;
+        
+        // Ambil kira efek sway masa tembak dilepaskan
+        let time = Date.now() / 300; 
+        let swayX = Math.sin(time) * 2.5; 
+        let swayY = Math.cos(time * 1.2) * 2.5;
+        
+        endArrowX = crosshairX + swayX; 
+        endArrowY = crosshairY + swayY;
       }
     }, {passive: false});
 
-    // Tolak Counter Macam Mode Jogging
+    // Tolak Counter
     function decrementMemanahAction() {
       if (isJoggingBlocked) return;
       const beforeVal = memanahInputBefore.value.trim();
