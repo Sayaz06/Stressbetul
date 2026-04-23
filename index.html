@@ -293,6 +293,7 @@
       -webkit-overflow-scrolling: touch;
     }
     
+    /* Scrollbar Design untuk Tepi Kotak */
     .fact-content-text::-webkit-scrollbar, .scrollable-container::-webkit-scrollbar {
       width: 5px;
     }
@@ -474,6 +475,7 @@
       resize: none; 
       outline: none; 
     }
+    /* Khas untuk readonly textarea (lock mode) */
     textarea.drawer-notes[readonly] {
       opacity: 0.7;
       cursor: not-allowed;
@@ -514,6 +516,7 @@
       margin-bottom: 10px;
     }
 
+    /* Khas untuk Input Bahagian Jogging Yang Berlapis */
     .jogging-input-before {
       font-size: 1.1rem; 
       padding: 12px; 
@@ -527,12 +530,13 @@
       margin-bottom: 0 !important;
     }
 
+    /* KELAS BARU UNTUK CONTAINER JOGGING SUPAYA BOLEH SCROLL */
     .scrollable-container {
       overflow-y: auto;
       padding-right: 4px; 
     }
 
-    /* ======== MODE MEMANAH ======== */
+    /* ======== MODE MEMANAH TAMBAHAN ======== */
     #memanah-canvas {
       width: 100%;
       height: 100%;
@@ -547,7 +551,8 @@
       border: 1px solid var(--border-mid);
       overflow: hidden;
       margin-bottom: 10px;
-      min-height: 250px;
+      min-height: 280px;
+      flex-shrink: 0;
     }
 
     .footer { 
@@ -748,12 +753,14 @@
         <div class="topbar" style="position: relative; z-index: 30;">
           <button id="btn-back-memanah" class="btn btn-secondary btn-sm">← Laci</button>
           <div class="topbar-title" style="color: var(--grad1); display: flex; align-items: center; gap: 8px;">
-            Mode Memanah 🏹
-            <span id="memanah-mini-count" style="background: var(--grad1); color: white; padding: 2px 10px; border-radius: 999px; font-size: 0.9rem; font-weight: bold; box-shadow: 0 2px 8px rgba(99,102,241,0.6);">33</span>
+            Memanah 🏹
+            <span id="memanah-mini-count" style="background: var(--grad1); color: white; padding: 2px 10px; border-radius: 999px; font-size: 0.9rem; font-weight: bold;">33</span>
           </div>
+          <button id="btn-lock-memanah-scroll" class="btn btn-secondary btn-sm" style="padding: 4px 8px; font-size: 0.75rem;">Lock Scroll: OFF</button>
         </div>
 
-        <div class="scrollable-container" style="flex: 1; display: flex; flex-direction: column; padding-bottom: 10px; position: relative;">
+        <div id="memanah-scroll-container" class="scrollable-container" style="flex: 1; display: flex; flex-direction: column; padding-bottom: 10px; position: relative;">
+          
           <div class="drawer-card" style="margin-bottom: 10px; flex-shrink: 0;">
             <div style="font-size: 0.85rem; color: var(--grad1); margin-bottom: 6px; font-weight:bold;">Ayat Hafalan Baharu</div>
             <input id="memanah-input-before" class="drawer-input-box jogging-input-before" placeholder="Perkataan (Sebelum '=')" style="margin-bottom: 8px;">
@@ -766,13 +773,20 @@
           <div class="memanah-game-container">
             <canvas id="memanah-canvas"></canvas>
             <div id="memanah-big-count" style="position:absolute; top:10px; right:15px; font-size:3.5rem; font-weight:bold; color:rgba(255,255,255,0.15); pointer-events:none;">33</div>
-            <div style="position:absolute; bottom:10px; left:0; right:0; text-align:center; font-size:0.75rem; color:var(--subtext); pointer-events:none; padding: 0 10px;">
+            <div style="position:absolute; bottom:10px; left:0; right:0; text-align:center; font-size:0.7rem; color:var(--subtext); pointer-events:none; padding: 0 10px;">
               Sentuh Tahan (Aim), Geser Jari (Momentum), Angkat Jari (Tembak)
             </div>
           </div>
+
+          <div class="drawer-card" style="flex-shrink: 0; display: flex; flex-direction: column; min-height: 250px; margin-bottom: 0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+              <div style="font-size: 0.85rem; color: var(--grad1); font-weight:bold;">Nota Laci Terkini</div>
+            </div>
+            <textarea id="memanah-main-textarea" class="drawer-notes" style="flex: 1; min-height: 200px; overflow-y: auto; font-size: 1rem; border-color: var(--grad2);" readonly></textarea>
+          </div>
+
         </div>
       </section>
-
       <section id="section-routine-times" class="section">
         <div class="topbar">
           <button id="btn-back-tasbih-routine" class="btn btn-secondary btn-sm">← Tasbih</button>
@@ -899,6 +913,8 @@
     const sectionTopics = document.getElementById("section-topics");
     const sectionDrawer = document.getElementById("section-drawer");
     const sectionJogging = document.getElementById("section-jogging"); 
+    
+    // TAMBAHAN DOM MEMANAH
     const sectionMemanah = document.getElementById("section-memanah");
 
     const sectionRoutineTimes = document.getElementById("section-routine-times");
@@ -1010,7 +1026,7 @@
     
     let isBlocked = false;
 
-    // STATE JOGGING & MEMANAH
+    // STATE JOGGING
     let currentJoggingDrawerId = null;
     let joggingTapCount = 33;
     let isFullScreenJogging = false; 
@@ -1025,6 +1041,7 @@
        if(!activeSection || activeSection.id === 'section-login') return;
        
        let secId = activeSection.id;
+       // Memanah ditambah di sini
        if (secId === 'section-jogging' || secId === 'section-memanah') secId = 'section-drawer'; 
        
        const state = {
@@ -1051,7 +1068,7 @@
       sectionRoutineTimes.classList.remove("active");
       sectionRoutineDrawers.classList.remove("active");
       sectionJogging.classList.remove("active"); 
-      sectionMemanah.classList.remove("active");
+      sectionMemanah.classList.remove("active"); // Memanah ditambah di sini
       
       section.classList.add("active");
       saveAppState(); 
@@ -1089,6 +1106,9 @@
       }
     }
 
+    // ==========================================
+    // FUNGSI BANTUAN TUKAR FORMAT 'NOMBOR.' KEPADA BARIS BARU (Hanya 1 Selang Baris)
+    // ==========================================
     function formatTextToHtmlList(text) {
       if (!text) return "";
       return text.replace(/(?:\s+|^)(\d+\.)/g, '<br>$1').replace(/^(<br>)+/, '');
@@ -1169,7 +1189,7 @@
         }
       } else if (factMode && !routineMode && learningMode === 1 && allFacts.length > 0) {
         if (!allFacts[currentFactIndex].isTamat && currentRepeatCount === 1) {
-              isSempadan = true; 
+             isSempadan = true; 
         }
       }
 
@@ -1847,6 +1867,7 @@
           <div style="margin-top: 10px; text-align: center;">
             <button class="btn btn-secondary btn-open-jogging" style="width: 100%; border-color: var(--grad1);">🏃‍♂️ Buka Skrin Jogging (Hafal & Tambah)</button>
           </div>
+
           <div style="margin-top: 6px; text-align: center;">
             <button class="btn btn-secondary btn-open-memanah" style="width: 100%; border-color: var(--grad2);">🏹 Buka Mode Memanah (Hafal & Main)</button>
           </div>
@@ -1868,8 +1889,14 @@
           });
         });
 
-        div.querySelector(".btn-open-jogging").addEventListener("click", () => { openJoggingMode(data); });
-        div.querySelector(".btn-open-memanah").addEventListener("click", () => { openMemanahMode(data); });
+        div.querySelector(".btn-open-jogging").addEventListener("click", () => {
+          openJoggingMode(data);
+        });
+
+        // LISTENER BUTANG MEMANAH
+        div.querySelector(".btn-open-memanah").addEventListener("click", () => {
+          openMemanahMode(data);
+        });
         
         div.querySelector(".btn-del-laci").addEventListener("click", () => {
           if (!confirm("Adakah anda pasti mahu memadam laci ini?")) return; 
@@ -2322,6 +2349,7 @@
     }, {passive:true});
 
     factDisplayBox.addEventListener('touchmove', (e) => {
+      // Jika gesel jari lebih 5 pixel = pengguna niat nak scroll
       if (Math.abs(e.touches[0].clientY - factTouchStartY) > 5) {
         factTouchIsScrolling = true;
       }
@@ -2329,6 +2357,8 @@
 
     factDisplayBox.addEventListener('click', (e) => {
       e.stopPropagation(); 
+      
+      // Jika pengguna sedang scroll, BATALKAN proses flip
       if (factTouchIsScrolling) return; 
 
       triggerVibration([50]); 
@@ -2445,9 +2475,8 @@
        if (!isFullScreenJogging) decrementJogging();
     });
 
-
     // ==========================================
-    // KOD BARU: MODE MEMANAH (AYUNAN BANDUL & 5 LEVEL TARGET)
+    // KOD BARU DITAMBAH: MODE MEMANAH 
     // ==========================================
     const btnBackMemanah = document.getElementById("btn-back-memanah");
     const memanahMiniCount = document.getElementById("memanah-mini-count");
@@ -2457,31 +2486,43 @@
     const btnAddMemanahAfter = document.getElementById("btn-add-memanah-after");
     const memanahCanvas = document.getElementById("memanah-canvas");
     const ctxMemanah = memanahCanvas.getContext("2d");
+    
+    const btnLockMemanahScroll = document.getElementById("btn-lock-memanah-scroll");
+    const memanahScrollContainer = document.getElementById("memanah-scroll-container");
+    const memanahMainTextarea = document.getElementById("memanah-main-textarea");
 
     let memanahAnimationFrame;
     let targetX = 0; let targetY = 0; 
     let crosshairX = 0; let crosshairY = 0;
-    
-    // Halaju untuk momentum crosshair
     let vx = 0; let vy = 0; 
-
     let isPulling = false; let arrowFlying = false;
     let arrowProgress = 0;
     let startArrowX = 0; let startArrowY = 0;
     let endArrowX = 0; let endArrowY = 0;
     let actualAimX = 0; let actualAimY = 0;
 
-    let lastTouchTime = 0; let lastTouchX = 0; let lastTouchY = 0;
+    let lastTouchX = 0; let lastTouchY = 0;
     let memanahTapCount = 33;
     let currentMemanahDrawerId = null;
     let memanahCurrentNotes = "";
-
-    // Teks apung (Floating Scores)
     let floatingTexts = [];
+
+    let memanahPaused = false;
+    let memanahPauseStartTime = 0;
+    let memanahTotalPausedTime = 0;
+    let memanahTotalScore = 0;
+    let isMemanahScrollLocked = false;
 
     btnBackMemanah.addEventListener("click", () => {
       cancelAnimationFrame(memanahAnimationFrame);
       showSection(sectionDrawer);
+    });
+
+    btnLockMemanahScroll.addEventListener("click", () => {
+      isMemanahScrollLocked = !isMemanahScrollLocked;
+      btnLockMemanahScroll.textContent = `Lock Scroll: ${isMemanahScrollLocked ? 'ON' : 'OFF'}`;
+      btnLockMemanahScroll.classList.toggle("btn-active", isMemanahScrollLocked);
+      memanahScrollContainer.style.overflowY = isMemanahScrollLocked ? "hidden" : "auto";
     });
 
     btnAddMemanahAfter.addEventListener("click", () => {
@@ -2496,7 +2537,13 @@
     function openMemanahMode(data) {
       currentMemanahDrawerId = data.id;
       memanahTapCount = 33;
+      memanahTotalScore = 0; 
+      memanahTotalPausedTime = 0;
+      memanahPaused = false;
+      
       memanahCurrentNotes = data.notes || "";
+      memanahMainTextarea.value = memanahCurrentNotes;
+
       memanahInputBefore.value = '';
       memanahAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
       memanahMiniCount.textContent = memanahTapCount;
@@ -2511,6 +2558,8 @@
       crosshairY = memanahCanvas.height / 2;
       vx = 0; vy = 0;
 
+      setTimeout(() => { memanahScrollContainer.scrollTop = 50; }, 100);
+
       cancelAnimationFrame(memanahAnimationFrame);
       loopMemanah();
     }
@@ -2518,95 +2567,62 @@
     function loopMemanah() {
       ctxMemanah.clearRect(0, 0, memanahCanvas.width, memanahCanvas.height);
 
-      // 1. Pergerakan Target (AYUNAN BANDUL / SINE WAVE)
-      let timeNow = Date.now() / 1000; 
-      let swingSpeed = 1.6; // Laju ayunan
-      // Math.sin memberikan pergerakan perlahan di hujung, laju di tengah
-      let angle = Math.sin(timeNow * swingSpeed) * (Math.PI / 2.5); // Hayunan ~72 darjah kiri kanan
-      
+      let swingSpeed = 1.6; 
+      let maxAngle = Math.PI / 2.5; 
       let pivotX = memanahCanvas.width / 2;
-      let pivotY = -50; // Titik gantung tali di atas skrin
-      let pendulumLength = memanahCanvas.height * 0.48; // Panjang tali bandul
+      let pivotY = -20; 
       
-      targetX = pivotX + Math.sin(angle) * pendulumLength;
-      targetY = pivotY + Math.cos(angle) * pendulumLength;
+      let maxSwingPx = (memanahCanvas.width / 2) - 50; 
+      let pendulumLength = Math.min(memanahCanvas.height * 0.65, maxSwingPx / Math.sin(maxAngle));
 
-      // Lukis Tali Bandul
-      ctxMemanah.beginPath();
-      ctxMemanah.moveTo(pivotX, pivotY);
-      ctxMemanah.lineTo(targetX, targetY);
-      ctxMemanah.strokeStyle = "rgba(255, 255, 255, 0.2)";
-      ctxMemanah.lineWidth = 2;
-      ctxMemanah.stroke();
+      if (!memanahPaused) {
+        let timeNow = (Date.now() - memanahTotalPausedTime) / 1000; 
+        let angle = Math.sin(timeNow * swingSpeed) * maxAngle;
+        targetX = pivotX + Math.sin(angle) * pendulumLength;
+        targetY = pivotY + Math.cos(angle) * pendulumLength;
+      }
 
-      // Lukis 5 Level Target
+      ctxMemanah.beginPath(); ctxMemanah.moveTo(pivotX, pivotY); ctxMemanah.lineTo(targetX, targetY);
+      ctxMemanah.strokeStyle = "rgba(255, 255, 255, 0.2)"; ctxMemanah.lineWidth = 2; ctxMemanah.stroke();
+
       const rings = [
-        { r: 40, c: "#171717", pts: 4 }, // Hitam
-        { r: 32, c: "#2563eb", pts: 6 }, // Biru
-        { r: 24, c: "#dc2626", pts: 8 }, // Merah
-        { r: 16, c: "#eab308", pts: 9 }, // Kuning
-        { r: 8,  c: "#fef08a", pts: 10 } // Kuning Tengah (Bullseye)
+        { r: 40, c: "#171717", pts: 4 }, 
+        { r: 32, c: "#2563eb", pts: 6 }, 
+        { r: 24, c: "#dc2626", pts: 8 }, 
+        { r: 16, c: "#eab308", pts: 9 }, 
+        { r: 8,  c: "#fef08a", pts: 10 } 
       ];
-      
-      // Bulatan luar sekali (Putih / 0 markah / Miss) 
       ctxMemanah.beginPath(); ctxMemanah.arc(targetX, targetY, 48, 0, Math.PI * 2); 
       ctxMemanah.fillStyle = "#ffffff"; ctxMemanah.fill();
 
-      // Lukis gelung dari besar ke kecil
       rings.forEach(ring => {
-        ctxMemanah.beginPath();
-        ctxMemanah.arc(targetX, targetY, ring.r, 0, Math.PI*2);
-        ctxMemanah.fillStyle = ring.c;
-        ctxMemanah.fill();
-        ctxMemanah.lineWidth = 0.5;
-        ctxMemanah.strokeStyle = "rgba(255,255,255,0.3)";
-        ctxMemanah.stroke();
+        ctxMemanah.beginPath(); ctxMemanah.arc(targetX, targetY, ring.r, 0, Math.PI*2);
+        ctxMemanah.fillStyle = ring.c; ctxMemanah.fill();
+        ctxMemanah.lineWidth = 0.5; ctxMemanah.strokeStyle = "rgba(255,255,255,0.3)"; ctxMemanah.stroke();
       });
 
-      // 2. Logic Momentum Crosshair 
-      if (isPulling && !arrowFlying) {
-        crosshairX += vx;
-        crosshairY += vy;
+      if (isPulling && !arrowFlying && !memanahPaused) {
+        crosshairX += vx; crosshairY += vy;
 
-        // Logic Sempadan Menggelongsor (Tiada geseran)
-        if (crosshairX < 20) { 
-            crosshairX = 20; 
-            if (vx < 0) vx = 0; 
-        }
-        if (crosshairX > memanahCanvas.width - 20) { 
-            crosshairX = memanahCanvas.width - 20; 
-            if (vx > 0) vx = 0; 
-        }
-        if (crosshairY < 20) { 
-            crosshairY = 20; 
-            if (vy < 0) vy = 0; 
-        }
-        if (crosshairY > memanahCanvas.height - 20) { 
-            crosshairY = memanahCanvas.height - 20; 
-            if (vy > 0) vy = 0; 
-        }
+        if (crosshairX < 20) { crosshairX = 20; if (vx < 0) vx = 0; }
+        if (crosshairX > memanahCanvas.width - 20) { crosshairX = memanahCanvas.width - 20; if (vx > 0) vx = 0; }
+        if (crosshairY < 20) { crosshairY = 20; if (vy < 0) vy = 0; }
+        if (crosshairY > memanahCanvas.height - 20) { crosshairY = memanahCanvas.height - 20; if (vy > 0) vy = 0; }
 
-        // Efek Sway Tambahan (Goyang Nafas)
         let time = Date.now() / 300; 
         let swayX = Math.sin(time) * 1.5; 
         let swayY = Math.cos(time * 1.2) * 1.5;
         
-        actualAimX = crosshairX + swayX;
-        actualAimY = crosshairY + swayY;
+        actualAimX = crosshairX + swayX; actualAimY = crosshairY + swayY;
 
-        // Lukis Crosshair & Busur
-        ctxMemanah.strokeStyle = "rgba(99, 102, 241, 0.8)";
-        ctxMemanah.lineWidth = 2;
-        ctxMemanah.beginPath();
-        ctxMemanah.arc(actualAimX, actualAimY, 35, 0, Math.PI * 2);
+        ctxMemanah.strokeStyle = "rgba(99, 102, 241, 0.8)"; ctxMemanah.lineWidth = 2;
+        ctxMemanah.beginPath(); ctxMemanah.arc(actualAimX, actualAimY, 35, 0, Math.PI * 2);
         ctxMemanah.moveTo(actualAimX - 45, actualAimY); ctxMemanah.lineTo(actualAimX + 45, actualAimY);
         ctxMemanah.moveTo(actualAimX, actualAimY - 45); ctxMemanah.lineTo(actualAimX, actualAimY + 45);
         ctxMemanah.stroke();
-        ctxMemanah.fillStyle = "white";
-        ctxMemanah.beginPath(); ctxMemanah.arc(actualAimX, actualAimY, 3, 0, Math.PI * 2); ctxMemanah.fill();
+        ctxMemanah.fillStyle = "white"; ctxMemanah.beginPath(); ctxMemanah.arc(actualAimX, actualAimY, 3, 0, Math.PI * 2); ctxMemanah.fill();
       }
 
-      // 3. Lukis Anak Panah Terbang
       if (arrowFlying) {
         arrowProgress += 0.08; 
         let scale = 1 - (arrowProgress * 0.7); 
@@ -2622,10 +2638,13 @@
         }
       }
 
-      // 4. Render Floating Texts (Markah)
+      if (memanahPaused) {
+        ctxMemanah.fillStyle = "#fde047";
+        ctxMemanah.beginPath(); ctxMemanah.arc(endArrowX, endArrowY, 6 * 0.3, 0, Math.PI * 2); ctxMemanah.fill();
+      }
+
       floatingTexts.forEach((ft, index) => {
-          ft.y -= 1.5;
-          ft.alpha -= 0.02;
+          ft.y -= 1.0; ft.alpha -= 0.015; 
           ctxMemanah.fillStyle = ft.color.replace("ALPHA", ft.alpha);
           ctxMemanah.font = "bold 24px sans-serif";
           ctxMemanah.textAlign = "center";
@@ -2638,74 +2657,63 @@
 
     function checkHitMemanah(hitX, hitY) {
       let dist = Math.hypot(hitX - targetX, hitY - targetY);
-      let score = 0;
-      let scoreColor = "rgba(255, 255, 255, ALPHA)";
+      let score = 0; let scoreColor = "rgba(255, 255, 255, ALPHA)";
 
-      // Sistem 5 Level Markah (Berdasarkan Radius Gelang)
-      if (dist < 8) { score = 10; scoreColor = "rgba(250, 204, 21, ALPHA)"; }        // Kuning Dalam
-      else if (dist < 16) { score = 9; scoreColor = "rgba(250, 204, 21, ALPHA)"; }  // Kuning Luar
-      else if (dist < 24) { score = 8; scoreColor = "rgba(239, 68, 68, ALPHA)"; }   // Merah
-      else if (dist < 32) { score = 6; scoreColor = "rgba(59, 130, 246, ALPHA)"; }  // Biru
-      else if (dist < 40) { score = 4; scoreColor = "rgba(163, 163, 163, ALPHA)"; } // Hitam
+      if (dist < 8) { score = 10; scoreColor = "rgba(250, 204, 21, ALPHA)"; }        
+      else if (dist < 16) { score = 9; scoreColor = "rgba(250, 204, 21, ALPHA)"; }  
+      else if (dist < 24) { score = 8; scoreColor = "rgba(239, 68, 68, ALPHA)"; }   
+      else if (dist < 32) { score = 6; scoreColor = "rgba(59, 130, 246, ALPHA)"; }  
+      else if (dist < 48) { score = 4; scoreColor = "rgba(163, 163, 163, ALPHA)"; } 
+
+      memanahTotalScore += score;
 
       if (score > 0) {
         triggerVibration([100, 50, 100]);
-        // Visual Letupan Hit
         ctxMemanah.fillStyle = "rgba(255, 255, 255, 0.6)";
         ctxMemanah.beginPath(); ctxMemanah.arc(targetX, targetY, 35, 0, Math.PI * 2); ctxMemanah.fill();
-        
-        // Push floating score
         floatingTexts.push({ text: `+${score}`, x: targetX, y: targetY - 20, alpha: 1.0, color: scoreColor });
-        decrementMemanahAction();
       } else {
         triggerVibration([50]); 
         floatingTexts.push({ text: "Miss!", x: hitX, y: hitY - 20, alpha: 1.0, color: "rgba(255, 100, 100, ALPHA)" });
       }
+
+      memanahPaused = true;
+      memanahPauseStartTime = Date.now();
+      
+      setTimeout(() => {
+        memanahPaused = false;
+        memanahTotalPausedTime += (Date.now() - memanahPauseStartTime);
+        decrementMemanahAction(); 
+      }, 1500); 
     }
 
-    // Touch Event - Hold To Aim, Swipe for Momentum, Release to Shoot
     memanahCanvas.addEventListener('touchstart', e => {
       e.preventDefault();
-      if(arrowFlying || isJoggingBlocked) return;
+      if(arrowFlying || isJoggingBlocked || memanahPaused) return;
       isPulling = true;
       
-      crosshairX = memanahCanvas.width / 2;
-      crosshairY = memanahCanvas.height / 2;
+      crosshairX = memanahCanvas.width / 2; crosshairY = memanahCanvas.height / 2;
       vx = 0; vy = 0;
-
-      lastTouchX = e.touches[0].clientX;
-      lastTouchY = e.touches[0].clientY;
+      lastTouchX = e.touches[0].clientX; lastTouchY = e.touches[0].clientY;
     }, {passive: false});
 
     memanahCanvas.addEventListener('touchmove', e => {
       e.preventDefault();
-      if (!isPulling) return;
+      if (!isPulling || memanahPaused) return;
       
-      let curTouchX = e.touches[0].clientX;
-      let curTouchY = e.touches[0].clientY;
+      let curTouchX = e.touches[0].clientX; let curTouchY = e.touches[0].clientY;
+      let deltaX = curTouchX - lastTouchX; let deltaY = curTouchY - lastTouchY;
       
-      let deltaX = curTouchX - lastTouchX;
-      let deltaY = curTouchY - lastTouchY;
-      
-      vx += deltaX * 0.05;
-      vy += deltaY * 0.05;
-
-      lastTouchX = curTouchX;
-      lastTouchY = curTouchY;
+      vx += deltaX * 0.05; vy += deltaY * 0.05;
+      lastTouchX = curTouchX; lastTouchY = curTouchY;
     }, {passive: false});
 
     memanahCanvas.addEventListener('touchend', e => {
       e.preventDefault();
-      if (isPulling) {
-        isPulling = false; 
-        arrowFlying = true; 
-        arrowProgress = 0;
-        
-        startArrowX = memanahCanvas.width / 2;
-        startArrowY = memanahCanvas.height; 
-        
-        endArrowX = actualAimX; 
-        endArrowY = actualAimY;
+      if (isPulling && !memanahPaused) {
+        isPulling = false; arrowFlying = true; arrowProgress = 0;
+        startArrowX = memanahCanvas.width / 2; startArrowY = memanahCanvas.height; 
+        endArrowX = actualAimX; endArrowY = actualAimY;
       }
     }, {passive: false});
 
@@ -2727,9 +2735,14 @@
       } else {
         isJoggingBlocked = true;
         triggerVibration([200, 100, 200, 100, 2000]);
+        
+        let finalScore = memanahTotalScore;
         memanahTapCount = 33;
+        memanahTotalScore = 0; 
+        
         memanahMiniCount.textContent = "✓";
         memanahBigCount.textContent = "✓";
+        showToast(`Selesai! Skor Keseluruhan: ${finalScore}`);
 
         setTimeout(() => {
           memanahMiniCount.textContent = memanahTapCount;
@@ -2740,6 +2753,8 @@
         const afterStr = afterInputs.map((val, index) => `${index + 1}.${val}`).join(" ");
         const combinedNewNote = beforeVal + " = " + afterStr;
         memanahCurrentNotes = memanahCurrentNotes ? memanahCurrentNotes + '\n' + combinedNewNote : combinedNewNote;
+        
+        memanahMainTextarea.value = memanahCurrentNotes;
 
         if (currentMemanahDrawerId && currentUser) {
           updateDoc(doc(db, "users", currentUser.uid, "drawer", currentMemanahDrawerId), {
@@ -2750,10 +2765,11 @@
 
         memanahInputBefore.value = "";
         memanahAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
-        showToast("Ayat ditambah melalui panahan!");
       }
     }
-
+    // ==========================================
+    // TAMAT KOD BARU MODE MEMANAH
+    // ==========================================
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => { 
