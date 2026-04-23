@@ -2624,7 +2624,7 @@
       }
 
       if (arrowFlying) {
-        arrowProgress += 0.08; 
+        arrowProgress += 0.2; // DIUBAH DARI 0.08 KEPADA 0.2 SUPAYA ANAK PANAH TERBANG SANGAT LAJU
         let scale = 1 - (arrowProgress * 0.7); 
         let curX = startArrowX + (endArrowX - startArrowX) * arrowProgress;
         let curY = startArrowY + (endArrowY - startArrowY) * arrowProgress;
@@ -2677,9 +2677,7 @@
         floatingTexts.push({ text: "Miss!", x: hitX, y: hitY - 20, alpha: 1.0, color: "rgba(255, 100, 100, ALPHA)" });
       }
 
-      memanahPaused = true;
-      memanahPauseStartTime = Date.now();
-      
+      // Target dah dibekukan masa 'touchend', jadi kita cuma set bila ia akan bergerak balik
       setTimeout(() => {
         memanahPaused = false;
         memanahTotalPausedTime += (Date.now() - memanahPauseStartTime);
@@ -2714,6 +2712,10 @@
         isPulling = false; arrowFlying = true; arrowProgress = 0;
         startArrowX = memanahCanvas.width / 2; startArrowY = memanahCanvas.height; 
         endArrowX = actualAimX; endArrowY = actualAimY;
+
+        // FREEZE TARGET SERTA-MERTA BILA JARI DILEPASKAN
+        memanahPaused = true;
+        memanahPauseStartTime = Date.now();
       }
     }, {passive: false});
 
