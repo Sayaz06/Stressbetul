@@ -581,7 +581,7 @@
       font-size: 28px;
       font-weight: 600;
       color: #fff;
-      left: 0; /* FIX DARI 100% UNTUK ELAK BOUNDARY LARI */
+      left: 0;
       will-change: transform;
     }
     .prompter-focus-line {
@@ -692,7 +692,7 @@
         <div style="margin-top: 15px; text-align: center; flex-shrink: 0;">
           <button id="btn-start-prompter" class="btn" style="border: none;">🚀 Mula Membaca</button>
           <div style="font-size: 0.7rem; color: var(--subtext); margin-top: 8px; line-height: 1.4;">
-            <strong>Kawal Keyboard:</strong> Arrow Kanan (Laju), Arrow Kiri (Brek), Enter (Next Laci), Esc (Keluar)
+            <strong>Kawal Keyboard:</strong> Arrow Kanan (Laju), Arrow Kiri (Brek, Min 4.0), Enter (Next Laci), Esc (Keluar)
           </div>
         </div>
       </section>
@@ -947,7 +947,7 @@
       <div class="prompter-focus-line"></div>
       <div id="scrolling-text"></div>
     </div>
-    <div id="prompter-status-overlay">Laci: 1/1 | Kelajuan: Manual: 0.00</div>
+    <div id="prompter-status-overlay">Laci: 1/1 | Kelajuan: Manual: 4.00</div>
     <button id="btn-exit-prompter" class="btn btn-sm btn-exit-prompter">X Keluar (Esc)</button>
   </div>
 
@@ -1307,7 +1307,7 @@
     let isPrompterActive = false;
     let currentPrompterIndex = 0;
     let prompterPosX = 0;
-    let prompterSpeed = 0;
+    let prompterSpeed = 4.0; // Bermula dengan minimum 4.0
     let prompterTextWidth = 0;
     let prompterAnimId;
     let prompterKeys = { ArrowRight: false, ArrowLeft: false };
@@ -1359,7 +1359,7 @@
       
       scrollingText.innerHTML = parsedText;
       prompterPosX = window.innerWidth;
-      prompterSpeed = 0;
+      prompterSpeed = 4.0; // Tetapkan minimum kelajuan lalai di sini
       
       // Dapatkan panjang teks sebenar selepas dimasukkan ke dalam DOM
       void scrollingText.offsetWidth; 
@@ -1375,7 +1375,7 @@
 
       const acceleration = 0.15;
       const braking = 0.25;
-      const maxSpeed = 8.0;
+      const maxSpeed = 10.0; // Dinaikkan supaya ada ruang dari 4.0
 
       // 1. DETECT HIGHLIGHTED WORD AT CENTER LINE
       let isInsideMarker = false;
@@ -1402,7 +1402,7 @@
         // Normal physics (Inersia kekal)
         if (prompterKeys.ArrowRight) prompterSpeed += acceleration;
         if (prompterKeys.ArrowLeft) prompterSpeed -= braking;
-        if (prompterSpeed < 0) prompterSpeed = 0;
+        if (prompterSpeed < 4.0) prompterSpeed = 4.0; // Minimum 4.0 untuk kelajuan normal
         if (prompterSpeed > maxSpeed) prompterSpeed = maxSpeed;
 
         prompterPosX -= prompterSpeed;
@@ -1413,7 +1413,7 @@
       const endBoundary = centerLineX - prompterTextWidth;
       if (prompterPosX < endBoundary) {
         prompterPosX = endBoundary;
-        prompterSpeed = 0;
+        prompterSpeed = 0; // Terpaksa reset ke 0 bila dah sampai hujung skrin
       }
 
       scrollingText.style.transform = `translateX(${prompterPosX}px)`;
