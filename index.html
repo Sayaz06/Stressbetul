@@ -692,7 +692,7 @@
         <div style="margin-top: 15px; text-align: center; flex-shrink: 0;">
           <button id="btn-start-prompter" class="btn" style="border: none;">🚀 Mula Membaca</button>
           <div style="font-size: 0.7rem; color: var(--subtext); margin-top: 8px; line-height: 1.4;">
-            <strong>Kawal Keyboard:</strong> Arrow Kanan (Laju), Arrow Kiri (Brek, Min 4.0), Enter (Next Laci), Esc (Keluar)
+            <strong>Kawal Keyboard:</strong><br> Tekan Sekali Kanan/Kiri untuk +- 0.1 Kelajuan. <br> Enter (Next Laci), Esc (Keluar)
           </div>
         </div>
       </section>
@@ -1310,7 +1310,6 @@
     let prompterSpeed = 4.0; // Bermula dengan minimum 4.0
     let prompterTextWidth = 0;
     let prompterAnimId;
-    let prompterKeys = { ArrowRight: false, ArrowLeft: false };
     let prompterLastTime = 0;
 
     btnStartPrompter.addEventListener("click", () => {
@@ -1359,7 +1358,8 @@
       
       scrollingText.innerHTML = parsedText;
       prompterPosX = window.innerWidth;
-      prompterSpeed = 4.0; // Tetapkan minimum kelajuan lalai di sini
+      // Kekalkan kelajuan semasa jika ada, jika tidak set kepada 4.0 (lalai)
+      if(prompterSpeed < 4.0) prompterSpeed = 4.0; 
       
       // Dapatkan panjang teks sebenar selepas dimasukkan ke dalam DOM
       void scrollingText.offsetWidth; 
@@ -1372,10 +1372,6 @@
       if (!isPrompterActive) return;
       const deltaTime = currentTime - prompterLastTime;
       prompterLastTime = currentTime;
-
-      const acceleration = 0.15;
-      const braking = 0.25;
-      const maxSpeed = 10.0; // Dinaikkan supaya ada ruang dari 4.0
 
       // 1. DETECT HIGHLIGHTED WORD AT CENTER LINE
       let isInsideMarker = false;
@@ -1393,19 +1389,16 @@
         }
       }
 
-      // 2. APPLY SPEED LOGIC
-      if (isInsideMarker) {
-        // Hanya guna kelajuan 'marker' untuk pergerakan semasa.
-        // Abaikan input keyboard dan jangan ubah prompterSpeed (inersia asal).
-        prompterPosX -= markerSpeed;
-      } else {
-        // Normal physics (Inersia kekal)
-        if (prompterKeys.ArrowRight) prompterSpeed += acceleration;
-        if (prompterKeys.ArrowLeft) prompterSpeed -= braking;
-        if (prompterSpeed < 4.0) prompterSpeed = 4.0; // Minimum 4.0 untuk kelajuan normal
-        if (prompterSpeed > maxSpeed) prompterSpeed = maxSpeed;
+      // 2. APPLY SPEED LOGIC (KELAJUAN RELATIF)
+      let currentAppliedSpeed = prompterSpeed;
 
-        prompterPosX -= prompterSpeed;
+      if (isInsideMarker) {
+        // Kelajuan Relatif = Kelajuan Semasa + (Kelajuan Marker - Kelajuan Minimum Base)
+        let offset = markerSpeed - 4.0; 
+        currentAppliedSpeed = prompterSpeed + offset;
+        
+        // Elakkan kelajuan menjadi negatif secara logik
+        if(currentAppliedSpeed < 0) currentAppliedSpeed = 0; 
       }
 
       // 3. BERHENTI TEPAT DI GARISAN TENGAH
@@ -1413,12 +1406,13 @@
       const endBoundary = centerLineX - prompterTextWidth;
       if (prompterPosX < endBoundary) {
         prompterPosX = endBoundary;
-        prompterSpeed = 0; // Terpaksa reset ke 0 bila dah sampai hujung skrin
+        currentAppliedSpeed = 0; // Terpaksa reset ke 0 bila dah sampai hujung skrin
       }
 
+      prompterPosX -= currentAppliedSpeed;
       scrollingText.style.transform = `translateX(${prompterPosX}px)`;
       
-      const speedStatus = isInsideMarker ? `Auto: ${markerSpeed.toFixed(1)}` : `Manual: ${prompterSpeed.toFixed(1)}`;
+      const speedStatus = isInsideMarker ? `Relatif: ${currentAppliedSpeed.toFixed(1)}` : `Manual: ${prompterSpeed.toFixed(1)}`;
       prompterStatusOverlay.textContent = `Laci: ${currentPrompterIndex + 1}/${prompterData.length} | Kelajuan: ${speedStatus}`;
 
       prompterAnimId = requestAnimationFrame(updatePrompterLoop);
@@ -2734,8 +2728,17 @@
     document.addEventListener("keydown", (e) => {
       // 1. Khas untuk Prompter
       if (isPrompterActive) {
-        if (e.code === 'ArrowRight') prompterKeys.ArrowRight = true;
-        if (e.code === 'ArrowLeft') prompterKeys.ArrowLeft = true;
+        if (e.code === 'ArrowRight' || e.code === 'ArrowLeft') {
+           e.preventDefault();
+           if (e.repeat) return; // Mengabaikan "Hold"
+           
+           if (e.code === 'ArrowRight') prompterSpeed += 0.1;
+           if (e.code === 'ArrowLeft') prompterSpeed -= 0.1;
+           
+           // Had kelajuan
+           if (prompterSpeed < 4.0) prompterSpeed = 4.0;
+           if (prompterSpeed > 10.0) prompterSpeed = 10.0;
+        }
         if (e.code === 'Enter' || e.code === 'NumpadEnter') { e.preventDefault(); loadNextPrompterLaci(); }
         if (e.code === 'Escape') { exitPrompter(); }
         return; // MESTI RETURN supaya tak usik tasbih di belakang layar
@@ -2756,13 +2759,6 @@
           e.preventDefault();
           decrementJogging();
         }
-      }
-    });
-
-    document.addEventListener("keyup", (e) => {
-      if (isPrompterActive) {
-        if (e.code === 'ArrowRight') prompterKeys.ArrowRight = false;
-        if (e.code === 'ArrowLeft') prompterKeys.ArrowLeft = false;
       }
     });
 
