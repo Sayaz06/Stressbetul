@@ -1124,7 +1124,7 @@
     let hasShownStartupToast = false;
     let isBlocked = false;
 
-    // STATE JOGGING
+    // STATE JOGGING & MEMANAH
     let currentJoggingDrawerId = null;
     let joggingTapCount = 33;
     let isFullScreenJogging = false; 
@@ -1556,7 +1556,7 @@
     }
 
     // ==========================================
-    // LOGIK JOGGING MODE (MULTI INPUT)
+    // LOGIK JOGGING MODE (MULTI INPUT) & AUTO SAVE
     // ==========================================
     btnBackJogging.addEventListener("click", () => {
       showSection(sectionDrawer);
@@ -1579,6 +1579,16 @@
       btnLockJoggingNota.textContent = `Lock Nota: ${isJoggingNotaLocked ? 'ON' : 'OFF'}`;
       btnLockJoggingNota.classList.toggle("btn-active", isJoggingNotaLocked);
       joggingMainTextarea.readOnly = isJoggingNotaLocked;
+    });
+
+    // AUTO-SAVE MANUAL EDIT UNTUK JOGGING
+    joggingMainTextarea.addEventListener("change", (e) => {
+      if (currentJoggingDrawerId && currentUser) {
+        updateDoc(doc(db, "users", currentUser.uid, "drawer", currentJoggingDrawerId), { 
+          notes: e.target.value,
+          repeatCount: 0 
+        });
+      }
     });
 
     btnAddJoggingAfter.addEventListener("click", () => {
@@ -1653,6 +1663,7 @@
         const afterStr = afterInputs.map((val, index) => `${index + 1}.${val}`).join(" ");
         const combinedNewNote = beforeVal + " = " + afterStr;
         
+        // GRAB LIVE VALUE DARI TEXTAREA
         const currentNotes = joggingMainTextarea.value;
         const updatedNotes = currentNotes ? currentNotes + '\n' + combinedNewNote : combinedNewNote;
         
