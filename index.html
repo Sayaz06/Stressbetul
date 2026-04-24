@@ -555,6 +555,64 @@
       flex-shrink: 0;
     }
 
+    /* ======== MODE PROMPTER OVERLAY ======== */
+    #prompter-view {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      z-index: 99999;
+    }
+    #prompter-zone {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 80px;
+      background: #111;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      border-bottom: 2px solid #222;
+    }
+    #scrolling-text {
+      position: absolute;
+      white-space: nowrap;
+      font-size: 28px;
+      font-weight: 600;
+      color: #fff;
+      left: 100%;
+      will-change: transform;
+    }
+    .prompter-focus-line {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      pointer-events: none;
+    }
+    #prompter-status-overlay {
+      position: absolute;
+      top: 85px;
+      left: 20px;
+      font-size: 0.85rem;
+      color: #64748b;
+      font-family: monospace;
+    }
+    .btn-exit-prompter {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: #333;
+      border-color: var(--border-mid);
+      z-index: 100000;
+    }
+
     .footer { 
       margin-top: auto; 
       padding-top: 10px; 
@@ -606,12 +664,34 @@
           <button id="btn-go-notes" class="btn btn-secondary">
             <span>Note For Istighfar</span>
           </button>
+          <button id="btn-go-prompter" class="btn btn-secondary" style="border-color: var(--grad1);">
+            <span>Teleprompter Kamera</span>
+          </button>
         </div>
         <div class="footer mt-16">
           Repo: <span class="small">Stressbetul / Istigfar</span>
         </div>
       </section>
 
+      <section id="section-prompter-editor" class="section">
+        <div class="topbar">
+          <button id="btn-back-home-prompter" class="btn btn-secondary btn-sm">← Menu</button>
+          <div style="text-align: right;">
+            <div class="topbar-title">Teleprompter</div>
+            <div class="topbar-sub">Teks skrin atas</div>
+          </div>
+        </div>
+
+        <button id="btn-add-prompter-laci" class="btn btn-sm mt-8">Tambah Laci Skrip</button>
+        <div class="list mt-8 scrollable-container" id="prompter-laci-list" style="padding: 10px;"></div>
+
+        <div style="margin-top: 15px; text-align: center; flex-shrink: 0;">
+          <button id="btn-start-prompter" class="btn" style="border: none;">🚀 Mula Membaca</button>
+          <div style="font-size: 0.7rem; color: var(--subtext); margin-top: 8px; line-height: 1.4;">
+            <strong>Kawal Keyboard:</strong> Arrow Kanan (Laju), Arrow Kiri (Brek), Enter (Next Laci), Esc (Keluar)
+          </div>
+        </div>
+      </section>
       <section id="section-tasbih" class="section">
         <div class="topbar">
           <div style="display: flex; gap: 6px; flex-wrap: wrap;">
@@ -787,6 +867,7 @@
 
         </div>
       </section>
+
       <section id="section-routine-times" class="section">
         <div class="topbar">
           <button id="btn-back-tasbih-routine" class="btn btn-secondary btn-sm">← Tasbih</button>
@@ -857,6 +938,15 @@
     </div>
   </div>
 
+  <div id="prompter-view">
+    <div id="prompter-zone">
+      <div class="prompter-focus-line"></div>
+      <div id="scrolling-text"></div>
+    </div>
+    <div id="prompter-status-overlay">Laci: 1/1 | Kelajuan: 0.00</div>
+    <button id="btn-exit-prompter" class="btn btn-sm btn-exit-prompter">X Keluar (Esc)</button>
+  </div>
+
   <script type="module">
     // Firebase v9 modular
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
@@ -899,7 +989,6 @@
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    // Panggil getVoices lebih awal
     window.speechSynthesis.getVoices();
 
     // DOM ELEMENTS
@@ -913,9 +1002,15 @@
     const sectionTopics = document.getElementById("section-topics");
     const sectionDrawer = document.getElementById("section-drawer");
     const sectionJogging = document.getElementById("section-jogging"); 
-    
-    // TAMBAHAN DOM MEMANAH
     const sectionMemanah = document.getElementById("section-memanah");
+    
+    // DOM PROMPTER EDITOR
+    const sectionPrompterEditor = document.getElementById("section-prompter-editor");
+    const btnGoPrompter = document.getElementById("btn-go-prompter");
+    const btnBackHomePrompter = document.getElementById("btn-back-home-prompter");
+    const btnAddPrompterLaci = document.getElementById("btn-add-prompter-laci");
+    const prompterLaciList = document.getElementById("prompter-laci-list");
+    const btnStartPrompter = document.getElementById("btn-start-prompter");
 
     const sectionRoutineTimes = document.getElementById("section-routine-times");
     const sectionRoutineDrawers = document.getElementById("section-routine-drawers");
@@ -940,7 +1035,6 @@
     const historyList = document.getElementById("history-list");
     const notesList = document.getElementById("notes-list");
     
-    // DOM Laci Fakta & Rutin
     const subjectsList = document.getElementById("subjects-list");
     const topicsList = document.getElementById("topics-list");
     const drawerList = document.getElementById("drawer-list");
@@ -1023,7 +1117,6 @@
 
     let isFlipped = false; 
     let hasShownStartupToast = false;
-    
     let isBlocked = false;
 
     // STATE JOGGING
@@ -1041,7 +1134,6 @@
        if(!activeSection || activeSection.id === 'section-login') return;
        
        let secId = activeSection.id;
-       // Memanah ditambah di sini
        if (secId === 'section-jogging' || secId === 'section-memanah') secId = 'section-drawer'; 
        
        const state = {
@@ -1068,7 +1160,8 @@
       sectionRoutineTimes.classList.remove("active");
       sectionRoutineDrawers.classList.remove("active");
       sectionJogging.classList.remove("active"); 
-      sectionMemanah.classList.remove("active"); // Memanah ditambah di sini
+      sectionMemanah.classList.remove("active"); 
+      sectionPrompterEditor.classList.remove("active"); 
       
       section.classList.add("active");
       saveAppState(); 
@@ -1106,12 +1199,163 @@
       }
     }
 
-    // ==========================================
-    // FUNGSI BANTUAN TUKAR FORMAT 'NOMBOR.' KEPADA BARIS BARU (Hanya 1 Selang Baris)
-    // ==========================================
     function formatTextToHtmlList(text) {
       if (!text) return "";
       return text.replace(/(?:\s+|^)(\d+\.)/g, '<br>$1').replace(/^(<br>)+/, '');
+    }
+
+    // ==========================================
+    // LOGIK TELEPROMPTER LACI
+    // ==========================================
+    let prompterData = ["Assalamualaikum. Selamat datang ke pembentangan saya. Sila tahan arrow kanan untuk mula..."];
+    try {
+      const saved = localStorage.getItem('istigfarPrompterData');
+      if (saved) prompterData = JSON.parse(saved);
+    } catch(e){}
+
+    const prompterView = document.getElementById("prompter-view");
+    const scrollingText = document.getElementById("scrolling-text");
+    const prompterStatusOverlay = document.getElementById("prompter-status-overlay");
+    const btnExitPrompter = document.getElementById("btn-exit-prompter");
+
+    function savePrompterData() {
+      localStorage.setItem('istigfarPrompterData', JSON.stringify(prompterData));
+    }
+
+    function renderPrompterEditor() {
+      prompterLaciList.innerHTML = "";
+      prompterData.forEach((teks, index) => {
+        const div = document.createElement("div");
+        div.className = "drawer-card";
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size: 0.85rem; color: var(--grad1); font-weight:bold;">Laci ${index + 1}</div>
+            <button class="btn-secondary btn-sm btn-del-prompter" data-index="${index}" style="color:var(--danger); border-color:var(--danger); padding:2px 8px;">Padam</button>
+          </div>
+          <textarea class="drawer-notes" data-index="${index}" placeholder="Masukkan skrip anda di sini...">${teks}</textarea>
+        `;
+        prompterLaciList.appendChild(div);
+      });
+
+      document.querySelectorAll('#prompter-laci-list textarea').forEach(ta => {
+        ta.addEventListener('input', (e) => {
+          const idx = e.target.getAttribute('data-index');
+          prompterData[idx] = e.target.value;
+          savePrompterData();
+        });
+      });
+
+      document.querySelectorAll('.btn-del-prompter').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = e.target.getAttribute('data-index');
+          prompterData.splice(idx, 1);
+          savePrompterData();
+          renderPrompterEditor();
+        });
+      });
+    }
+
+    btnGoPrompter.addEventListener("click", () => {
+      showSection(sectionPrompterEditor);
+      renderPrompterEditor();
+    });
+
+    btnBackHomePrompter.addEventListener("click", () => showSection(sectionHome));
+    
+    btnAddPrompterLaci.addEventListener("click", () => {
+      prompterData.push("");
+      savePrompterData();
+      renderPrompterEditor();
+      prompterLaciList.scrollTop = prompterLaciList.scrollHeight;
+    });
+
+    // FIZIK PROMPTER
+    let isPrompterActive = false;
+    let currentPrompterIndex = 0;
+    let prompterPosX = 0;
+    let prompterSpeed = 0;
+    let prompterTextWidth = 0;
+    let prompterAnimId;
+    let prompterKeys = { ArrowRight: false, ArrowLeft: false };
+    let prompterLastTime = 0;
+
+    btnStartPrompter.addEventListener("click", () => {
+      prompterData = prompterData.map(t => t.trim()).filter(t => t !== "");
+      if (prompterData.length === 0) {
+        showToast("Sila masukkan sekurang-kurangnya satu teks skrip.");
+        return;
+      }
+      
+      isPrompterActive = true;
+      prompterView.style.display = "block";
+      
+      currentPrompterIndex = 0;
+      loadPrompterLaci(currentPrompterIndex);
+      
+      prompterLastTime = performance.now();
+      prompterAnimId = requestAnimationFrame(updatePrompterLoop);
+    });
+
+    btnExitPrompter.addEventListener("click", exitPrompter);
+
+    function exitPrompter() {
+      isPrompterActive = false;
+      cancelAnimationFrame(prompterAnimId);
+      prompterView.style.display = "none";
+      renderPrompterEditor();
+    }
+
+    function loadNextPrompterLaci() {
+      if (currentPrompterIndex < prompterData.length - 1) {
+        currentPrompterIndex++;
+        loadPrompterLaci(currentPrompterIndex);
+      } else {
+        scrollingText.innerHTML = "<span style='color:#10b981;'>-- TAMAT SKRIP --</span>";
+        prompterPosX = window.innerWidth;
+        prompterSpeed = 0;
+        prompterTextWidth = scrollingText.getBoundingClientRect().width;
+      }
+    }
+
+    function loadPrompterLaci(index) {
+      scrollingText.textContent = prompterData[index];
+      prompterPosX = window.innerWidth;
+      prompterSpeed = 0;
+      prompterTextWidth = scrollingText.getBoundingClientRect().width;
+      updatePrompterStatus();
+    }
+
+    function updatePrompterStatus() {
+      prompterStatusOverlay.textContent = `Laci: ${currentPrompterIndex + 1}/${prompterData.length} | Laju: ${prompterSpeed.toFixed(1)}`;
+    }
+
+    function updatePrompterLoop(currentTime) {
+      if (!isPrompterActive) return;
+      const deltaTime = currentTime - prompterLastTime;
+      prompterLastTime = currentTime;
+
+      const acceleration = 0.15;
+      const braking = 0.25;
+      const maxSpeed = 8.0;
+
+      if (prompterKeys.ArrowRight) prompterSpeed += acceleration;
+      if (prompterKeys.ArrowLeft) prompterSpeed -= braking;
+
+      if (prompterSpeed < 0) prompterSpeed = 0;
+      if (prompterSpeed > maxSpeed) prompterSpeed = maxSpeed;
+
+      prompterPosX -= prompterSpeed;
+
+      const endBoundary = -(prompterTextWidth - 50);
+      if (prompterPosX < endBoundary) {
+        prompterPosX = endBoundary;
+        prompterSpeed = 0;
+      }
+
+      scrollingText.style.transform = `translateX(${prompterPosX}px)`;
+      updatePrompterStatus();
+
+      prompterAnimId = requestAnimationFrame(updatePrompterLoop);
     }
 
     // ==========================================
@@ -2420,7 +2664,18 @@
       decrementTasbih();
     });
 
+    // KAWALAN KEYBOARD BERSEPADU
     document.addEventListener("keydown", (e) => {
+      // 1. Khas untuk Prompter
+      if (isPrompterActive) {
+        if (e.code === 'ArrowRight') prompterKeys.ArrowRight = true;
+        if (e.code === 'ArrowLeft') prompterKeys.ArrowLeft = true;
+        if (e.code === 'Enter' || e.code === 'NumpadEnter') { e.preventDefault(); loadNextPrompterLaci(); }
+        if (e.code === 'Escape') { exitPrompter(); }
+        return; // MESTI RETURN supaya tak usik tasbih di belakang layar
+      }
+
+      // 2. Tasbih/Jogging Keyboard
       if (sectionTasbih.classList.contains('active')) {
         if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
         if (e.code === "NumpadEnter" || e.key === "Enter") {
@@ -2435,6 +2690,13 @@
           e.preventDefault();
           decrementJogging();
         }
+      }
+    });
+
+    document.addEventListener("keyup", (e) => {
+      if (isPrompterActive) {
+        if (e.code === 'ArrowRight') prompterKeys.ArrowRight = false;
+        if (e.code === 'ArrowLeft') prompterKeys.ArrowLeft = false;
       }
     });
 
@@ -2624,7 +2886,7 @@
       }
 
       if (arrowFlying) {
-        arrowProgress += 0.2; // DIUBAH DARI 0.08 KEPADA 0.2 SUPAYA ANAK PANAH TERBANG SANGAT LAJU
+        arrowProgress += 0.2; 
         let scale = 1 - (arrowProgress * 0.7); 
         let curX = startArrowX + (endArrowX - startArrowX) * arrowProgress;
         let curY = startArrowY + (endArrowY - startArrowY) * arrowProgress;
@@ -2677,7 +2939,6 @@
         floatingTexts.push({ text: "Miss!", x: hitX, y: hitY - 20, alpha: 1.0, color: "rgba(255, 100, 100, ALPHA)" });
       }
 
-      // Target dah dibekukan masa 'touchend', jadi kita cuma set bila ia akan bergerak balik
       setTimeout(() => {
         memanahPaused = false;
         memanahTotalPausedTime += (Date.now() - memanahPauseStartTime);
@@ -2713,7 +2974,6 @@
         startArrowX = memanahCanvas.width / 2; startArrowY = memanahCanvas.height; 
         endArrowX = actualAimX; endArrowY = actualAimY;
 
-        // FREEZE TARGET SERTA-MERTA BILA JARI DILEPASKAN
         memanahPaused = true;
         memanahPauseStartTime = Date.now();
       }
@@ -2769,9 +3029,6 @@
         memanahAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
       }
     }
-    // ==========================================
-    // TAMAT KOD BARU MODE MEMANAH
-    // ==========================================
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => { 
