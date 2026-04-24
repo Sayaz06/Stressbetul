@@ -581,7 +581,7 @@
       font-size: 28px;
       font-weight: 600;
       color: #fff;
-      left: 100%;
+      left: 0; /* FIX DARI 100% UNTUK ELAK BOUNDARY LARI */
       will-change: transform;
     }
     .prompter-focus-line {
@@ -1364,10 +1364,7 @@
       // Dapatkan panjang teks sebenar selepas dimasukkan ke dalam DOM
       void scrollingText.offsetWidth; 
       prompterTextWidth = scrollingText.getBoundingClientRect().width;
-      updatePrompterStatus();
-    }
-
-    function updatePrompterStatus() {
+      
       prompterStatusOverlay.textContent = `Laci: ${currentPrompterIndex + 1}/${prompterData.length} | Kelajuan: Manual: ${prompterSpeed.toFixed(1)}`;
     }
 
@@ -1381,7 +1378,8 @@
       const maxSpeed = 8.0;
 
       // 1. DETECT HIGHLIGHTED WORD AT CENTER LINE
-      let forcedSpeed = null;
+      let isInsideMarker = false;
+      let markerSpeed = 0;
       const centerLineX = window.innerWidth / 2;
       const markers = scrollingText.querySelectorAll('.speed-marker');
 
@@ -1389,23 +1387,26 @@
         const rect = span.getBoundingClientRect();
         // Kalau garisan tengah sentuh marker ini
         if (rect.left <= centerLineX && rect.right >= centerLineX) {
-          forcedSpeed = parseFloat(span.getAttribute('data-speed'));
+          isInsideMarker = true;
+          markerSpeed = parseFloat(span.getAttribute('data-speed'));
           break;
         }
       }
 
       // 2. APPLY SPEED LOGIC
-      if (forcedSpeed !== null) {
-        prompterSpeed = forcedSpeed; // Override ikut speed yang di set
+      if (isInsideMarker) {
+        // Hanya guna kelajuan 'marker' untuk pergerakan semasa.
+        // Abaikan input keyboard dan jangan ubah prompterSpeed (inersia asal).
+        prompterPosX -= markerSpeed;
       } else {
-        // Normal physics (Inertia kekal)
+        // Normal physics (Inersia kekal)
         if (prompterKeys.ArrowRight) prompterSpeed += acceleration;
         if (prompterKeys.ArrowLeft) prompterSpeed -= braking;
         if (prompterSpeed < 0) prompterSpeed = 0;
         if (prompterSpeed > maxSpeed) prompterSpeed = maxSpeed;
-      }
 
-      prompterPosX -= prompterSpeed;
+        prompterPosX -= prompterSpeed;
+      }
 
       // 3. BERHENTI TEPAT DI GARISAN TENGAH
       // Boundary berhenti apabila hujung ayat (kanan) mencecah garisan tengah
@@ -1417,7 +1418,7 @@
 
       scrollingText.style.transform = `translateX(${prompterPosX}px)`;
       
-      const speedStatus = forcedSpeed !== null ? `Auto: ${forcedSpeed.toFixed(1)}` : `Manual: ${prompterSpeed.toFixed(1)}`;
+      const speedStatus = isInsideMarker ? `Auto: ${markerSpeed.toFixed(1)}` : `Manual: ${prompterSpeed.toFixed(1)}`;
       prompterStatusOverlay.textContent = `Laci: ${currentPrompterIndex + 1}/${prompterData.length} | Kelajuan: ${speedStatus}`;
 
       prompterAnimId = requestAnimationFrame(updatePrompterLoop);
