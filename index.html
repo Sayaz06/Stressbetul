@@ -475,7 +475,6 @@
       resize: none; 
       outline: none; 
     }
-    /* Khas untuk readonly textarea (lock mode) */
     textarea.drawer-notes[readonly] {
       opacity: 0.7;
       cursor: not-allowed;
@@ -516,7 +515,6 @@
       margin-bottom: 10px;
     }
 
-    /* Khas untuk Input Bahagian Jogging Yang Berlapis */
     .jogging-input-before {
       font-size: 1.1rem; 
       padding: 12px; 
@@ -530,7 +528,6 @@
       margin-bottom: 0 !important;
     }
 
-    /* KELAS BARU UNTUK CONTAINER JOGGING SUPAYA BOLEH SCROLL */
     .scrollable-container {
       overflow-y: auto;
       padding-right: 4px; 
@@ -611,6 +608,13 @@
       background: #333;
       border-color: var(--border-mid);
       z-index: 100000;
+    }
+    
+    /* STYLE BARU: Untuk Tanda Kelajuan (Speed Marker) */
+    .speed-marker {
+      color: #a78bfa;
+      border-bottom: 3px dashed #8b5cf6;
+      padding: 0 4px;
     }
 
     .footer { 
@@ -943,7 +947,7 @@
       <div class="prompter-focus-line"></div>
       <div id="scrolling-text"></div>
     </div>
-    <div id="prompter-status-overlay">Laci: 1/1 | Kelajuan: 0.00</div>
+    <div id="prompter-status-overlay">Laci: 1/1 | Kelajuan: Manual: 0.00</div>
     <button id="btn-exit-prompter" class="btn btn-sm btn-exit-prompter">X Keluar (Esc)</button>
   </div>
 
@@ -1230,9 +1234,12 @@
         div.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <div style="font-size: 0.85rem; color: var(--grad1); font-weight:bold;">Laci ${index + 1}</div>
-            <button class="btn-secondary btn-sm btn-del-prompter" data-index="${index}" style="color:var(--danger); border-color:var(--danger); padding:2px 8px;">Padam</button>
+            <div>
+              <button class="btn-secondary btn-sm btn-highlight-prompter" data-index="${index}" style="color:var(--grad1); border-color:var(--grad1); padding:2px 8px; margin-right: 4px;">Set Kelajuan</button>
+              <button class="btn-secondary btn-sm btn-del-prompter" data-index="${index}" style="color:var(--danger); border-color:var(--danger); padding:2px 8px;">Padam</button>
+            </div>
           </div>
-          <textarea class="drawer-notes" data-index="${index}" placeholder="Masukkan skrip anda di sini...">${teks}</textarea>
+          <textarea id="prompter-textarea-${index}" class="drawer-notes" data-index="${index}" placeholder="Masukkan skrip anda di sini...">${teks}</textarea>
         `;
         prompterLaciList.appendChild(div);
       });
@@ -1242,6 +1249,33 @@
           const idx = e.target.getAttribute('data-index');
           prompterData[idx] = e.target.value;
           savePrompterData();
+        });
+      });
+
+      // FUNGSI HIGHLIGHT UNTUK SET SPEED
+      document.querySelectorAll('.btn-highlight-prompter').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = e.target.getAttribute('data-index');
+          const textarea = document.getElementById(`prompter-textarea-${idx}`);
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+
+          if (start === end) {
+              showToast("Sila highlight (pilih) perkataan dalam kotak teks dahulu.");
+              return;
+          }
+
+          const selectedText = textarea.value.substring(start, end);
+          const speedInput = prompt(`Tetapkan kelajuan untuk "${selectedText}"\n(Contoh: 0.5 perlahan, 2.0 laju, 0 berhenti):`, "0.5");
+
+          if (speedInput !== null && !isNaN(speedInput) && speedInput !== "") {
+              const before = textarea.value.substring(0, start);
+              const after = textarea.value.substring(end);
+              textarea.value = before + `[speed:${speedInput}]${selectedText}[/speed]` + after;
+              
+              prompterData[idx] = textarea.value;
+              savePrompterData();
+          }
         });
       });
 
@@ -1318,15 +1352,23 @@
     }
 
     function loadPrompterLaci(index) {
-      scrollingText.textContent = prompterData[index];
+      let rawText = prompterData[index];
+      
+      // Tukarkan kod [speed:X] menjadi HTML <span>
+      const parsedText = rawText.replace(/\[speed:([0-9.]+)\](.*?)\[\/speed\]/g, '<span class="speed-marker" data-speed="$1">$2</span>');
+      
+      scrollingText.innerHTML = parsedText;
       prompterPosX = window.innerWidth;
       prompterSpeed = 0;
+      
+      // Dapatkan panjang teks sebenar selepas dimasukkan ke dalam DOM
+      void scrollingText.offsetWidth; 
       prompterTextWidth = scrollingText.getBoundingClientRect().width;
       updatePrompterStatus();
     }
 
     function updatePrompterStatus() {
-      prompterStatusOverlay.textContent = `Laci: ${currentPrompterIndex + 1}/${prompterData.length} | Laju: ${prompterSpeed.toFixed(1)}`;
+      prompterStatusOverlay.textContent = `Laci: ${currentPrompterIndex + 1}/${prompterData.length} | Kelajuan: Manual: ${prompterSpeed.toFixed(1)}`;
     }
 
     function updatePrompterLoop(currentTime) {
@@ -1338,22 +1380,45 @@
       const braking = 0.25;
       const maxSpeed = 8.0;
 
-      if (prompterKeys.ArrowRight) prompterSpeed += acceleration;
-      if (prompterKeys.ArrowLeft) prompterSpeed -= braking;
+      // 1. DETECT HIGHLIGHTED WORD AT CENTER LINE
+      let forcedSpeed = null;
+      const centerLineX = window.innerWidth / 2;
+      const markers = scrollingText.querySelectorAll('.speed-marker');
 
-      if (prompterSpeed < 0) prompterSpeed = 0;
-      if (prompterSpeed > maxSpeed) prompterSpeed = maxSpeed;
+      for (let span of markers) {
+        const rect = span.getBoundingClientRect();
+        // Kalau garisan tengah sentuh marker ini
+        if (rect.left <= centerLineX && rect.right >= centerLineX) {
+          forcedSpeed = parseFloat(span.getAttribute('data-speed'));
+          break;
+        }
+      }
+
+      // 2. APPLY SPEED LOGIC
+      if (forcedSpeed !== null) {
+        prompterSpeed = forcedSpeed; // Override ikut speed yang di set
+      } else {
+        // Normal physics (Inertia kekal)
+        if (prompterKeys.ArrowRight) prompterSpeed += acceleration;
+        if (prompterKeys.ArrowLeft) prompterSpeed -= braking;
+        if (prompterSpeed < 0) prompterSpeed = 0;
+        if (prompterSpeed > maxSpeed) prompterSpeed = maxSpeed;
+      }
 
       prompterPosX -= prompterSpeed;
 
-      const endBoundary = -(prompterTextWidth - 50);
+      // 3. BERHENTI TEPAT DI GARISAN TENGAH
+      // Boundary berhenti apabila hujung ayat (kanan) mencecah garisan tengah
+      const endBoundary = centerLineX - prompterTextWidth;
       if (prompterPosX < endBoundary) {
         prompterPosX = endBoundary;
         prompterSpeed = 0;
       }
 
       scrollingText.style.transform = `translateX(${prompterPosX}px)`;
-      updatePrompterStatus();
+      
+      const speedStatus = forcedSpeed !== null ? `Auto: ${forcedSpeed.toFixed(1)}` : `Manual: ${prompterSpeed.toFixed(1)}`;
+      prompterStatusOverlay.textContent = `Laci: ${currentPrompterIndex + 1}/${prompterData.length} | Kelajuan: ${speedStatus}`;
 
       prompterAnimId = requestAnimationFrame(updatePrompterLoop);
     }
