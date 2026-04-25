@@ -534,7 +534,7 @@
     }
 
     /* ======== MODE MEMANAH TAMBAHAN ======== */
-    #memanah-canvas {
+    #memanah-canvas, #tasbih-memanah-canvas {
       width: 100%;
       height: 100%;
       display: block;
@@ -696,6 +696,7 @@
           </div>
         </div>
       </section>
+
       <section id="section-tasbih" class="section">
         <div class="topbar">
           <div style="display: flex; gap: 6px; flex-wrap: wrap;">
@@ -703,6 +704,9 @@
             <button id="btn-toggle-fact" class="btn btn-secondary btn-sm">Fakta: OFF</button>
             <button id="btn-toggle-rutin" class="btn btn-secondary btn-sm">Rutin: OFF</button>
             <button id="btn-toggle-mode" class="btn btn-secondary btn-sm btn-active" style="display: none;">Mode: Normal</button>
+            
+            <button id="btn-toggle-tasbih-ui" class="btn btn-secondary btn-sm" style="border-color: var(--grad2);">UI: Bulatan</button>
+            <button id="btn-music-tasbih" class="btn btn-secondary btn-sm">Muzik: OFF 🎵</button>
           </div>
           <div style="text-align:right; display:flex; gap:6px; flex-direction:column; align-items:flex-end;">
             <div style="display:flex; gap:6px;">
@@ -725,6 +729,13 @@
           <div class="counter-label">Baki hari ini</div>
           <div id="tasbih-count" class="counter-value">10000</div>
           <div id="tasbih-status" class="counter-sub">Tekan / Sapu Skrin / Enter</div>
+        </div>
+
+        <div id="tasbih-memanah-container" class="memanah-game-container" style="display: none; height: 260px; margin: 10px auto; width: 100%;">
+            <canvas id="tasbih-memanah-canvas"></canvas>
+            <div style="position:absolute; bottom:10px; left:0; right:0; text-align:center; font-size:0.7rem; color:var(--subtext); pointer-events:none; padding: 0 10px;">
+              Sentuh Tahan (Aim), Geser Jari (Momentum), Angkat Jari (Tembak)
+            </div>
         </div>
 
         <div style="font-size: 0.65rem; color: var(--subtext); text-align: center; margin-top: 4px; font-style: italic; opacity: 0.8;">
@@ -834,12 +845,13 @@
       </section>
 
       <section id="section-memanah" class="section">
-        <div class="topbar" style="position: relative; z-index: 30;">
+        <div class="topbar" style="position: relative; z-index: 30; flex-wrap: wrap;">
           <button id="btn-back-memanah" class="btn btn-secondary btn-sm">← Laci</button>
           <div class="topbar-title" style="color: var(--grad1); display: flex; align-items: center; gap: 8px;">
             Memanah 🏹
             <span id="memanah-mini-count" style="background: var(--grad1); color: white; padding: 2px 10px; border-radius: 999px; font-size: 0.9rem; font-weight: bold;">33</span>
           </div>
+          <button id="btn-music-memanah" class="btn btn-secondary btn-sm">Muzik: OFF 🎵</button>
           <button id="btn-lock-memanah-scroll" class="btn btn-secondary btn-sm" style="padding: 4px 8px; font-size: 0.75rem;">Lock Scroll: OFF</button>
         </div>
 
@@ -1033,6 +1045,9 @@
 
     const homeUserEmail = document.getElementById("home-user-email");
     const tasbihCircle = document.getElementById("tasbih-circle");
+    const tasbihMemanahContainer = document.getElementById("tasbih-memanah-container"); // NEW
+    const btnToggleTasbihUI = document.getElementById("btn-toggle-tasbih-ui"); // NEW
+    
     const tasbihCountEl = document.getElementById("tasbih-count");
     const tasbihStatusEl = document.getElementById("tasbih-status");
     const tasbihStatusChip = document.getElementById("tasbih-status-chip");
@@ -1086,6 +1101,33 @@
     const joggingInputBefore = document.getElementById("jogging-input-before");
     const joggingAfterContainer = document.getElementById("jogging-after-container");
     const btnAddJoggingAfter = document.getElementById("btn-add-jogging-after");
+    
+    // MUZIK GLOBAL
+    const bgMusic = new Audio('backgroundmusic.mp3');
+    bgMusic.loop = true;
+    let isMusicPlaying = false;
+    const btnMusicTasbih = document.getElementById('btn-music-tasbih');
+    const btnMusicMemanah = document.getElementById('btn-music-memanah');
+
+    function toggleMusic() {
+        isMusicPlaying = !isMusicPlaying;
+        if (isMusicPlaying) {
+            bgMusic.play().catch(e => {
+                console.log("Audio play failed/blocked by browser:", e);
+                showToast("Sila berinteraksi (klik/tekan skrin) sebelum mainkan muzik.");
+                isMusicPlaying = false;
+            });
+        } else {
+            bgMusic.pause();
+        }
+        
+        btnMusicTasbih.textContent = `Muzik: ${isMusicPlaying ? 'ON' : 'OFF'} 🎵`;
+        btnMusicTasbih.classList.toggle('btn-active', isMusicPlaying);
+        btnMusicMemanah.textContent = `Muzik: ${isMusicPlaying ? 'ON' : 'OFF'} 🎵`;
+        btnMusicMemanah.classList.toggle('btn-active', isMusicPlaying);
+    }
+    btnMusicTasbih.addEventListener('click', toggleMusic);
+    btnMusicMemanah.addEventListener('click', toggleMusic);
 
     // VARIABLES
     let currentUser = null;
@@ -1169,6 +1211,15 @@
       sectionPrompterEditor.classList.remove("active"); 
       
       section.classList.add("active");
+      
+      // Update canvas dimension if returning to Tasbih Memanah
+      if(section.id === "section-tasbih" && isTasbihMemanahActive) {
+          setTimeout(() => {
+              tm_canvas.width = tm_canvas.parentElement.clientWidth;
+              tm_canvas.height = tm_canvas.parentElement.clientHeight;
+          }, 50);
+      }
+      
       saveAppState(); 
     }
 
@@ -2708,13 +2759,13 @@
 
     document.addEventListener("touchstart", (e) => {
       if(!sectionTasbih.classList.contains('active')) return;
-      if(e.target.closest('button') || e.target.closest('.topbar') || e.target.closest('#fact-display-box')) return;
+      if(e.target.closest('button') || e.target.closest('.topbar') || e.target.closest('#fact-display-box') || e.target.closest('#tasbih-memanah-container')) return;
       touchY = e.touches[0].clientY;
       isSwiping = false;
     }, {passive:true});
 
     document.addEventListener("touchmove", (e) => {
-      if(!sectionTasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box')) return;
+      if(!sectionTasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box') || e.target.closest('#tasbih-memanah-container')) return;
       const currentY = e.touches[0].clientY;
       const diff = currentY - touchY;
       if(Math.abs(diff) > 3) isSwiping = true;
@@ -2732,7 +2783,7 @@
     }, {passive:true});
 
     document.addEventListener("click", (e) => {
-      if(!sectionTasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box') || isSwiping) return;
+      if(!sectionTasbih.classList.contains('active') || e.target.closest('button') || e.target.closest('#fact-display-box') || e.target.closest('#tasbih-memanah-container') || isSwiping) return;
       decrementTasbih();
     });
 
@@ -2812,7 +2863,7 @@
     });
 
     // ==========================================
-    // KOD BARU DITAMBAH: MODE MEMANAH 
+    // KOD ASAL: LACI MEMANAH 
     // ==========================================
     const btnBackMemanah = document.getElementById("btn-back-memanah");
     const memanahMiniCount = document.getElementById("memanah-mini-count");
@@ -2824,7 +2875,7 @@
     const ctxMemanah = memanahCanvas.getContext("2d");
     
     const btnLockMemanahScroll = document.getElementById("btn-lock-memanah-scroll");
-    const btnLockMemanahNota = document.getElementById("btn-lock-memanah-nota"); // BUTANG LOCK BARU
+    const btnLockMemanahNota = document.getElementById("btn-lock-memanah-nota"); 
     const memanahScrollContainer = document.getElementById("memanah-scroll-container");
     const memanahMainTextarea = document.getElementById("memanah-main-textarea");
 
@@ -2848,7 +2899,7 @@
     let memanahTotalPausedTime = 0;
     let memanahTotalScore = 0;
     let isMemanahScrollLocked = false;
-    let isMemanahNotaLocked = true; // STATE LOCK BARU
+    let isMemanahNotaLocked = true; 
 
     btnBackMemanah.addEventListener("click", () => {
       cancelAnimationFrame(memanahAnimationFrame);
@@ -2862,7 +2913,6 @@
       memanahScrollContainer.style.overflowY = isMemanahScrollLocked ? "hidden" : "auto";
     });
 
-    // LISTENER LOCK NOTA MEMANAH
     btnLockMemanahNota.addEventListener("click", () => {
       isMemanahNotaLocked = !isMemanahNotaLocked;
       btnLockMemanahNota.textContent = `Lock Nota: ${isMemanahNotaLocked ? 'ON' : 'OFF'}`;
@@ -2870,7 +2920,6 @@
       memanahMainTextarea.readOnly = isMemanahNotaLocked;
     });
 
-    // SIMPAN MANUAL JIKA USER EDIT DALAM TEXTAREA
     memanahMainTextarea.addEventListener("change", (e) => {
       if (currentMemanahDrawerId && currentUser) {
         updateDoc(doc(db, "users", currentUser.uid, "drawer", currentMemanahDrawerId), { 
@@ -2896,7 +2945,6 @@
       memanahTotalPausedTime = 0;
       memanahPaused = false;
       
-      // RESET LOCK NOTA
       isMemanahNotaLocked = true;
       btnLockMemanahNota.textContent = "Lock Nota: ON";
       btnLockMemanahNota.classList.add("btn-active");
@@ -2924,26 +2972,18 @@
       loopMemanah();
     }
 
-    function loopMemanah() {
-      ctxMemanah.clearRect(0, 0, memanahCanvas.width, memanahCanvas.height);
+    function drawArcheryGame(ctx, cvsWidth, cvsHeight, tX, tY, pIsPulling, pArrowFlying, pPaused, pCrossX, pCrossY, pActX, pActY, pArrProg, pStX, pStY, pEnX, pEnY, pTexts) {
+      ctx.clearRect(0, 0, cvsWidth, cvsHeight);
 
       let swingSpeed = 1.6; 
       let maxAngle = Math.PI / 2.5; 
-      let pivotX = memanahCanvas.width / 2;
+      let pivotX = cvsWidth / 2;
       let pivotY = -20; 
-      
-      let maxSwingPx = (memanahCanvas.width / 2) - 50; 
-      let pendulumLength = Math.min(memanahCanvas.height * 0.65, maxSwingPx / Math.sin(maxAngle));
+      let maxSwingPx = (cvsWidth / 2) - 50; 
+      let pendulumLength = Math.min(cvsHeight * 0.65, maxSwingPx / Math.sin(maxAngle));
 
-      if (!memanahPaused) {
-        let timeNow = (Date.now() - memanahTotalPausedTime) / 1000; 
-        let angle = Math.sin(timeNow * swingSpeed) * maxAngle;
-        targetX = pivotX + Math.sin(angle) * pendulumLength;
-        targetY = pivotY + Math.cos(angle) * pendulumLength;
-      }
-
-      ctxMemanah.beginPath(); ctxMemanah.moveTo(pivotX, pivotY); ctxMemanah.lineTo(targetX, targetY);
-      ctxMemanah.strokeStyle = "rgba(255, 255, 255, 0.2)"; ctxMemanah.lineWidth = 2; ctxMemanah.stroke();
+      ctx.beginPath(); ctx.moveTo(pivotX, pivotY); ctx.lineTo(tX, tY);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; ctx.lineWidth = 2; ctx.stroke();
 
       const rings = [
         { r: 40, c: "#171717", pts: 4 }, 
@@ -2952,89 +2992,115 @@
         { r: 16, c: "#eab308", pts: 9 }, 
         { r: 8,  c: "#fef08a", pts: 10 } 
       ];
-      ctxMemanah.beginPath(); ctxMemanah.arc(targetX, targetY, 48, 0, Math.PI * 2); 
-      ctxMemanah.fillStyle = "#ffffff"; ctxMemanah.fill();
+      ctx.beginPath(); ctx.arc(tX, tY, 48, 0, Math.PI * 2); 
+      ctx.fillStyle = "#ffffff"; ctx.fill();
 
       rings.forEach(ring => {
-        ctxMemanah.beginPath(); ctxMemanah.arc(targetX, targetY, ring.r, 0, Math.PI*2);
-        ctxMemanah.fillStyle = ring.c; ctxMemanah.fill();
-        ctxMemanah.lineWidth = 0.5; ctxMemanah.strokeStyle = "rgba(255,255,255,0.3)"; ctxMemanah.stroke();
+        ctx.beginPath(); ctx.arc(tX, tY, ring.r, 0, Math.PI*2);
+        ctx.fillStyle = ring.c; ctx.fill();
+        ctx.lineWidth = 0.5; ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.stroke();
       });
+
+      if (pIsPulling && !pArrowFlying && !pPaused) {
+        ctx.strokeStyle = "rgba(99, 102, 241, 0.8)"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(pActX, pActY, 35, 0, Math.PI * 2);
+        ctx.moveTo(pActX - 45, pActY); ctx.lineTo(pActX + 45, pActY);
+        ctx.moveTo(pActX, pActY - 45); ctx.lineTo(pActX, pActY + 45);
+        ctx.stroke();
+        ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(pActX, pActY, 3, 0, Math.PI * 2); ctx.fill();
+      }
+
+      if (pArrowFlying) {
+        let scale = 1 - (pArrProg * 0.7); 
+        let curX = pStX + (pEnX - pStX) * pArrProg;
+        let curY = pStY + (pEnY - pStY) * pArrProg;
+
+        ctx.fillStyle = "#fde047";
+        ctx.beginPath(); ctx.arc(curX, curY, 6 * scale, 0, Math.PI * 2); ctx.fill();
+      }
+
+      if (pPaused) {
+        ctx.fillStyle = "#fde047";
+        ctx.beginPath(); ctx.arc(pEnX, pEnY, 6 * 0.3, 0, Math.PI * 2); ctx.fill();
+      }
+
+      pTexts.forEach(ft => {
+          ctx.fillStyle = ft.color.replace("ALPHA", ft.alpha);
+          ctx.font = "bold 24px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(ft.text, ft.x, ft.y);
+      });
+    }
+
+    function getTargetPos(cvsWidth, cvsHeight, pausedTime, isPaused, curTX, curTY) {
+      if (isPaused) return { x: curTX, y: curTY };
+      let swingSpeed = 1.6; 
+      let maxAngle = Math.PI / 2.5; 
+      let pivotX = cvsWidth / 2;
+      let pivotY = -20; 
+      let maxSwingPx = (cvsWidth / 2) - 50; 
+      let pendulumLength = Math.min(cvsHeight * 0.65, maxSwingPx / Math.sin(maxAngle));
+      let timeNow = (Date.now() - pausedTime) / 1000; 
+      let angle = Math.sin(timeNow * swingSpeed) * maxAngle;
+      return {
+          x: pivotX + Math.sin(angle) * pendulumLength,
+          y: pivotY + Math.cos(angle) * pendulumLength
+      };
+    }
+
+    function loopMemanah() {
+      let tPos = getTargetPos(memanahCanvas.width, memanahCanvas.height, memanahTotalPausedTime, memanahPaused, targetX, targetY);
+      targetX = tPos.x; targetY = tPos.y;
 
       if (isPulling && !arrowFlying && !memanahPaused) {
         crosshairX += vx; crosshairY += vy;
-
         if (crosshairX < 20) { crosshairX = 20; if (vx < 0) vx = 0; }
         if (crosshairX > memanahCanvas.width - 20) { crosshairX = memanahCanvas.width - 20; if (vx > 0) vx = 0; }
         if (crosshairY < 20) { crosshairY = 20; if (vy < 0) vy = 0; }
         if (crosshairY > memanahCanvas.height - 20) { crosshairY = memanahCanvas.height - 20; if (vy > 0) vy = 0; }
-
         let time = Date.now() / 300; 
-        let swayX = Math.sin(time) * 1.5; 
-        let swayY = Math.cos(time * 1.2) * 1.5;
-        
+        let swayX = Math.sin(time) * 1.5; let swayY = Math.cos(time * 1.2) * 1.5;
         actualAimX = crosshairX + swayX; actualAimY = crosshairY + swayY;
-
-        ctxMemanah.strokeStyle = "rgba(99, 102, 241, 0.8)"; ctxMemanah.lineWidth = 2;
-        ctxMemanah.beginPath(); ctxMemanah.arc(actualAimX, actualAimY, 35, 0, Math.PI * 2);
-        ctxMemanah.moveTo(actualAimX - 45, actualAimY); ctxMemanah.lineTo(actualAimX + 45, actualAimY);
-        ctxMemanah.moveTo(actualAimX, actualAimY - 45); ctxMemanah.lineTo(actualAimX, actualAimY + 45);
-        ctxMemanah.stroke();
-        ctxMemanah.fillStyle = "white"; ctxMemanah.beginPath(); ctxMemanah.arc(actualAimX, actualAimY, 3, 0, Math.PI * 2); ctxMemanah.fill();
       }
 
       if (arrowFlying) {
         arrowProgress += 0.2; 
-        let scale = 1 - (arrowProgress * 0.7); 
-        let curX = startArrowX + (endArrowX - startArrowX) * arrowProgress;
-        let curY = startArrowY + (endArrowY - startArrowY) * arrowProgress;
-
-        ctxMemanah.fillStyle = "#fde047";
-        ctxMemanah.beginPath(); ctxMemanah.arc(curX, curY, 6 * scale, 0, Math.PI * 2); ctxMemanah.fill();
-
         if (arrowProgress >= 1) {
           arrowFlying = false;
           checkHitMemanah(endArrowX, endArrowY);
         }
       }
 
-      if (memanahPaused) {
-        ctxMemanah.fillStyle = "#fde047";
-        ctxMemanah.beginPath(); ctxMemanah.arc(endArrowX, endArrowY, 6 * 0.3, 0, Math.PI * 2); ctxMemanah.fill();
-      }
-
       floatingTexts.forEach((ft, index) => {
           ft.y -= 1.0; ft.alpha -= 0.015; 
-          ctxMemanah.fillStyle = ft.color.replace("ALPHA", ft.alpha);
-          ctxMemanah.font = "bold 24px sans-serif";
-          ctxMemanah.textAlign = "center";
-          ctxMemanah.fillText(ft.text, ft.x, ft.y);
           if(ft.alpha <= 0) floatingTexts.splice(index, 1);
       });
+
+      drawArcheryGame(ctxMemanah, memanahCanvas.width, memanahCanvas.height, targetX, targetY, isPulling, arrowFlying, memanahPaused, crosshairX, crosshairY, actualAimX, actualAimY, arrowProgress, startArrowX, startArrowY, endArrowX, endArrowY, floatingTexts);
 
       memanahAnimationFrame = requestAnimationFrame(loopMemanah);
     }
 
+    function getHitScore(hitX, hitY, tX, tY) {
+      let dist = Math.hypot(hitX - tX, hitY - tY);
+      if (dist < 8) return { score: 10, color: "rgba(250, 204, 21, ALPHA)" };
+      if (dist < 16) return { score: 9, color: "rgba(250, 204, 21, ALPHA)" };
+      if (dist < 24) return { score: 8, color: "rgba(239, 68, 68, ALPHA)" };
+      if (dist < 32) return { score: 6, color: "rgba(59, 130, 246, ALPHA)" };
+      if (dist < 48) return { score: 4, color: "rgba(163, 163, 163, ALPHA)" };
+      return { score: 0, color: "rgba(255, 100, 100, ALPHA)" };
+    }
+
     function checkHitMemanah(hitX, hitY) {
-      let dist = Math.hypot(hitX - targetX, hitY - targetY);
-      let score = 0; let scoreColor = "rgba(255, 255, 255, ALPHA)";
+      let result = getHitScore(hitX, hitY, targetX, targetY);
+      memanahTotalScore += result.score;
 
-      if (dist < 8) { score = 10; scoreColor = "rgba(250, 204, 21, ALPHA)"; }        
-      else if (dist < 16) { score = 9; scoreColor = "rgba(250, 204, 21, ALPHA)"; }  
-      else if (dist < 24) { score = 8; scoreColor = "rgba(239, 68, 68, ALPHA)"; }   
-      else if (dist < 32) { score = 6; scoreColor = "rgba(59, 130, 246, ALPHA)"; }  
-      else if (dist < 48) { score = 4; scoreColor = "rgba(163, 163, 163, ALPHA)"; } 
-
-      memanahTotalScore += score;
-
-      if (score > 0) {
+      if (result.score > 0) {
         triggerVibration([100, 50, 100]);
-        ctxMemanah.fillStyle = "rgba(255, 255, 255, 0.6)";
-        ctxMemanah.beginPath(); ctxMemanah.arc(targetX, targetY, 35, 0, Math.PI * 2); ctxMemanah.fill();
-        floatingTexts.push({ text: `+${score}`, x: targetX, y: targetY - 20, alpha: 1.0, color: scoreColor });
+        floatingTexts.push({ text: `+${result.score}`, x: targetX, y: targetY - 20, alpha: 1.0, color: result.color });
       } else {
         triggerVibration([50]); 
-        floatingTexts.push({ text: "Miss!", x: hitX, y: hitY - 20, alpha: 1.0, color: "rgba(255, 100, 100, ALPHA)" });
+        floatingTexts.push({ text: "Miss!", x: hitX, y: hitY - 20, alpha: 1.0, color: result.color });
       }
 
       setTimeout(() => {
@@ -3048,7 +3114,6 @@
       e.preventDefault();
       if(arrowFlying || isJoggingBlocked || memanahPaused) return;
       isPulling = true;
-      
       crosshairX = memanahCanvas.width / 2; crosshairY = memanahCanvas.height / 2;
       vx = 0; vy = 0;
       lastTouchX = e.touches[0].clientX; lastTouchY = e.touches[0].clientY;
@@ -3057,10 +3122,8 @@
     memanahCanvas.addEventListener('touchmove', e => {
       e.preventDefault();
       if (!isPulling || memanahPaused) return;
-      
       let curTouchX = e.touches[0].clientX; let curTouchY = e.touches[0].clientY;
       let deltaX = curTouchX - lastTouchX; let deltaY = curTouchY - lastTouchY;
-      
       vx += deltaX * 0.05; vy += deltaY * 0.05;
       lastTouchX = curTouchX; lastTouchY = curTouchY;
     }, {passive: false});
@@ -3071,9 +3134,7 @@
         isPulling = false; arrowFlying = true; arrowProgress = 0;
         startArrowX = memanahCanvas.width / 2; startArrowY = memanahCanvas.height; 
         endArrowX = actualAimX; endArrowY = actualAimY;
-
-        memanahPaused = true;
-        memanahPauseStartTime = Date.now();
+        memanahPaused = true; memanahPauseStartTime = Date.now();
       }
     }, {passive: false});
 
@@ -3095,25 +3156,14 @@
       } else {
         isJoggingBlocked = true;
         triggerVibration([200, 100, 200, 100, 2000]);
-        
         let finalScore = memanahTotalScore;
-        memanahTapCount = 33;
-        memanahTotalScore = 0; 
-        
-        memanahMiniCount.textContent = "✓";
-        memanahBigCount.textContent = "✓";
+        memanahTapCount = 33; memanahTotalScore = 0; 
+        memanahMiniCount.textContent = "✓"; memanahBigCount.textContent = "✓";
         showToast(`Selesai! Skor Keseluruhan: ${finalScore}`);
-
-        setTimeout(() => {
-          memanahMiniCount.textContent = memanahTapCount;
-          memanahBigCount.textContent = memanahTapCount;
-          isJoggingBlocked = false;
-        }, 2600);
+        setTimeout(() => { memanahMiniCount.textContent = memanahTapCount; memanahBigCount.textContent = memanahTapCount; isJoggingBlocked = false; }, 2600);
 
         const afterStr = afterInputs.map((val, index) => `${index + 1}.${val}`).join(" ");
         const combinedNewNote = beforeVal + " = " + afterStr;
-        
-        // MENGGUNAKAN TEKS DARI TEXTAREA TERUS (BAGI MEMASTIKAN EDIT MANUAL DISIMPAN)
         const currentNotes = memanahMainTextarea.value;
         const updatedNotes = currentNotes ? currentNotes + '\n' + combinedNewNote : combinedNewNote;
         
@@ -3121,16 +3171,140 @@
         memanahMainTextarea.scrollTop = memanahMainTextarea.scrollHeight;
 
         if (currentMemanahDrawerId && currentUser) {
-          updateDoc(doc(db, "users", currentUser.uid, "drawer", currentMemanahDrawerId), {
-            notes: updatedNotes,
-            repeatCount: 0
-          });
+          updateDoc(doc(db, "users", currentUser.uid, "drawer", currentMemanahDrawerId), { notes: updatedNotes, repeatCount: 0 });
         }
-
         memanahInputBefore.value = "";
         memanahAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
       }
     }
+
+
+    // ==========================================
+    // KOD BARU: TASBIH MEMANAH (Di Page Utama)
+    // ==========================================
+    const tm_canvas = document.getElementById("tasbih-memanah-canvas");
+    const tm_ctx = tm_canvas.getContext("2d");
+
+    let isTasbihMemanahActive = false;
+    let tm_animationFrame;
+    let tm_targetX = 0; let tm_targetY = 0; 
+    let tm_crossX = 0; let tm_crossY = 0;
+    let tm_vx = 0; let tm_vy = 0; 
+    let tm_isPulling = false; let tm_arrowFlying = false;
+    let tm_arrowProgress = 0;
+    let tm_startArrowX = 0; let tm_startArrowY = 0;
+    let tm_endArrowX = 0; let tm_endArrowY = 0;
+    let tm_actualAimX = 0; let tm_actualAimY = 0;
+    let tm_lastTouchX = 0; let tm_lastTouchY = 0;
+    let tm_floatingTexts = [];
+    let tm_paused = false;
+    let tm_pauseStartTime = 0;
+    let tm_totalPausedTime = 0;
+
+    btnToggleTasbihUI.addEventListener("click", () => {
+        isTasbihMemanahActive = !isTasbihMemanahActive;
+        btnToggleTasbihUI.textContent = isTasbihMemanahActive ? "UI: Memanah 🏹" : "UI: Bulatan";
+        btnToggleTasbihUI.classList.toggle('btn-active', isTasbihMemanahActive);
+
+        if (isTasbihMemanahActive) {
+            document.getElementById('tasbih-circle').style.display = 'none';
+            tasbihMemanahContainer.style.display = 'block';
+            
+            cancelAnimationFrame(tm_animationFrame);
+            tm_canvas.width = tm_canvas.parentElement.clientWidth;
+            tm_canvas.height = tm_canvas.parentElement.clientHeight;
+            tm_crossX = tm_canvas.width / 2;
+            tm_crossY = tm_canvas.height / 2;
+            loopTasbihMemanah();
+        } else {
+            document.getElementById('tasbih-circle').style.display = 'flex';
+            tasbihMemanahContainer.style.display = 'none';
+            cancelAnimationFrame(tm_animationFrame);
+        }
+    });
+
+    function loopTasbihMemanah() {
+      let tPos = getTargetPos(tm_canvas.width, tm_canvas.height, tm_totalPausedTime, tm_paused, tm_targetX, tm_targetY);
+      tm_targetX = tPos.x; tm_targetY = tPos.y;
+
+      if (tm_isPulling && !tm_arrowFlying && !tm_paused) {
+        tm_crossX += tm_vx; tm_crossY += tm_vy;
+        if (tm_crossX < 20) { tm_crossX = 20; if (tm_vx < 0) tm_vx = 0; }
+        if (tm_crossX > tm_canvas.width - 20) { tm_crossX = tm_canvas.width - 20; if (tm_vx > 0) tm_vx = 0; }
+        if (tm_crossY < 20) { tm_crossY = 20; if (tm_vy < 0) tm_vy = 0; }
+        if (tm_crossY > tm_canvas.height - 20) { tm_crossY = tm_canvas.height - 20; if (tm_vy > 0) tm_vy = 0; }
+        let time = Date.now() / 300; 
+        let swayX = Math.sin(time) * 1.5; let swayY = Math.cos(time * 1.2) * 1.5;
+        tm_actualAimX = tm_crossX + swayX; tm_actualAimY = tm_crossY + swayY;
+      }
+
+      if (tm_arrowFlying) {
+        tm_arrowProgress += 0.2; 
+        if (tm_arrowProgress >= 1) {
+          tm_arrowFlying = false;
+          checkHitTasbihMemanah(tm_endArrowX, tm_endArrowY);
+        }
+      }
+
+      tm_floatingTexts.forEach((ft, index) => {
+          ft.y -= 1.0; ft.alpha -= 0.015; 
+          if(ft.alpha <= 0) tm_floatingTexts.splice(index, 1);
+      });
+
+      drawArcheryGame(tm_ctx, tm_canvas.width, tm_canvas.height, tm_targetX, tm_targetY, tm_isPulling, tm_arrowFlying, tm_paused, tm_crossX, tm_crossY, tm_actualAimX, tm_actualAimY, tm_arrowProgress, tm_startArrowX, tm_startArrowY, tm_endArrowX, tm_endArrowY, tm_floatingTexts);
+
+      tm_animationFrame = requestAnimationFrame(loopTasbihMemanah);
+    }
+
+    function checkHitTasbihMemanah(hitX, hitY) {
+      let result = getHitScore(hitX, hitY, tm_targetX, tm_targetY);
+
+      if (result.score > 0) {
+        // BERJAYA KENA TARGET!
+        triggerVibration([100, 50, 100]);
+        tm_floatingTexts.push({ text: `Kena!`, x: tm_targetX, y: tm_targetY - 20, alpha: 1.0, color: result.color });
+        
+        // Panggil fungsi tasbih decrement asal
+        decrementTasbih();
+      } else {
+        triggerVibration([50]); 
+        tm_floatingTexts.push({ text: "Miss!", x: hitX, y: hitY - 20, alpha: 1.0, color: result.color });
+      }
+
+      setTimeout(() => {
+        tm_paused = false;
+        tm_totalPausedTime += (Date.now() - tm_pauseStartTime);
+      }, 1000); 
+    }
+
+    tm_canvas.addEventListener('touchstart', e => {
+      e.preventDefault();
+      if(tm_arrowFlying || tm_paused || isBlocked) return;
+      tm_isPulling = true;
+      tm_crossX = tm_canvas.width / 2; tm_crossY = tm_canvas.height / 2;
+      tm_vx = 0; tm_vy = 0;
+      tm_lastTouchX = e.touches[0].clientX; tm_lastTouchY = e.touches[0].clientY;
+    }, {passive: false});
+
+    tm_canvas.addEventListener('touchmove', e => {
+      e.preventDefault();
+      if (!tm_isPulling || tm_paused) return;
+      let curTouchX = e.touches[0].clientX; let curTouchY = e.touches[0].clientY;
+      let deltaX = curTouchX - tm_lastTouchX; let deltaY = curTouchY - tm_lastTouchY;
+      tm_vx += deltaX * 0.05; tm_vy += deltaY * 0.05;
+      tm_lastTouchX = curTouchX; tm_lastTouchY = curTouchY;
+    }, {passive: false});
+
+    tm_canvas.addEventListener('touchend', e => {
+      e.preventDefault();
+      if (tm_isPulling && !tm_paused) {
+        tm_isPulling = false; tm_arrowFlying = true; tm_arrowProgress = 0;
+        tm_startArrowX = tm_canvas.width / 2; tm_startArrowY = tm_canvas.height; 
+        tm_endArrowX = tm_actualAimX; tm_endArrowY = tm_actualAimY;
+        tm_paused = true; tm_pauseStartTime = Date.now();
+      }
+    }, {passive: false});
+
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => { 
