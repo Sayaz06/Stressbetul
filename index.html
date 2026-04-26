@@ -370,25 +370,6 @@
       opacity: 1; 
     }
 
-    /* UPLOAD PROGRESS BAR */
-    #upload-progress-container {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.1);
-      z-index: 999999;
-    }
-    #upload-progress-bar {
-      height: 100%;
-      width: 0%;
-      background: #3b82f6; /* Blue Color */
-      box-shadow: 0 0 10px #3b82f6;
-      transition: width 0.1s ease;
-    }
-
     .list { 
       margin-top: 10px; 
       border-radius: 14px; 
@@ -637,28 +618,6 @@
       padding: 0 4px;
     }
 
-    /* OVERLAY VIDEO REHAT MINDA */
-    #video-rest-overlay {
-      display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(10px);
-      z-index: 999999; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
-    }
-    .video-container { 
-      width: 100%; 
-      max-width: 480px; 
-      aspect-ratio: 1 / 1; /* ASPECT RATIO SAMA SISI 1:1 */
-      border-radius: 16px; 
-      overflow: hidden; 
-      box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
-      border: 2px solid var(--border-mid); 
-    }
-    #rest-video { 
-      width: 100%; 
-      height: 100%;
-      object-fit: cover; /* PASTIKAN VIDEO TAK HEROT */
-      display: block; 
-    }
-
     .footer { 
       margin-top: auto; 
       padding-top: 10px; 
@@ -675,21 +634,6 @@
 </head>
 
 <body>
-  <div id="upload-progress-container">
-    <div id="upload-progress-bar"></div>
-  </div>
-
-  <input type="file" id="video-upload-input" accept="video/*" style="display: none;">
-
-  <div id="video-rest-overlay">
-    <div style="color:var(--grad1); font-size:1.4rem; font-weight:bold; margin-bottom:8px; text-align:center;">Fasa 1 Selesai! 🧠</div>
-    <div style="color:var(--subtext); font-size:0.9rem; margin-bottom:24px; text-align:center;">Tarik nafas, tenangkan minda. Biarkan memori diproses.</div>
-    <div class="video-container">
-      <video id="rest-video" src="" controls playsinline></video>
-    </div>
-    <button id="btn-sambung-fasa2" class="btn mt-16" style="max-width: 300px; padding: 14px;">Sambung Fasa 2</button>
-  </div>
-
   <div class="app-shell">
     <div class="card">
 
@@ -728,9 +672,51 @@
           <button id="btn-go-prompter" class="btn btn-secondary" style="border-color: var(--grad1);">
             <span>Teleprompter Kamera</span>
           </button>
+          <button id="btn-go-rehat" class="btn btn-secondary" style="border-color: var(--grad2);">
+            <span>Mode Rehat (MP3 & Balang Nafas)</span>
+          </button>
         </div>
         <div class="footer mt-16">
           Repo: <span class="small">Stressbetul / Istigfar</span>
+        </div>
+      </section>
+
+      <section id="section-rehat" class="section">
+        <div class="topbar">
+          <button id="btn-back-home-rehat" class="btn btn-secondary btn-sm">← Menu</button>
+          <div style="text-align: right;">
+            <div class="topbar-title">Mode Rehat</div>
+            <div class="topbar-sub">Audio & Latihan Pernafasan</div>
+          </div>
+        </div>
+
+        <div class="drawer-card mt-8" style="flex-shrink: 0;">
+          <div style="font-size:0.85rem; font-weight:bold; color:var(--grad1); margin-bottom:8px;">Muat Naik Audio MP3</div>
+          <input type="file" id="mp3-upload-input" accept="audio/mp3, audio/mpeg" style="display:none;">
+          <button id="btn-select-mp3" class="btn btn-secondary btn-sm" style="width:100%; margin-bottom:8px;">Pilih Fail MP3</button>
+          <div id="mp3-upload-status" style="font-size:0.75rem; color:var(--subtext); text-align:center; margin-bottom:6px;">Tiada fail dipilih</div>
+          <div style="width:100%; background:rgba(255,255,255,0.1); border-radius:999px; height:8px; overflow:hidden;">
+            <div id="mp3-progress-bar" style="width:0%; height:100%; background:var(--grad1); transition:width 0.2s;"></div>
+          </div>
+          <audio id="audio-player" controls style="width:100%; margin-top:12px; display:none; outline:none; border-radius:8px;"></audio>
+        </div>
+
+        <div class="drawer-card mt-8" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative;">
+          <div style="font-size:0.85rem; color:var(--subtext); margin-bottom:15px; text-align:center;">
+            Tekan & Hold butang di bawah untuk latihan.<br>Tarik (Biru) → Tahan (Putih) → Hembus (Merah)
+          </div>
+
+          <div id="balang-nafas" style="width: 140px; height: 180px; border: 4px solid var(--border-mid); border-radius: 70px; position:relative; overflow:hidden; box-shadow: 0 0 25px rgba(0,0,0,0.4); background: rgba(0,0,0,0.3);">
+             <div id="balang-isi" style="position:absolute; bottom:0; left:0; width:100%; height:10%; background: transparent; transition: background 2s ease, height 2s ease;"></div>
+          </div>
+
+          <div id="balang-status" style="margin-top:20px; font-weight:bold; font-size:1.2rem; color:var(--text); text-transform:uppercase; letter-spacing: 0.1em;">Bersedia</div>
+
+          <div style="display:flex; gap:10px; margin-top:25px; width:100%; justify-content:center;">
+            <button id="btn-inhale" class="btn btn-secondary" style="flex:1; font-weight:bold;">Inhale</button>
+            <button id="btn-hold" class="btn btn-secondary" style="flex:1; font-weight:bold;">Hold</button>
+            <button id="btn-exhale" class="btn btn-secondary" style="flex:1; font-weight:bold;">Exhale</button>
+          </div>
         </div>
       </section>
 
@@ -853,7 +839,7 @@
       </section>
 
       <section id="section-jogging" class="section">
-        <div class="topbar" style="position: relative; z-index: 30; flex-wrap: wrap;">
+        <div class="topbar" style="position: relative; z-index: 30;">
           <button id="btn-back-jogging" class="btn btn-secondary btn-sm">← Laci</button>
           
           <div class="topbar-title" style="color: var(--grad1); display: flex; align-items: center; gap: 8px;">
@@ -861,12 +847,8 @@
             <span id="jogging-mini-count" style="background: var(--grad1); color: white; padding: 2px 10px; border-radius: 999px; font-size: 0.9rem; font-weight: bold; box-shadow: 0 2px 8px rgba(99,102,241,0.6);">33</span>
           </div>
 
-          <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            <button id="btn-toggle-jogging-max" class="btn btn-secondary btn-sm" style="border-color: var(--grad2);">Target: 33</button>
-            <button id="btn-video-jogging" class="btn btn-secondary btn-sm btn-active">Video Rehat: ON</button>
-            <button class="btn btn-secondary btn-sm btn-upload-video" style="border-color: #f59e0b; color: #fcd34d;">⬆️ Upload Video (1:1)</button>
-            <button id="btn-toggle-scroll" class="btn btn-secondary btn-sm">Mode Berlari: OFF</button>
-          </div>
+          <button id="btn-toggle-jogging-max" class="btn btn-secondary btn-sm" style="border-color: var(--grad2);">Target: 33</button>
+          <button id="btn-toggle-scroll" class="btn btn-secondary btn-sm">Mode Berlari: OFF</button>
         </div>
         
         <div style="font-size: 0.7rem; color: var(--subtext); text-align: center; margin-bottom: 10px; position: relative; z-index: 30;">
@@ -890,7 +872,7 @@
           </div>
 
           <div id="jogging-circle" class="counter-circle" style="margin: 5px auto 15px auto; flex-shrink: 0; width: 180px; height: 180px; position: relative; z-index: 30;">
-            <div class="counter-label" id="jogging-phase-label">Fasa 1: Baki Hafalan</div>
+            <div class="counter-label">Baki Hafalan</div>
             <div id="jogging-count" class="counter-value" style="font-size: 2.2rem;">33</div>
             <div class="counter-sub">Sapu / Tekan</div>
           </div>
@@ -914,10 +896,8 @@
             <span id="memanah-mini-count" style="background: var(--grad1); color: white; padding: 2px 10px; border-radius: 999px; font-size: 0.9rem; font-weight: bold;">33</span>
           </div>
           
-          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <div style="display:flex; gap:6px;">
             <button id="btn-toggle-memanah-max" class="btn btn-secondary btn-sm" style="border-color: var(--grad2);">Target: 33</button>
-            <button id="btn-video-memanah" class="btn btn-secondary btn-sm btn-active">Video Rehat: ON</button>
-            <button class="btn btn-secondary btn-sm btn-upload-video" style="border-color: #f59e0b; color: #fcd34d;">⬆️ Upload Video (1:1)</button>
             <button id="btn-music-memanah" class="btn btn-secondary btn-sm">Muzik: OFF 🎵</button>
             <button id="btn-lock-memanah-scroll" class="btn btn-secondary btn-sm">Lock Scroll: OFF</button>
           </div>
@@ -938,7 +918,6 @@
 
           <div class="memanah-game-container" style="position:relative; z-index:25;">
             <canvas id="memanah-canvas"></canvas>
-            <div id="memanah-phase-label" style="position:absolute; top:10px; left:15px; font-size:0.9rem; font-weight:bold; color:rgba(255,255,255,0.8); pointer-events:none;">Fasa 1</div>
             <div id="memanah-big-count" style="position:absolute; top:10px; right:15px; font-size:3.5rem; font-weight:bold; color:rgba(255,255,255,0.15); pointer-events:none;">33</div>
             <div style="position:absolute; bottom:10px; left:0; right:0; text-align:center; font-size:0.7rem; color:var(--subtext); pointer-events:none; padding: 0 10px;">
               Sentuh Tahan (Aim), Geser Jari (Momentum), Angkat Jari (Tembak)
@@ -1061,12 +1040,12 @@
       orderBy
     } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
     
-    // IMPORT BARU: FIREBASE STORAGE
-    import { 
-      getStorage, 
-      ref, 
-      uploadBytesResumable, 
-      getDownloadURL 
+    // TAMBAHAN: Import Storage dari Firebase
+    import {
+      getStorage,
+      ref,
+      uploadBytesResumable,
+      getDownloadURL
     } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js";
 
     // CONFIG
@@ -1082,9 +1061,10 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const provider = new GoogleAuthProvider(); // <--- TAMBAH BARIS INI
     const db = getFirestore(app);
-    const storage = getStorage(app); // INITIALIZE STORAGE
+    const storage = getStorage(app); // INISIALISASI STORAGE
+    const provider = new GoogleAuthProvider(); // INI MENYELESAIKAN ISU PROVIDER NOT DEFINED
+
     window.speechSynthesis.getVoices();
 
     // DOM ELEMENTS
@@ -1184,148 +1164,6 @@
     const joggingAfterContainer = document.getElementById("jogging-after-container");
     const btnAddJoggingAfter = document.getElementById("btn-add-jogging-after");
     
-    // ==========================================
-    // SISTEM UPLOAD VIDEO REHAT (FIREBASE STORAGE)
-    // ==========================================
-    const videoOverlay = document.getElementById('video-rest-overlay');
-    const restVideo = document.getElementById('rest-video');
-    const btnSambungFasa2 = document.getElementById('btn-sambung-fasa2');
-    const videoUploadInput = document.getElementById("video-upload-input");
-    const btnUploadVideos = document.querySelectorAll(".btn-upload-video"); // Ambil semua butang upload
-    
-    // TAMBAHAN BARU: DOM UPLOAD PROGRESS
-    const uploadProgressContainer = document.getElementById("upload-progress-container");
-    const uploadProgressBar = document.getElementById("upload-progress-bar");
-
-    let currentRestCallback = null;
-    let globalVideoRehatUrl = ""; // Simpan URL video yang difetch dari Firestore
-    let hasUploadedVideo = false; // TAMBAHAN BARU: Track status upload
-
-    // 1. Subscribe ke User Settings untuk ambil URL Video Rehat
-    function subscribeToVideoRehat() {
-        if (!currentUser) return;
-        const refSetting = doc(db, "users", currentUser.uid, "settings", "preferences");
-        onSnapshot(refSetting, (snap) => {
-            if (snap.exists() && snap.data().videoRehatUrl) {
-                globalVideoRehatUrl = snap.data().videoRehatUrl;
-                restVideo.src = globalVideoRehatUrl;
-                
-                // TAMBAHAN BARU: Tukar Butang Upload Pintar
-                hasUploadedVideo = true;
-                btnUploadVideos.forEach(btn => {
-                    btn.innerHTML = "✅ Video Diupload";
-                    btn.style.borderColor = "#10b981"; 
-                    btn.style.color = "#34d399";
-                });
-            } else {
-                // Fallback default kalau belum upload
-                restVideo.src = "relax.mp4";
-                
-                // TAMBAHAN BARU: Reset Butang
-                hasUploadedVideo = false;
-                btnUploadVideos.forEach(btn => {
-                    btn.innerHTML = "⬆️ Upload Video (1:1)";
-                    btn.style.borderColor = "#f59e0b";
-                    btn.style.color = "#fcd34d";
-                });
-            }
-        });
-    }
-
-    // 2. Trigger input file bila butang ditekan
-    btnUploadVideos.forEach(btn => {
-        btn.addEventListener("click", () => {
-            if(!currentUser) {
-                showToast("Sila login dahulu.");
-                return;
-            }
-            // TAMBAHAN BARU: Sistem Pengesahan (Dialog Box)
-            if (hasUploadedVideo) {
-                const confirmReplace = confirm("Video sudah diupload, adakah awak mahu menggantikannya?");
-                if (!confirmReplace) return;
-            }
-            videoUploadInput.click();
-        });
-    });
-
-    // 3. Handle proses upload ke Firebase Storage
-    videoUploadInput.addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        // Hadkan saiz (Contoh: maksimum 100MB, boleh adjust)
-        if (file.size > 100 * 1024 * 1024) {
-            showToast("Gagal: Saiz file video terlalu besar (Max 100MB).");
-            return;
-        }
-
-        const storageRefPath = ref(storage, `users/${currentUser.uid}/videos/relax.mp4`);
-        const uploadTask = uploadBytesResumable(storageRefPath, file);
-
-        uploadTask.on('state_changed', 
-            (snapshot) => {
-                // TAMBAHAN BARU: Papar Progress Bar dan Line Biru
-                uploadProgressContainer.style.display = "block";
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                uploadProgressBar.style.width = progress + "%";
-                
-                // Guna showToast dengan duration 0 supaya kekal tayang peratusan
-                showToast(`Sedang upload... ${Math.round(progress)}%`, 0);
-            }, 
-            (error) => {
-                console.error("Upload error:", error);
-                uploadProgressContainer.style.display = "none";
-                showToast("Gagal upload video. Sila cuba lagi.", 3500);
-            }, 
-            async () => {
-                uploadProgressContainer.style.display = "none";
-                showToast("Memproses URL video...", 0);
-                
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                
-                // Save URL ke Firestore
-                const refSetting = doc(db, "users", currentUser.uid, "settings", "preferences");
-                await setDoc(refSetting, { videoRehatUrl: downloadURL }, { merge: true });
-                
-                showToast("Berjaya! Video Rehat telah dikemaskini ✅", 3500);
-                videoUploadInput.value = ""; // Reset input
-            }
-        );
-    });
-
-    function showVideoRest(callback) {
-        if (!restVideo.src) restVideo.src = "relax.mp4"; // Safety fallback
-        videoOverlay.style.display = 'flex';
-        currentRestCallback = callback;
-        restVideo.currentTime = 0;
-        restVideo.play().catch(e => {
-            console.log("Auto-play blocked", e);
-            showToast("Klik mainkan video jika ia tidak auto-play.");
-        });
-    }
-
-    btnSambungFasa2.addEventListener('click', () => {
-        videoOverlay.style.display = 'none';
-        restVideo.pause();
-        if(currentRestCallback) currentRestCallback();
-    });
-
-    const btnVideoJogging = document.getElementById("btn-video-jogging");
-    let isJoggingVideoRestON = true;
-    btnVideoJogging.addEventListener("click", () => {
-        isJoggingVideoRestON = !isJoggingVideoRestON;
-        btnVideoJogging.textContent = `Video Rehat: ${isJoggingVideoRestON ? 'ON' : 'OFF'}`;
-        btnVideoJogging.classList.toggle("btn-active", isJoggingVideoRestON);
-    });
-
-    const btnVideoMemanah = document.getElementById("btn-video-memanah");
-    let isMemanahVideoRestON = true;
-    btnVideoMemanah.addEventListener("click", () => {
-        isMemanahVideoRestON = !isMemanahVideoRestON;
-        btnVideoMemanah.textContent = `Video Rehat: ${isMemanahVideoRestON ? 'ON' : 'OFF'}`;
-        btnVideoMemanah.classList.toggle("btn-active", isMemanahVideoRestON);
-    });
-
     // MUZIK GLOBAL
     const bgMusic = new Audio('backgroundmusic.mp3');
     bgMusic.loop = true;
@@ -1352,6 +1190,113 @@
     }
     btnMusicTasbih.addEventListener('click', toggleMusic);
     btnMusicMemanah.addEventListener('click', toggleMusic);
+
+    // ==========================================
+    // DOM & LOGIK MODE REHAT (MP3 UPLOAD & NAFAS)
+    // ==========================================
+    const sectionRehat = document.getElementById('section-rehat');
+    const btnGoRehat = document.getElementById('btn-go-rehat');
+    const btnBackHomeRehat = document.getElementById('btn-back-home-rehat');
+    const mp3Input = document.getElementById('mp3-upload-input');
+    const btnSelectMp3 = document.getElementById('btn-select-mp3');
+    const mp3Status = document.getElementById('mp3-upload-status');
+    const mp3Progress = document.getElementById('mp3-progress-bar');
+    const audioPlayer = document.getElementById('audio-player');
+
+    // DOM Balang Nafas
+    const balangIsi = document.getElementById('balang-isi');
+    const balangStatus = document.getElementById('balang-status');
+    const btnInhale = document.getElementById('btn-inhale');
+    const btnHold = document.getElementById('btn-hold');
+    const btnExhale = document.getElementById('btn-exhale');
+
+    let currentMp3Url = null;
+
+    btnGoRehat.addEventListener('click', () => { 
+        showSection(sectionRehat); 
+        loadUserMp3(); 
+    });
+    
+    btnBackHomeRehat.addEventListener('click', () => { 
+        showSection(sectionHome); 
+        audioPlayer.pause(); 
+    });
+
+    btnSelectMp3.addEventListener('click', () => {
+        if(currentMp3Url) {
+            if(!confirm("Anda sudah mempunyai MP3 yang disimpan. Adakah anda ingin menggantikannya dengan yang baharu?")) return;
+        }
+        mp3Input.click();
+    });
+
+    mp3Input.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if(!file || !currentUser) return;
+
+        const storageRef = ref(storage, `users/${currentUser.uid}/rehat.mp3`);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                mp3Progress.style.width = progress + '%';
+                mp3Status.textContent = `Memuat naik... ${Math.round(progress)}%`;
+            },
+            (error) => {
+                mp3Status.textContent = "Ralat memuat naik! Sila periksa Rules/CORS.";
+                console.error(error);
+            },
+            async () => {
+                mp3Status.textContent = "Muat naik selesai!";
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                await setDoc(doc(db, "users", currentUser.uid, "settings", "mp3"), { url: downloadURL }, {merge: true});
+                currentMp3Url = downloadURL;
+                audioPlayer.src = downloadURL;
+                audioPlayer.style.display = "block";
+            }
+        );
+    });
+
+    async function loadUserMp3() {
+        if(!currentUser) return;
+        const docSnap = await getDoc(doc(db, "users", currentUser.uid, "settings", "mp3"));
+        if(docSnap.exists() && docSnap.data().url) {
+            currentMp3Url = docSnap.data().url;
+            audioPlayer.src = currentMp3Url;
+            audioPlayer.style.display = "block";
+            mp3Status.textContent = "Audio MP3 sedia dimainkan.";
+            mp3Progress.style.width = '100%';
+        }
+    }
+
+    // LOGIK BUTANG BALANG NAFAS (Inhale/Hold/Exhale)
+    function startInhale() {
+        balangStatus.textContent = "Inhale...";
+        balangStatus.style.color = "#60a5fa"; // Biru
+        balangIsi.style.background = "linear-gradient(to top, #1e3a8a, #3b82f6)";
+        balangIsi.style.height = "100%";
+    }
+    function startHold() {
+        balangStatus.textContent = "Hold...";
+        balangStatus.style.color = "#f8fafc"; // Putih Aesthetic
+        balangIsi.style.background = "linear-gradient(to top, #cbd5e1, #f8fafc)";
+    }
+    function startExhale() {
+        balangStatus.textContent = "Exhale...";
+        balangStatus.style.color = "#f87171"; // Merah
+        balangIsi.style.background = "linear-gradient(to top, #7f1d1d, #ef4444)";
+        balangIsi.style.height = "10%";
+    }
+
+    btnInhale.addEventListener('touchstart', (e) => { e.preventDefault(); startInhale(); });
+    btnInhale.addEventListener('mousedown', startInhale);
+
+    btnHold.addEventListener('touchstart', (e) => { e.preventDefault(); startHold(); });
+    btnHold.addEventListener('mousedown', startHold);
+
+    btnExhale.addEventListener('touchstart', (e) => { e.preventDefault(); startExhale(); });
+    btnExhale.addEventListener('mousedown', startExhale);
+
 
     // VARIABLES
     let currentUser = null;
@@ -1394,13 +1339,11 @@
     let currentJoggingDrawerId = null;
     let maxJoggingCount = 33;
     let joggingTapCount = maxJoggingCount;
-    let joggingPhase = 1;
     let isFullScreenJogging = false; 
     let isJoggingBlocked = false; 
     let isJoggingNotaLocked = true; 
 
     let maxMemanahCount = 33;
-    let memanahPhase = 1;
 
     // ==========================================
     // PERSISTENCE (STATE MEMORY) 
@@ -1438,6 +1381,7 @@
       sectionJogging.classList.remove("active"); 
       sectionMemanah.classList.remove("active"); 
       sectionPrompterEditor.classList.remove("active"); 
+      sectionRehat.classList.remove("active");
       
       section.classList.add("active");
       
@@ -1451,19 +1395,12 @@
       saveAppState(); 
     }
 
-    // TAMBAHAN BARU: Override showToast untuk sokong paparan berterusan masa upload
-    window.toastTimeout = null;
-    function showToast(message, duration = 3500) {
+    function showToast(message) {
       toastNotification.textContent = message;
       toastNotification.classList.add("show");
-      
-      if(window.toastTimeout) clearTimeout(window.toastTimeout);
-      
-      if(duration > 0) {
-          window.toastTimeout = setTimeout(() => {
-            toastNotification.classList.remove("show");
-          }, duration);
-      }
+      setTimeout(() => {
+        toastNotification.classList.remove("show");
+      }, 3500);
     }
 
     function formatDateLabel(dateObj) {
@@ -1834,8 +1771,6 @@
         joggingTapCount = maxJoggingCount;
         joggingCount.textContent = joggingTapCount;
         joggingMiniCount.textContent = joggingTapCount;
-        joggingPhase = 1;
-        document.getElementById('jogging-phase-label').textContent = "Fasa 1: Baki Hafalan";
     });
 
     btnBackJogging.addEventListener("click", () => {
@@ -1882,8 +1817,6 @@
 
     function openJoggingMode(data) {
       currentJoggingDrawerId = data.id;
-      joggingPhase = 1;
-      document.getElementById('jogging-phase-label').textContent = "Fasa 1: Baki Hafalan";
       joggingTapCount = maxJoggingCount;
       isJoggingBlocked = false; 
       
@@ -1904,31 +1837,6 @@
       setTimeout(() => {
         joggingMainTextarea.scrollTop = joggingMainTextarea.scrollHeight;
       }, 50);
-    }
-    
-    function simpanKeLaciJogging() {
-        const beforeVal = joggingInputBefore.value.trim();
-        const afterInputs = Array.from(joggingAfterContainer.querySelectorAll('.jogging-input-after'))
-                                 .map(inp => inp.value.trim())
-                                 .filter(val => val !== "");
-        const afterStr = afterInputs.map((val, index) => `${index + 1}.${val}`).join(" ");
-        const combinedNewNote = beforeVal + " = " + afterStr;
-        
-        const currentNotes = joggingMainTextarea.value;
-        const updatedNotes = currentNotes ? currentNotes + '\n' + combinedNewNote : combinedNewNote;
-        
-        joggingMainTextarea.value = updatedNotes;
-        joggingMainTextarea.scrollTop = joggingMainTextarea.scrollHeight;
-
-        if (currentJoggingDrawerId && currentUser) {
-          updateDoc(doc(db, "users", currentUser.uid, "drawer", currentJoggingDrawerId), { 
-            notes: updatedNotes,
-            repeatCount: 0 
-          });
-        }
-
-        joggingInputBefore.value = "";
-        joggingAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
     }
 
     function decrementJogging() {
@@ -1955,36 +1863,36 @@
         setTimeout(() => joggingCircle.style.transform = "scale(1)", 100);
       } else {
         isJoggingBlocked = true; 
+
         triggerVibration([200, 100, 200, 100, 2000]);
+        joggingTapCount = maxJoggingCount;
+        joggingCount.textContent = "Ditambah!";
+        joggingMiniCount.textContent = "✓"; 
+
+        setTimeout(() => {
+          joggingCount.textContent = joggingTapCount;
+          joggingMiniCount.textContent = joggingTapCount; 
+          isJoggingBlocked = false; 
+        }, 2600);
+
+        const afterStr = afterInputs.map((val, index) => `${index + 1}.${val}`).join(" ");
+        const combinedNewNote = beforeVal + " = " + afterStr;
         
-        if (isJoggingVideoRestON && joggingPhase === 1) {
-            joggingCount.textContent = "Rehat";
-            joggingMiniCount.textContent = "⏸️";
-            showVideoRest(() => {
-                joggingPhase = 2;
-                document.getElementById('jogging-phase-label').textContent = "Fasa 2: Baki Hafalan";
-                joggingTapCount = (maxJoggingCount === 33) ? 17 : 33;
-                joggingCount.textContent = joggingTapCount;
-                joggingMiniCount.textContent = joggingTapCount;
-                isJoggingBlocked = false;
-                showToast("Fasa 2 bermula!");
-            });
-        } else {
-            // TAMAT SELURUH FASA (Atau fasa 2 selesai)
-            joggingTapCount = maxJoggingCount;
-            joggingCount.textContent = "Selesai!";
-            joggingMiniCount.textContent = "✓"; 
+        const currentNotes = joggingMainTextarea.value;
+        const updatedNotes = currentNotes ? currentNotes + '\n' + combinedNewNote : combinedNewNote;
+        
+        joggingMainTextarea.value = updatedNotes;
+        joggingMainTextarea.scrollTop = joggingMainTextarea.scrollHeight;
 
-            setTimeout(() => {
-              joggingPhase = 1;
-              document.getElementById('jogging-phase-label').textContent = "Fasa 1: Baki Hafalan";
-              joggingCount.textContent = joggingTapCount;
-              joggingMiniCount.textContent = joggingTapCount; 
-              isJoggingBlocked = false; 
-            }, 2600);
-
-            simpanKeLaciJogging();
+        if (currentJoggingDrawerId && currentUser) {
+          updateDoc(doc(db, "users", currentUser.uid, "drawer", currentJoggingDrawerId), { 
+            notes: updatedNotes,
+            repeatCount: 0 
+          });
         }
+
+        joggingInputBefore.value = "";
+        joggingAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
       }
     }
 
@@ -2830,7 +2738,6 @@
         subscribeHistory();
         subscribeNotes();
         subscribeAllHierarchyData();
-        subscribeToVideoRehat(); // TENGOK SINI: FETCH VIDEO URL BILA LOGIN
       } else {
         homeUserEmail.textContent = "";
         if (notesUnsub) notesUnsub();
@@ -3153,8 +3060,6 @@
         memanahTapCount = maxMemanahCount;
         memanahMiniCount.textContent = memanahTapCount;
         memanahBigCount.textContent = memanahTapCount;
-        memanahPhase = 1;
-        document.getElementById('memanah-phase-label').textContent = "Fasa 1";
     });
 
     btnBackMemanah.addEventListener("click", () => {
@@ -3203,13 +3108,10 @@
 
     function openMemanahMode(data) {
       currentMemanahDrawerId = data.id;
-      memanahPhase = 1;
-      document.getElementById('memanah-phase-label').textContent = "Fasa 1";
       memanahTapCount = maxMemanahCount;
       memanahTotalScore = 0; 
       memanahTotalPausedTime = 0;
       memanahPaused = false;
-      isJoggingBlocked = false; 
       
       isMemanahNotaLocked = true;
       btnLockMemanahNota.textContent = "Lock Nota: ON";
@@ -3432,48 +3334,24 @@
         isJoggingBlocked = true;
         triggerVibration([200, 100, 200, 100, 2000]);
         let finalScore = memanahTotalScore;
+        memanahTapCount = maxMemanahCount; memanahTotalScore = 0; 
+        memanahMiniCount.textContent = "✓"; memanahBigCount.textContent = "✓";
+        showToast(`Selesai! Skor Keseluruhan: ${finalScore}`);
+        setTimeout(() => { memanahMiniCount.textContent = memanahTapCount; memanahBigCount.textContent = memanahTapCount; isJoggingBlocked = false; }, 2600);
 
-        if (isMemanahVideoRestON && memanahPhase === 1) {
-            memanahMiniCount.textContent = "⏸️";
-            memanahBigCount.textContent = "⏸️";
-            showVideoRest(() => {
-                memanahPhase = 2;
-                document.getElementById('memanah-phase-label').textContent = "Fasa 2";
-                memanahTapCount = (maxMemanahCount === 33) ? 17 : 33; 
-                memanahMiniCount.textContent = memanahTapCount;
-                memanahBigCount.textContent = memanahTapCount;
-                isJoggingBlocked = false;
-                showToast("Fasa 2 bermula! Skor disambung.");
-            });
-        } else {
-            // FASA TAMAT
-            memanahTapCount = maxMemanahCount; memanahTotalScore = 0; 
-            memanahMiniCount.textContent = "✓"; memanahBigCount.textContent = "✓";
-            showToast(`Selesai! Skor Keseluruhan: ${finalScore}`);
-            
-            setTimeout(() => { 
-                memanahPhase = 1;
-                document.getElementById('memanah-phase-label').textContent = "Fasa 1";
-                memanahMiniCount.textContent = memanahTapCount; 
-                memanahBigCount.textContent = memanahTapCount; 
-                isJoggingBlocked = false; 
-            }, 2600);
+        const afterStr = afterInputs.map((val, index) => `${index + 1}.${val}`).join(" ");
+        const combinedNewNote = beforeVal + " = " + afterStr;
+        const currentNotes = memanahMainTextarea.value;
+        const updatedNotes = currentNotes ? currentNotes + '\n' + combinedNewNote : combinedNewNote;
+        
+        memanahMainTextarea.value = updatedNotes;
+        memanahMainTextarea.scrollTop = memanahMainTextarea.scrollHeight;
 
-            // SIMPAN KE LACI
-            const afterStr = afterInputs.map((val, index) => `${index + 1}.${val}`).join(" ");
-            const combinedNewNote = beforeVal + " = " + afterStr;
-            const currentNotes = memanahMainTextarea.value;
-            const updatedNotes = currentNotes ? currentNotes + '\n' + combinedNewNote : combinedNewNote;
-            
-            memanahMainTextarea.value = updatedNotes;
-            memanahMainTextarea.scrollTop = memanahMainTextarea.scrollHeight;
-
-            if (currentMemanahDrawerId && currentUser) {
-              updateDoc(doc(db, "users", currentUser.uid, "drawer", currentMemanahDrawerId), { notes: updatedNotes, repeatCount: 0 });
-            }
-            memanahInputBefore.value = "";
-            memanahAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
+        if (currentMemanahDrawerId && currentUser) {
+          updateDoc(doc(db, "users", currentUser.uid, "drawer", currentMemanahDrawerId), { notes: updatedNotes, repeatCount: 0 });
         }
+        memanahInputBefore.value = "";
+        memanahAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
       }
     }
 
