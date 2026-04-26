@@ -624,8 +624,21 @@
       background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(10px);
       z-index: 999999; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
     }
-    .video-container { width: 100%; max-width: 480px; border-radius: 16px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 2px solid var(--border-mid); }
-    #rest-video { width: 100%; display: block; }
+    .video-container { 
+      width: 100%; 
+      max-width: 480px; 
+      aspect-ratio: 1 / 1; /* ASPECT RATIO SAMA SISI 1:1 */
+      border-radius: 16px; 
+      overflow: hidden; 
+      box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
+      border: 2px solid var(--border-mid); 
+    }
+    #rest-video { 
+      width: 100%; 
+      height: 100%;
+      object-fit: cover; /* PASTIKAN VIDEO TAK HEROT */
+      display: block; 
+    }
 
     .footer { 
       margin-top: auto; 
@@ -643,11 +656,13 @@
 </head>
 
 <body>
+  <input type="file" id="video-upload-input" accept="video/*" style="display: none;">
+
   <div id="video-rest-overlay">
     <div style="color:var(--grad1); font-size:1.4rem; font-weight:bold; margin-bottom:8px; text-align:center;">Fasa 1 Selesai! 🧠</div>
     <div style="color:var(--subtext); font-size:0.9rem; margin-bottom:24px; text-align:center;">Tarik nafas, tenangkan minda. Biarkan memori diproses.</div>
     <div class="video-container">
-      <video id="rest-video" src="relax.mp4" controls playsinline></video>
+      <video id="rest-video" src="" controls playsinline></video>
     </div>
     <button id="btn-sambung-fasa2" class="btn mt-16" style="max-width: 300px; padding: 14px;">Sambung Fasa 2</button>
   </div>
@@ -826,6 +841,7 @@
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button id="btn-toggle-jogging-max" class="btn btn-secondary btn-sm" style="border-color: var(--grad2);">Target: 33</button>
             <button id="btn-video-jogging" class="btn btn-secondary btn-sm btn-active">Video Rehat: ON</button>
+            <button class="btn btn-secondary btn-sm btn-upload-video" style="border-color: #f59e0b; color: #fcd34d;">⬆️ Upload Video (1:1)</button>
             <button id="btn-toggle-scroll" class="btn btn-secondary btn-sm">Mode Berlari: OFF</button>
           </div>
         </div>
@@ -851,7 +867,7 @@
           </div>
 
           <div id="jogging-circle" class="counter-circle" style="margin: 5px auto 15px auto; flex-shrink: 0; width: 180px; height: 180px; position: relative; z-index: 30;">
-            <div class="counter-label" id="jogging-phase-label">Baki Hafalan</div>
+            <div class="counter-label" id="jogging-phase-label">Fasa 1: Baki Hafalan</div>
             <div id="jogging-count" class="counter-value" style="font-size: 2.2rem;">33</div>
             <div class="counter-sub">Sapu / Tekan</div>
           </div>
@@ -878,6 +894,7 @@
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button id="btn-toggle-memanah-max" class="btn btn-secondary btn-sm" style="border-color: var(--grad2);">Target: 33</button>
             <button id="btn-video-memanah" class="btn btn-secondary btn-sm btn-active">Video Rehat: ON</button>
+            <button class="btn btn-secondary btn-sm btn-upload-video" style="border-color: #f59e0b; color: #fcd34d;">⬆️ Upload Video (1:1)</button>
             <button id="btn-music-memanah" class="btn btn-secondary btn-sm">Muzik: OFF 🎵</button>
             <button id="btn-lock-memanah-scroll" class="btn btn-secondary btn-sm">Lock Scroll: OFF</button>
           </div>
@@ -898,7 +915,7 @@
 
           <div class="memanah-game-container" style="position:relative; z-index:25;">
             <canvas id="memanah-canvas"></canvas>
-            <div id="memanah-phase-label" style="position:absolute; top:10px; left:15px; font-size:0.9rem; font-weight:bold; color:rgba(255,255,255,0.8); pointer-events:none;"></div>
+            <div id="memanah-phase-label" style="position:absolute; top:10px; left:15px; font-size:0.9rem; font-weight:bold; color:rgba(255,255,255,0.8); pointer-events:none;">Fasa 1</div>
             <div id="memanah-big-count" style="position:absolute; top:10px; right:15px; font-size:3.5rem; font-weight:bold; color:rgba(255,255,255,0.15); pointer-events:none;">33</div>
             <div style="position:absolute; bottom:10px; left:0; right:0; text-align:center; font-size:0.7rem; color:var(--subtext); pointer-events:none; padding: 0 10px;">
               Sentuh Tahan (Aim), Geser Jari (Momentum), Angkat Jari (Tembak)
@@ -1020,6 +1037,14 @@
       query,
       orderBy
     } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+    
+    // IMPORT BARU: FIREBASE STORAGE
+    import { 
+      getStorage, 
+      ref, 
+      uploadBytesResumable, 
+      getDownloadURL 
+    } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js";
 
     // CONFIG
     const firebaseConfig = {
@@ -1035,7 +1060,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
+    const storage = getStorage(app); // INITIALIZE STORAGE
 
     window.speechSynthesis.getVoices();
 
@@ -1136,13 +1161,85 @@
     const joggingAfterContainer = document.getElementById("jogging-after-container");
     const btnAddJoggingAfter = document.getElementById("btn-add-jogging-after");
     
-    // VIDEO REST SYSTEM LOGIC
+    // ==========================================
+    // SISTEM UPLOAD VIDEO REHAT (FIREBASE STORAGE)
+    // ==========================================
     const videoOverlay = document.getElementById('video-rest-overlay');
     const restVideo = document.getElementById('rest-video');
     const btnSambungFasa2 = document.getElementById('btn-sambung-fasa2');
+    const videoUploadInput = document.getElementById("video-upload-input");
+    const btnUploadVideos = document.querySelectorAll(".btn-upload-video"); // Ambil semua butang upload
+
     let currentRestCallback = null;
+    let globalVideoRehatUrl = ""; // Simpan URL video yang difetch dari Firestore
+
+    // 1. Subscribe ke User Settings untuk ambil URL Video Rehat
+    function subscribeToVideoRehat() {
+        if (!currentUser) return;
+        const refSetting = doc(db, "users", currentUser.uid, "settings", "preferences");
+        onSnapshot(refSetting, (snap) => {
+            if (snap.exists() && snap.data().videoRehatUrl) {
+                globalVideoRehatUrl = snap.data().videoRehatUrl;
+                restVideo.src = globalVideoRehatUrl;
+            } else {
+                // Fallback default kalau belum upload
+                restVideo.src = "relax.mp4";
+            }
+        });
+    }
+
+    // 2. Trigger input file bila butang ditekan
+    btnUploadVideos.forEach(btn => {
+        btn.addEventListener("click", () => {
+            if(!currentUser) {
+                showToast("Sila login dahulu.");
+                return;
+            }
+            videoUploadInput.click();
+        });
+    });
+
+    // 3. Handle proses upload ke Firebase Storage
+    videoUploadInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Hadkan saiz (Contoh: maksimum 100MB, boleh adjust)
+        if (file.size > 100 * 1024 * 1024) {
+            showToast("Gagal: Saiz file video terlalu besar (Max 100MB).");
+            return;
+        }
+
+        showToast("Sedang upload video... Sila tunggu ⏳");
+
+        const storageRefPath = ref(storage, `users/${currentUser.uid}/videos/relax.mp4`);
+        const uploadTask = uploadBytesResumable(storageRefPath, file);
+
+        uploadTask.on('state_changed', 
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                // Boleh letak progress bar kalau nak, buat masa ni toast je
+                if(progress === 100) showToast("Memproses URL video...");
+            }, 
+            (error) => {
+                console.error("Upload error:", error);
+                showToast("Gagal upload video. Sila cuba lagi.");
+            }, 
+            async () => {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                
+                // Save URL ke Firestore
+                const refSetting = doc(db, "users", currentUser.uid, "settings", "preferences");
+                await setDoc(refSetting, { videoRehatUrl: downloadURL }, { merge: true });
+                
+                showToast("Berjaya! Video Rehat telah dikemaskini ✅");
+                videoUploadInput.value = ""; // Reset input
+            }
+        );
+    });
 
     function showVideoRest(callback) {
+        if (!restVideo.src) restVideo.src = "relax.mp4"; // Safety fallback
         videoOverlay.style.display = 'flex';
         currentRestCallback = callback;
         restVideo.currentTime = 0;
@@ -2671,6 +2768,7 @@
         subscribeHistory();
         subscribeNotes();
         subscribeAllHierarchyData();
+        subscribeToVideoRehat(); // TENGOK SINI: FETCH VIDEO URL BILA LOGIN
       } else {
         homeUserEmail.textContent = "";
         if (notesUnsub) notesUnsub();
