@@ -1082,9 +1082,9 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const provider = new GoogleAuthProvider(); // <--- TAMBAH BARIS INI
     const db = getFirestore(app);
     const storage = getStorage(app); // INITIALIZE STORAGE
-
     window.speechSynthesis.getVoices();
 
     // DOM ELEMENTS
