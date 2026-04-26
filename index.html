@@ -618,6 +618,15 @@
       padding: 0 4px;
     }
 
+    /* OVERLAY VIDEO REHAT MINDA */
+    #video-rest-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(10px);
+      z-index: 999999; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+    }
+    .video-container { width: 100%; max-width: 480px; border-radius: 16px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 2px solid var(--border-mid); }
+    #rest-video { width: 100%; display: block; }
+
     .footer { 
       margin-top: auto; 
       padding-top: 10px; 
@@ -634,6 +643,15 @@
 </head>
 
 <body>
+  <div id="video-rest-overlay">
+    <div style="color:var(--grad1); font-size:1.4rem; font-weight:bold; margin-bottom:8px; text-align:center;">Fasa 1 Selesai! 🧠</div>
+    <div style="color:var(--subtext); font-size:0.9rem; margin-bottom:24px; text-align:center;">Tarik nafas, tenangkan minda. Biarkan memori diproses.</div>
+    <div class="video-container">
+      <video id="rest-video" src="relax.mp4" controls playsinline></video>
+    </div>
+    <button id="btn-sambung-fasa2" class="btn mt-16" style="max-width: 300px; padding: 14px;">Sambung Fasa 2</button>
+  </div>
+
   <div class="app-shell">
     <div class="card">
 
@@ -797,7 +815,7 @@
       </section>
 
       <section id="section-jogging" class="section">
-        <div class="topbar" style="position: relative; z-index: 30;">
+        <div class="topbar" style="position: relative; z-index: 30; flex-wrap: wrap;">
           <button id="btn-back-jogging" class="btn btn-secondary btn-sm">← Laci</button>
           
           <div class="topbar-title" style="color: var(--grad1); display: flex; align-items: center; gap: 8px;">
@@ -805,8 +823,11 @@
             <span id="jogging-mini-count" style="background: var(--grad1); color: white; padding: 2px 10px; border-radius: 999px; font-size: 0.9rem; font-weight: bold; box-shadow: 0 2px 8px rgba(99,102,241,0.6);">33</span>
           </div>
 
-          <button id="btn-toggle-jogging-max" class="btn btn-secondary btn-sm" style="border-color: var(--grad2);">Target: 33</button>
-          <button id="btn-toggle-scroll" class="btn btn-secondary btn-sm">Mode Berlari: OFF</button>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button id="btn-toggle-jogging-max" class="btn btn-secondary btn-sm" style="border-color: var(--grad2);">Target: 33</button>
+            <button id="btn-video-jogging" class="btn btn-secondary btn-sm btn-active">Video Rehat: ON</button>
+            <button id="btn-toggle-scroll" class="btn btn-secondary btn-sm">Mode Berlari: OFF</button>
+          </div>
         </div>
         
         <div style="font-size: 0.7rem; color: var(--subtext); text-align: center; margin-bottom: 10px; position: relative; z-index: 30;">
@@ -830,7 +851,7 @@
           </div>
 
           <div id="jogging-circle" class="counter-circle" style="margin: 5px auto 15px auto; flex-shrink: 0; width: 180px; height: 180px; position: relative; z-index: 30;">
-            <div class="counter-label">Baki Hafalan</div>
+            <div class="counter-label" id="jogging-phase-label">Baki Hafalan</div>
             <div id="jogging-count" class="counter-value" style="font-size: 2.2rem;">33</div>
             <div class="counter-sub">Sapu / Tekan</div>
           </div>
@@ -854,8 +875,9 @@
             <span id="memanah-mini-count" style="background: var(--grad1); color: white; padding: 2px 10px; border-radius: 999px; font-size: 0.9rem; font-weight: bold;">33</span>
           </div>
           
-          <div style="display:flex; gap:6px;">
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button id="btn-toggle-memanah-max" class="btn btn-secondary btn-sm" style="border-color: var(--grad2);">Target: 33</button>
+            <button id="btn-video-memanah" class="btn btn-secondary btn-sm btn-active">Video Rehat: ON</button>
             <button id="btn-music-memanah" class="btn btn-secondary btn-sm">Muzik: OFF 🎵</button>
             <button id="btn-lock-memanah-scroll" class="btn btn-secondary btn-sm">Lock Scroll: OFF</button>
           </div>
@@ -876,6 +898,7 @@
 
           <div class="memanah-game-container" style="position:relative; z-index:25;">
             <canvas id="memanah-canvas"></canvas>
+            <div id="memanah-phase-label" style="position:absolute; top:10px; left:15px; font-size:0.9rem; font-weight:bold; color:rgba(255,255,255,0.8); pointer-events:none;"></div>
             <div id="memanah-big-count" style="position:absolute; top:10px; right:15px; font-size:3.5rem; font-weight:bold; color:rgba(255,255,255,0.15); pointer-events:none;">33</div>
             <div style="position:absolute; bottom:10px; left:0; right:0; text-align:center; font-size:0.7rem; color:var(--subtext); pointer-events:none; padding: 0 10px;">
               Sentuh Tahan (Aim), Geser Jari (Momentum), Angkat Jari (Tembak)
@@ -1113,6 +1136,44 @@
     const joggingAfterContainer = document.getElementById("jogging-after-container");
     const btnAddJoggingAfter = document.getElementById("btn-add-jogging-after");
     
+    // VIDEO REST SYSTEM LOGIC
+    const videoOverlay = document.getElementById('video-rest-overlay');
+    const restVideo = document.getElementById('rest-video');
+    const btnSambungFasa2 = document.getElementById('btn-sambung-fasa2');
+    let currentRestCallback = null;
+
+    function showVideoRest(callback) {
+        videoOverlay.style.display = 'flex';
+        currentRestCallback = callback;
+        restVideo.currentTime = 0;
+        restVideo.play().catch(e => {
+            console.log("Auto-play blocked", e);
+            showToast("Klik mainkan video jika ia tidak auto-play.");
+        });
+    }
+
+    btnSambungFasa2.addEventListener('click', () => {
+        videoOverlay.style.display = 'none';
+        restVideo.pause();
+        if(currentRestCallback) currentRestCallback();
+    });
+
+    const btnVideoJogging = document.getElementById("btn-video-jogging");
+    let isJoggingVideoRestON = true;
+    btnVideoJogging.addEventListener("click", () => {
+        isJoggingVideoRestON = !isJoggingVideoRestON;
+        btnVideoJogging.textContent = `Video Rehat: ${isJoggingVideoRestON ? 'ON' : 'OFF'}`;
+        btnVideoJogging.classList.toggle("btn-active", isJoggingVideoRestON);
+    });
+
+    const btnVideoMemanah = document.getElementById("btn-video-memanah");
+    let isMemanahVideoRestON = true;
+    btnVideoMemanah.addEventListener("click", () => {
+        isMemanahVideoRestON = !isMemanahVideoRestON;
+        btnVideoMemanah.textContent = `Video Rehat: ${isMemanahVideoRestON ? 'ON' : 'OFF'}`;
+        btnVideoMemanah.classList.toggle("btn-active", isMemanahVideoRestON);
+    });
+
     // MUZIK GLOBAL
     const bgMusic = new Audio('backgroundmusic.mp3');
     bgMusic.loop = true;
@@ -1181,11 +1242,13 @@
     let currentJoggingDrawerId = null;
     let maxJoggingCount = 33;
     let joggingTapCount = maxJoggingCount;
+    let joggingPhase = 1;
     let isFullScreenJogging = false; 
     let isJoggingBlocked = false; 
     let isJoggingNotaLocked = true; 
 
     let maxMemanahCount = 33;
+    let memanahPhase = 1;
 
     // ==========================================
     // PERSISTENCE (STATE MEMORY) 
@@ -1612,6 +1675,8 @@
         joggingTapCount = maxJoggingCount;
         joggingCount.textContent = joggingTapCount;
         joggingMiniCount.textContent = joggingTapCount;
+        joggingPhase = 1;
+        document.getElementById('jogging-phase-label').textContent = "Fasa 1: Baki Hafalan";
     });
 
     btnBackJogging.addEventListener("click", () => {
@@ -1658,6 +1723,8 @@
 
     function openJoggingMode(data) {
       currentJoggingDrawerId = data.id;
+      joggingPhase = 1;
+      document.getElementById('jogging-phase-label').textContent = "Fasa 1: Baki Hafalan";
       joggingTapCount = maxJoggingCount;
       isJoggingBlocked = false; 
       
@@ -1678,6 +1745,31 @@
       setTimeout(() => {
         joggingMainTextarea.scrollTop = joggingMainTextarea.scrollHeight;
       }, 50);
+    }
+    
+    function simpanKeLaciJogging() {
+        const beforeVal = joggingInputBefore.value.trim();
+        const afterInputs = Array.from(joggingAfterContainer.querySelectorAll('.jogging-input-after'))
+                                 .map(inp => inp.value.trim())
+                                 .filter(val => val !== "");
+        const afterStr = afterInputs.map((val, index) => `${index + 1}.${val}`).join(" ");
+        const combinedNewNote = beforeVal + " = " + afterStr;
+        
+        const currentNotes = joggingMainTextarea.value;
+        const updatedNotes = currentNotes ? currentNotes + '\n' + combinedNewNote : combinedNewNote;
+        
+        joggingMainTextarea.value = updatedNotes;
+        joggingMainTextarea.scrollTop = joggingMainTextarea.scrollHeight;
+
+        if (currentJoggingDrawerId && currentUser) {
+          updateDoc(doc(db, "users", currentUser.uid, "drawer", currentJoggingDrawerId), { 
+            notes: updatedNotes,
+            repeatCount: 0 
+          });
+        }
+
+        joggingInputBefore.value = "";
+        joggingAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
     }
 
     function decrementJogging() {
@@ -1704,36 +1796,36 @@
         setTimeout(() => joggingCircle.style.transform = "scale(1)", 100);
       } else {
         isJoggingBlocked = true; 
-
         triggerVibration([200, 100, 200, 100, 2000]);
-        joggingTapCount = maxJoggingCount;
-        joggingCount.textContent = "Ditambah!";
-        joggingMiniCount.textContent = "✓"; 
-
-        setTimeout(() => {
-          joggingCount.textContent = joggingTapCount;
-          joggingMiniCount.textContent = joggingTapCount; 
-          isJoggingBlocked = false; 
-        }, 2600);
-
-        const afterStr = afterInputs.map((val, index) => `${index + 1}.${val}`).join(" ");
-        const combinedNewNote = beforeVal + " = " + afterStr;
         
-        const currentNotes = joggingMainTextarea.value;
-        const updatedNotes = currentNotes ? currentNotes + '\n' + combinedNewNote : combinedNewNote;
-        
-        joggingMainTextarea.value = updatedNotes;
-        joggingMainTextarea.scrollTop = joggingMainTextarea.scrollHeight;
+        if (isJoggingVideoRestON && joggingPhase === 1) {
+            joggingCount.textContent = "Rehat";
+            joggingMiniCount.textContent = "⏸️";
+            showVideoRest(() => {
+                joggingPhase = 2;
+                document.getElementById('jogging-phase-label').textContent = "Fasa 2: Baki Hafalan";
+                joggingTapCount = (maxJoggingCount === 33) ? 17 : 33;
+                joggingCount.textContent = joggingTapCount;
+                joggingMiniCount.textContent = joggingTapCount;
+                isJoggingBlocked = false;
+                showToast("Fasa 2 bermula!");
+            });
+        } else {
+            // TAMAT SELURUH FASA (Atau fasa 2 selesai)
+            joggingTapCount = maxJoggingCount;
+            joggingCount.textContent = "Selesai!";
+            joggingMiniCount.textContent = "✓"; 
 
-        if (currentJoggingDrawerId && currentUser) {
-          updateDoc(doc(db, "users", currentUser.uid, "drawer", currentJoggingDrawerId), { 
-            notes: updatedNotes,
-            repeatCount: 0 
-          });
+            setTimeout(() => {
+              joggingPhase = 1;
+              document.getElementById('jogging-phase-label').textContent = "Fasa 1: Baki Hafalan";
+              joggingCount.textContent = joggingTapCount;
+              joggingMiniCount.textContent = joggingTapCount; 
+              isJoggingBlocked = false; 
+            }, 2600);
+
+            simpanKeLaciJogging();
         }
-
-        joggingInputBefore.value = "";
-        joggingAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
       }
     }
 
@@ -2901,6 +2993,8 @@
         memanahTapCount = maxMemanahCount;
         memanahMiniCount.textContent = memanahTapCount;
         memanahBigCount.textContent = memanahTapCount;
+        memanahPhase = 1;
+        document.getElementById('memanah-phase-label').textContent = "Fasa 1";
     });
 
     btnBackMemanah.addEventListener("click", () => {
@@ -2949,10 +3043,13 @@
 
     function openMemanahMode(data) {
       currentMemanahDrawerId = data.id;
+      memanahPhase = 1;
+      document.getElementById('memanah-phase-label').textContent = "Fasa 1";
       memanahTapCount = maxMemanahCount;
       memanahTotalScore = 0; 
       memanahTotalPausedTime = 0;
       memanahPaused = false;
+      isJoggingBlocked = false;
       
       isMemanahNotaLocked = true;
       btnLockMemanahNota.textContent = "Lock Nota: ON";
@@ -3175,24 +3272,48 @@
         isJoggingBlocked = true;
         triggerVibration([200, 100, 200, 100, 2000]);
         let finalScore = memanahTotalScore;
-        memanahTapCount = maxMemanahCount; memanahTotalScore = 0; 
-        memanahMiniCount.textContent = "✓"; memanahBigCount.textContent = "✓";
-        showToast(`Selesai! Skor Keseluruhan: ${finalScore}`);
-        setTimeout(() => { memanahMiniCount.textContent = memanahTapCount; memanahBigCount.textContent = memanahTapCount; isJoggingBlocked = false; }, 2600);
 
-        const afterStr = afterInputs.map((val, index) => `${index + 1}.${val}`).join(" ");
-        const combinedNewNote = beforeVal + " = " + afterStr;
-        const currentNotes = memanahMainTextarea.value;
-        const updatedNotes = currentNotes ? currentNotes + '\n' + combinedNewNote : combinedNewNote;
-        
-        memanahMainTextarea.value = updatedNotes;
-        memanahMainTextarea.scrollTop = memanahMainTextarea.scrollHeight;
+        if (isMemanahVideoRestON && memanahPhase === 1) {
+            memanahMiniCount.textContent = "⏸️";
+            memanahBigCount.textContent = "⏸️";
+            showVideoRest(() => {
+                memanahPhase = 2;
+                document.getElementById('memanah-phase-label').textContent = "Fasa 2";
+                memanahTapCount = (maxMemanahCount === 33) ? 17 : 33; 
+                memanahMiniCount.textContent = memanahTapCount;
+                memanahBigCount.textContent = memanahTapCount;
+                isJoggingBlocked = false;
+                showToast("Fasa 2 bermula! Skor disambung.");
+            });
+        } else {
+            // FASA TAMAT
+            memanahTapCount = maxMemanahCount; memanahTotalScore = 0; 
+            memanahMiniCount.textContent = "✓"; memanahBigCount.textContent = "✓";
+            showToast(`Selesai! Skor Keseluruhan: ${finalScore}`);
+            
+            setTimeout(() => { 
+                memanahPhase = 1;
+                document.getElementById('memanah-phase-label').textContent = "Fasa 1";
+                memanahMiniCount.textContent = memanahTapCount; 
+                memanahBigCount.textContent = memanahTapCount; 
+                isJoggingBlocked = false; 
+            }, 2600);
 
-        if (currentMemanahDrawerId && currentUser) {
-          updateDoc(doc(db, "users", currentUser.uid, "drawer", currentMemanahDrawerId), { notes: updatedNotes, repeatCount: 0 });
+            // SIMPAN KE LACI
+            const afterStr = afterInputs.map((val, index) => `${index + 1}.${val}`).join(" ");
+            const combinedNewNote = beforeVal + " = " + afterStr;
+            const currentNotes = memanahMainTextarea.value;
+            const updatedNotes = currentNotes ? currentNotes + '\n' + combinedNewNote : combinedNewNote;
+            
+            memanahMainTextarea.value = updatedNotes;
+            memanahMainTextarea.scrollTop = memanahMainTextarea.scrollHeight;
+
+            if (currentMemanahDrawerId && currentUser) {
+              updateDoc(doc(db, "users", currentUser.uid, "drawer", currentMemanahDrawerId), { notes: updatedNotes, repeatCount: 0 });
+            }
+            memanahInputBefore.value = "";
+            memanahAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
         }
-        memanahInputBefore.value = "";
-        memanahAfterContainer.innerHTML = '<input class="drawer-input-box jogging-input-after" placeholder="Maksud 1 (Selepas \'=\')">';
       }
     }
 
