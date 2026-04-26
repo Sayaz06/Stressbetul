@@ -370,6 +370,25 @@
       opacity: 1; 
     }
 
+    /* UPLOAD PROGRESS BAR */
+    #upload-progress-container {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      z-index: 999999;
+    }
+    #upload-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: #3b82f6; /* Blue Color */
+      box-shadow: 0 0 10px #3b82f6;
+      transition: width 0.1s ease;
+    }
+
     .list { 
       margin-top: 10px; 
       border-radius: 14px; 
@@ -656,6 +675,10 @@
 </head>
 
 <body>
+  <div id="upload-progress-container">
+    <div id="upload-progress-bar"></div>
+  </div>
+
   <input type="file" id="video-upload-input" accept="video/*" style="display: none;">
 
   <div id="video-rest-overlay">
@@ -1169,9 +1192,14 @@
     const btnSambungFasa2 = document.getElementById('btn-sambung-fasa2');
     const videoUploadInput = document.getElementById("video-upload-input");
     const btnUploadVideos = document.querySelectorAll(".btn-upload-video"); // Ambil semua butang upload
+    
+    // TAMBAHAN BARU: DOM UPLOAD PROGRESS
+    const uploadProgressContainer = document.getElementById("upload-progress-container");
+    const uploadProgressBar = document.getElementById("upload-progress-bar");
 
     let currentRestCallback = null;
     let globalVideoRehatUrl = ""; // Simpan URL video yang difetch dari Firestore
+    let hasUploadedVideo = false; // TAMBAHAN BARU: Track status upload
 
     // 1. Subscribe ke User Settings untuk ambil URL Video Rehat
     function subscribeToVideoRehat() {
@@ -1181,9 +1209,25 @@
             if (snap.exists() && snap.data().videoRehatUrl) {
                 globalVideoRehatUrl = snap.data().videoRehatUrl;
                 restVideo.src = globalVideoRehatUrl;
+                
+                // TAMBAHAN BARU: Tukar Butang Upload Pintar
+                hasUploadedVideo = true;
+                btnUploadVideos.forEach(btn => {
+                    btn.innerHTML = "✅ Video Diupload";
+                    btn.style.borderColor = "#10b981"; 
+                    btn.style.color = "#34d399";
+                });
             } else {
                 // Fallback default kalau belum upload
                 restVideo.src = "relax.mp4";
+                
+                // TAMBAHAN BARU: Reset Butang
+                hasUploadedVideo = false;
+                btnUploadVideos.forEach(btn => {
+                    btn.innerHTML = "⬆️ Upload Video (1:1)";
+                    btn.style.borderColor = "#f59e0b";
+                    btn.style.color = "#fcd34d";
+                });
             }
         });
     }
@@ -1194,6 +1238,11 @@
             if(!currentUser) {
                 showToast("Sila login dahulu.");
                 return;
+            }
+            // TAMBAHAN BARU: Sistem Pengesahan (Dialog Box)
+            if (hasUploadedVideo) {
+                const confirmReplace = confirm("Video sudah diupload, adakah awak mahu menggantikannya?");
+                if (!confirmReplace) return;
             }
             videoUploadInput.click();
         });
@@ -1210,29 +1259,35 @@
             return;
         }
 
-        showToast("Sedang upload video... Sila tunggu ⏳");
-
         const storageRefPath = ref(storage, `users/${currentUser.uid}/videos/relax.mp4`);
         const uploadTask = uploadBytesResumable(storageRefPath, file);
 
         uploadTask.on('state_changed', 
             (snapshot) => {
+                // TAMBAHAN BARU: Papar Progress Bar dan Line Biru
+                uploadProgressContainer.style.display = "block";
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                // Boleh letak progress bar kalau nak, buat masa ni toast je
-                if(progress === 100) showToast("Memproses URL video...");
+                uploadProgressBar.style.width = progress + "%";
+                
+                // Guna showToast dengan duration 0 supaya kekal tayang peratusan
+                showToast(`Sedang upload... ${Math.round(progress)}%`, 0);
             }, 
             (error) => {
                 console.error("Upload error:", error);
-                showToast("Gagal upload video. Sila cuba lagi.");
+                uploadProgressContainer.style.display = "none";
+                showToast("Gagal upload video. Sila cuba lagi.", 3500);
             }, 
             async () => {
+                uploadProgressContainer.style.display = "none";
+                showToast("Memproses URL video...", 0);
+                
                 const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                 
                 // Save URL ke Firestore
                 const refSetting = doc(db, "users", currentUser.uid, "settings", "preferences");
                 await setDoc(refSetting, { videoRehatUrl: downloadURL }, { merge: true });
                 
-                showToast("Berjaya! Video Rehat telah dikemaskini ✅");
+                showToast("Berjaya! Video Rehat telah dikemaskini ✅", 3500);
                 videoUploadInput.value = ""; // Reset input
             }
         );
@@ -1396,12 +1451,19 @@
       saveAppState(); 
     }
 
-    function showToast(message) {
+    // TAMBAHAN BARU: Override showToast untuk sokong paparan berterusan masa upload
+    window.toastTimeout = null;
+    function showToast(message, duration = 3500) {
       toastNotification.textContent = message;
       toastNotification.classList.add("show");
-      setTimeout(() => {
-        toastNotification.classList.remove("show");
-      }, 3500);
+      
+      if(window.toastTimeout) clearTimeout(window.toastTimeout);
+      
+      if(duration > 0) {
+          window.toastTimeout = setTimeout(() => {
+            toastNotification.classList.remove("show");
+          }, duration);
+      }
     }
 
     function formatDateLabel(dateObj) {
@@ -3147,7 +3209,7 @@
       memanahTotalScore = 0; 
       memanahTotalPausedTime = 0;
       memanahPaused = false;
-      isJoggingBlocked = false;
+      isJoggingBlocked = false; 
       
       isMemanahNotaLocked = true;
       btnLockMemanahNota.textContent = "Lock Nota: ON";
