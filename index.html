@@ -1308,29 +1308,22 @@
         );
     });
 
-    function showVideoRest(callback) {
-        // Assign semula src yang betul supaya ia dimainkan dari mula
-        restYoutube.src = globalVideoRehatUrl || "https://www.youtube.com/embed/dXZtogyYzyU?autoplay=1&rel=0&playsinline=1";
-        
-        videoOverlay.style.display = 'flex';
-        currentRestCallback = callback;
-        
-        // Kod lama untuk video storage dibiarkan
-        restVideo.currentTime = 0;
-        restVideo.play().catch(e => {
-            console.log("Auto-play blocked", e);
-        });
-    }
+function showVideoRest(callback) {
+        // Assign semula src yang betul supaya ia dimainkan dari mula
+        restYoutube.src = globalVideoRehatUrl || "https://www.youtube.com/embed/dXZtogyYzyU?autoplay=1&rel=0&playsinline=1";
+        
+        videoOverlay.style.display = 'flex';
+        currentRestCallback = callback;
+    }
 
-    btnSambungFasa2.addEventListener('click', () => {
-        videoOverlay.style.display = 'none';
-        
-        // KOD PENTING: Bunuh (block) Audio YouTube dari terus berbunyi 100%
-        restYoutube.src = ""; 
+    btnSambungFasa2.addEventListener('click', () => {
+        videoOverlay.style.display = 'none';
+        
+        // KOD PENTING: Bunuh (block) Audio YouTube dari terus berbunyi 100%
+        restYoutube.src = ""; 
 
-        restVideo.pause(); // Kod lama dibiarkan
-        if(currentRestCallback) currentRestCallback();
-    });
+        if(currentRestCallback) currentRestCallback();
+    });
 
     const btnVideoJogging = document.getElementById("btn-video-jogging");
     let isJoggingVideoRestON = true;
@@ -1985,18 +1978,22 @@
         triggerVibration([200, 100, 200, 100, 2000]);
         
         if (isJoggingVideoRestON && joggingPhase === 1) {
-            joggingCount.textContent = "Rehat";
-            joggingMiniCount.textContent = "⏸️";
-            showVideoRest(() => {
-                joggingPhase = 2;
-                document.getElementById('jogging-phase-label').textContent = "Fasa 2: Baki Hafalan";
-                joggingTapCount = (maxJoggingCount === 33) ? 17 : 33;
-                joggingCount.textContent = joggingTapCount;
-                joggingMiniCount.textContent = joggingTapCount;
-                isJoggingBlocked = false;
-                showToast("Fasa 2 bermula!");
-            });
-        } else {
+            joggingMiniCount.textContent = "⏸️";
+            joggingBigCount.textContent = "⏸️";
+            
+            // Tunggu 2.6 saat (gegaran habis) sebelum buka skrin video
+            setTimeout(() => {
+                showVideoRest(() => {
+                    joggingPhase = 2;
+                    document.getElementById('jogging-phase-label').textContent = "Fasa 2";
+                    joggingTapCount = (maxJoggingCount === 33) ? 17 : 33; 
+                    joggingMiniCount.textContent = joggingTapCount;
+                    joggingBigCount.textContent = joggingTapCount;
+                    isJoggingBlocked = false;
+                    showToast("Fasa 2 bermula! Skor disambung.");
+                });
+            }, 2600); // 2600ms = 2.6 saat
+        } else {
             // TAMAT SELURUH FASA (Atau fasa 2 selesai)
             joggingTapCount = maxJoggingCount;
             joggingCount.textContent = "Selesai!";
@@ -3525,16 +3522,20 @@ function checkHitMemanah(hitX, hitY) {
 if (isMemanahVideoRestON && memanahPhase === 1) {
             memanahMiniCount.textContent = "⏸️";
             memanahBigCount.textContent = "⏸️";
-            showVideoRest(() => {
-                memanahPhase = 2;
-                document.getElementById('memanah-phase-label').textContent = "Fasa 2";
-                memanahTapCount = (maxMemanahCount === 33) ? 17 : 33; 
-                memanahMiniCount.textContent = memanahTapCount;
-                memanahBigCount.textContent = memanahTapCount;
-                isJoggingBlocked = false;
-                memanahPaused = false; // <--- KOD BARU: Sambung gerak HANYA lepas video ditutup
-                showToast("Fasa 2 bermula! Skor disambung.");
-            });
+            
+            // Tunggu 2.6 saat (gegaran habis) sebelum buka skrin video
+            setTimeout(() => {
+                showVideoRest(() => {
+                    memanahPhase = 2;
+                    document.getElementById('memanah-phase-label').textContent = "Fasa 2";
+                    memanahTapCount = (maxMemanahCount === 33) ? 17 : 33; 
+                    memanahMiniCount.textContent = memanahTapCount;
+                    memanahBigCount.textContent = memanahTapCount;
+                    isJoggingBlocked = false;
+                    memanahPaused = false; 
+                    showToast("Fasa 2 bermula! Skor disambung.");
+                });
+            }, 2600); // 2600ms = 2.6 saat
         } else {
             // FASA TAMAT
             memanahTapCount = maxMemanahCount; memanahTotalScore = 0; 
