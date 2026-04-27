@@ -3441,24 +3441,27 @@
       return { score: 0, color: "rgba(255, 100, 100, ALPHA)" };
     }
 
-    function checkHitMemanah(hitX, hitY) {
-      let result = getHitScore(hitX, hitY, targetX, targetY);
-      memanahTotalScore += result.score;
+function checkHitMemanah(hitX, hitY) {
+      let result = getHitScore(hitX, hitY, targetX, targetY);
+      memanahTotalScore += result.score;
 
-      if (result.score > 0) {
-        triggerVibration([100, 50, 100]);
-        floatingTexts.push({ text: `+${result.score}`, x: targetX, y: targetY - 20, alpha: 1.0, color: result.color });
-      } else {
-        triggerVibration([50]); 
-        floatingTexts.push({ text: "Miss!", x: hitX, y: hitY - 20, alpha: 1.0, color: result.color });
-      }
+      if (result.score > 0) {
+        triggerVibration([100, 50, 100]);
+        floatingTexts.push({ text: `+${result.score}`, x: targetX, y: targetY - 20, alpha: 1.0, color: result.color });
+      } else {
+        triggerVibration([50]); 
+        floatingTexts.push({ text: "Miss!", x: hitX, y: hitY - 20, alpha: 1.0, color: result.color });
+      }
 
-      setTimeout(() => {
-        memanahPaused = false;
-        memanahTotalPausedTime += (Date.now() - memanahPauseStartTime);
-        decrementMemanahAction(); 
-      }, 1500); 
-    }
+      // Pindah keluar dari setTimeout! Ia akan dipanggil serta-merta 
+      // untuk elak video disekat oleh browser. Logik 'Miss' awak dikekalkan.
+      decrementMemanahAction();
+
+      setTimeout(() => {
+        memanahPaused = false;
+        memanahTotalPausedTime += (Date.now() - memanahPauseStartTime);
+      }, 1500); 
+    }
 
     function handleMemanahTouchStart(e) {
       e.preventDefault();
