@@ -2950,14 +2950,13 @@
     });
 
 
-    // ==========================================
-    // LOGIK TOGGLE BUTTONS (FAKTA, RUTIN & 5 MODE)
-    // ==========================================
-    const btnToggleMainRestMax = document.getElementById("btn-toggle-main-rest-max");
-    if(btnToggleMainRestMax) {
-        btnToggleMainRestMax.addEventListener("click", () => {
-            mainRestMax = (mainRestMax === 33) ? 17 : 33;
-            btnToggleMainRestMax.textContent = `Target: ${mainRestMax}`;
+// ==========================================
+    // LOGIK TOGGLE BUTTONS (FAKTA, RUTIN & 5 MODE)
+    // ==========================================
+    if(btnToggleMainRestMax) {
+        btnToggleMainRestMax.addEventListener("click", () => {
+            mainRestMax = (mainRestMax === 33) ? 17 : 33;
+            btnToggleMainRestMax.textContent = `Target: ${mainRestMax}`;
             mainRestCount = mainRestMax;
             mainRestPhase = 1;
             renderCurrentFact();
