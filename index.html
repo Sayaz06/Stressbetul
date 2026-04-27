@@ -1314,11 +1314,6 @@
         
         videoOverlay.style.display = 'flex';
         currentRestCallback = callback;
-        
-        // Kod lama untuk video storage dibiarkan
-        restVideo.currentTime = 0;
-        restVideo.play().catch(e => {
-            console.log("Auto-play blocked", e);
         });
     }
 
