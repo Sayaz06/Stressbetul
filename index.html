@@ -1227,7 +1227,7 @@
                     btn.style.color = "#34d399";
                 });
             } else {
-                restYoutube.src = "https://youtu.be/dXZtogyYzyU"; 
+                restYoutube.src = "https://www.youtube.com/embed/dXZtogyYzyU?autoplay=1&rel=0&playsinline=1";
                 
                 hasUploadedVideo = false;
                 btnUploadVideos.forEach(btn => {
@@ -1310,7 +1310,7 @@
 
     function showVideoRest(callback) {
         // Assign semula src yang betul supaya ia dimainkan dari mula
-        restYoutube.src = globalVideoRehatUrl || "https://youtu.be/dXZtogyYzyU"; 
+        restYoutube.src = globalVideoRehatUrl || "https://www.youtube.com/embed/dXZtogyYzyU?autoplay=1&rel=0&playsinline=1";
         
         videoOverlay.style.display = 'flex';
         currentRestCallback = callback;
