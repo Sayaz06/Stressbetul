@@ -3453,12 +3453,14 @@ function checkHitMemanah(hitX, hitY) {
         floatingTexts.push({ text: "Miss!", x: hitX, y: hitY - 20, alpha: 1.0, color: result.color });
       }
 
-      // Pindah keluar dari setTimeout! Ia akan dipanggil serta-merta 
-      // untuk elak video disekat oleh browser. Logik 'Miss' awak dikekalkan.
+// Pindah keluar dari setTimeout! Ia akan dipanggil serta-merta
       decrementMemanahAction();
 
       setTimeout(() => {
-        memanahPaused = false;
+        // KOD BARU: Elak unpause jika video tengah main (supaya video tak lekat/stuck)
+        if (document.getElementById('video-rest-overlay').style.display !== 'flex') {
+            memanahPaused = false;
+        }
         memanahTotalPausedTime += (Date.now() - memanahPauseStartTime);
       }, 1500); 
     }
@@ -3520,19 +3522,20 @@ function checkHitMemanah(hitX, hitY) {
         triggerVibration([200, 100, 200, 100, 2000]);
         let finalScore = memanahTotalScore;
 
-        if (isMemanahVideoRestON && memanahPhase === 1) {
-            memanahMiniCount.textContent = "⏸️";
-            memanahBigCount.textContent = "⏸️";
-            showVideoRest(() => {
-                memanahPhase = 2;
-                document.getElementById('memanah-phase-label').textContent = "Fasa 2";
-                memanahTapCount = (maxMemanahCount === 33) ? 17 : 33; 
-                memanahMiniCount.textContent = memanahTapCount;
-                memanahBigCount.textContent = memanahTapCount;
-                isJoggingBlocked = false;
-                showToast("Fasa 2 bermula! Skor disambung.");
-            });
-        } else {
+if (isMemanahVideoRestON && memanahPhase === 1) {
+            memanahMiniCount.textContent = "⏸️";
+            memanahBigCount.textContent = "⏸️";
+            showVideoRest(() => {
+                memanahPhase = 2;
+                document.getElementById('memanah-phase-label').textContent = "Fasa 2";
+                memanahTapCount = (maxMemanahCount === 33) ? 17 : 33; 
+                memanahMiniCount.textContent = memanahTapCount;
+                memanahBigCount.textContent = memanahTapCount;
+                isJoggingBlocked = false;
+                memanahPaused = false; // <--- KOD BARU: Sambung gerak HANYA lepas video ditutup
+                showToast("Fasa 2 bermula! Skor disambung.");
+            });
+        } else {
             // FASA TAMAT
             memanahTapCount = maxMemanahCount; memanahTotalScore = 0; 
             memanahMiniCount.textContent = "✓"; memanahBigCount.textContent = "✓";
