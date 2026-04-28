@@ -637,10 +637,10 @@
       padding: 0 4px;
     }
 
-    /* OVERLAY VIDEO REHAT MINDA */
+    /* OVERLAY VIDEO REHAT MINDA - KOD BARU: DITUKAR BACKGROUND UNTUK PRESTASI GPU */
     #video-rest-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(10px);
+      background: #020617; /* Solid color (bukan rgba + blur) elak stuck/lag GPU */
       z-index: 999999; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
     }
     .video-container { 
@@ -1801,7 +1801,10 @@
 
       if (didDecrement) {
         if (isSempadan) {
-          triggerVibration([200, 100, 200, 100, 2000]); 
+          // KOD BARU: Matikan getaran panjang jika kita dalam mode rest page utama (learningMode === 2)
+          if (learningMode !== 2) {
+              triggerVibration([200, 100, 200, 100, 2000]); 
+          }
           isBlocked = true;
           setTimeout(() => { isBlocked = false; }, 2600);
         } else {
@@ -1976,7 +1979,11 @@
         setTimeout(() => joggingCircle.style.transform = "scale(1)", 100);
       } else {
         isJoggingBlocked = true; 
-        triggerVibration([200, 100, 200, 100, 2000]);
+        
+        // KOD BARU: Hanya bergetar JIKA video rehat OFF
+        if (!(isJoggingVideoRestON && joggingPhase === 1)) {
+            triggerVibration([200, 100, 200, 100, 2000]);
+        }
         
         if (isJoggingVideoRestON && joggingPhase === 1) {
             joggingCount.textContent = "Rehat";
@@ -2256,7 +2263,10 @@
           }
         }
 
-        triggerVibration([200, 100, 200, 100, 2000]); 
+        // KOD BARU: Matikan getaran jika learningMode === 2
+        if (learningMode !== 2) {
+            triggerVibration([200, 100, 200, 100, 2000]); 
+        }
         isBlocked = true;
         setTimeout(() => { isBlocked = false; }, 2600);
         
@@ -2945,12 +2955,12 @@
 
 
 // ==========================================
-    // LOGIK TOGGLE BUTTONS (FAKTA, RUTIN & 5 MODE)
-    // ==========================================
-    if(btnToggleMainRestMax) {
-        btnToggleMainRestMax.addEventListener("click", () => {
-            mainRestMax = (mainRestMax === 33) ? 17 : 33;
-            btnToggleMainRestMax.textContent = `Target: ${mainRestMax}`;
+    // LOGIK TOGGLE BUTTONS (FAKTA, RUTIN & 5 MODE)
+    // ==========================================
+    if(btnToggleMainRestMax) {
+        btnToggleMainRestMax.addEventListener("click", () => {
+            mainRestMax = (mainRestMax === 33) ? 17 : 33;
+            btnToggleMainRestMax.textContent = `Target: ${mainRestMax}`;
             mainRestCount = mainRestMax;
             mainRestPhase = 1;
             renderCurrentFact();
@@ -3393,6 +3403,12 @@
     }
 
     function loopMemanah() {
+      // KOD BARU: Hentikan lukisan Canvas jika video sedang main untuk jimat GPU/elak stuck
+      if (document.getElementById('video-rest-overlay').style.display === 'flex') {
+          memanahAnimationFrame = requestAnimationFrame(loopMemanah);
+          return;
+      }
+
       let tPos = getTargetPos(memanahCanvas.width, memanahCanvas.height, memanahTotalPausedTime, memanahPaused, targetX, targetY);
       targetX = tPos.x; targetY = tPos.y;
 
@@ -3435,29 +3451,27 @@
       return { score: 0, color: "rgba(255, 100, 100, ALPHA)" };
     }
 
-function checkHitMemanah(hitX, hitY) {
-      let result = getHitScore(hitX, hitY, targetX, targetY);
-      memanahTotalScore += result.score;
+    function checkHitMemanah(hitX, hitY) {
+      let result = getHitScore(hitX, hitY, targetX, targetY);
+      memanahTotalScore += result.score;
 
-      if (result.score > 0) {
-        triggerVibration([100, 50, 100]);
-        floatingTexts.push({ text: `+${result.score}`, x: targetX, y: targetY - 20, alpha: 1.0, color: result.color });
-      } else {
-        triggerVibration([50]); 
-        floatingTexts.push({ text: "Miss!", x: hitX, y: hitY - 20, alpha: 1.0, color: result.color });
-      }
+      if (result.score > 0) {
+        triggerVibration([100, 50, 100]);
+        floatingTexts.push({ text: `+${result.score}`, x: targetX, y: targetY - 20, alpha: 1.0, color: result.color });
+      } else {
+        triggerVibration([50]); 
+        floatingTexts.push({ text: "Miss!", x: hitX, y: hitY - 20, alpha: 1.0, color: result.color });
+      }
 
-// Pindah keluar dari setTimeout! Ia akan dipanggil serta-merta
-      decrementMemanahAction();
+      decrementMemanahAction();
 
-      setTimeout(() => {
-        // KOD BARU: Elak unpause jika video tengah main (supaya video tak lekat/stuck)
-        if (document.getElementById('video-rest-overlay').style.display !== 'flex') {
-            memanahPaused = false;
-        }
-        memanahTotalPausedTime += (Date.now() - memanahPauseStartTime);
-      }, 1500); 
-    }
+      setTimeout(() => {
+        if (document.getElementById('video-rest-overlay').style.display !== 'flex') {
+            memanahPaused = false;
+        }
+        memanahTotalPausedTime += (Date.now() - memanahPauseStartTime);
+      }, 1500); 
+    }
 
     function handleMemanahTouchStart(e) {
       e.preventDefault();
@@ -3487,7 +3501,6 @@ function checkHitMemanah(hitX, hitY) {
       }
     }
 
-    // Attach to Canvas AND Overlay
     memanahCanvas.addEventListener('touchstart', handleMemanahTouchStart, {passive: false});
     memanahCanvas.addEventListener('touchmove', handleMemanahTouchMove, {passive: false});
     memanahCanvas.addEventListener('touchend', handleMemanahTouchEnd, {passive: false});
@@ -3513,23 +3526,28 @@ function checkHitMemanah(hitX, hitY) {
         memanahBigCount.textContent = memanahTapCount;
       } else {
         isJoggingBlocked = true;
-        triggerVibration([200, 100, 200, 100, 2000]);
+        
+        // KOD BARU: Hanya bergetar JIKA video rehat OFF
+        if (!(isMemanahVideoRestON && memanahPhase === 1)) {
+            triggerVibration([200, 100, 200, 100, 2000]);
+        }
+        
         let finalScore = memanahTotalScore;
 
-if (isMemanahVideoRestON && memanahPhase === 1) {
-            memanahMiniCount.textContent = "⏸️";
-            memanahBigCount.textContent = "⏸️";
-            showVideoRest(() => {
-                memanahPhase = 2;
-                document.getElementById('memanah-phase-label').textContent = "Fasa 2";
-                memanahTapCount = (maxMemanahCount === 33) ? 17 : 33; 
-                memanahMiniCount.textContent = memanahTapCount;
-                memanahBigCount.textContent = memanahTapCount;
-                isJoggingBlocked = false;
-                memanahPaused = false; // <--- KOD BARU: Sambung gerak HANYA lepas video ditutup
-                showToast("Fasa 2 bermula! Skor disambung.");
-            });
-        } else {
+        if (isMemanahVideoRestON && memanahPhase === 1) {
+            memanahMiniCount.textContent = "⏸️";
+            memanahBigCount.textContent = "⏸️";
+            showVideoRest(() => {
+                memanahPhase = 2;
+                document.getElementById('memanah-phase-label').textContent = "Fasa 2";
+                memanahTapCount = (maxMemanahCount === 33) ? 17 : 33; 
+                memanahMiniCount.textContent = memanahTapCount;
+                memanahBigCount.textContent = memanahTapCount;
+                isJoggingBlocked = false;
+                memanahPaused = false; 
+                showToast("Fasa 2 bermula! Skor disambung.");
+            });
+        } else {
             // FASA TAMAT
             memanahTapCount = maxMemanahCount; memanahTotalScore = 0; 
             memanahMiniCount.textContent = "✓"; memanahBigCount.textContent = "✓";
@@ -3562,7 +3580,9 @@ if (isMemanahVideoRestON && memanahPhase === 1) {
     }
 
 
-    // ==========================================
+
+
+// ==========================================
     // KOD BARU: TASBIH MEMANAH (Di Page Utama)
     // ==========================================
     const tm_canvas = document.getElementById("tasbih-memanah-canvas");
@@ -3583,7 +3603,7 @@ if (isMemanahVideoRestON && memanahPhase === 1) {
     let tm_paused = false;
     let tm_pauseStartTime = 0;
     let tm_totalPausedTime = 0;
-    
+
     // PEMARKAHAN TASBIH MEMANAH
     let tm_totalPemarkahan = 0;
     let tm_shotCount = 0;
@@ -3611,6 +3631,12 @@ if (isMemanahVideoRestON && memanahPhase === 1) {
     });
 
     function loopTasbihMemanah() {
+      // KOD BARU: Hentikan lukisan Canvas jika video sedang main untuk jimat GPU/elak stuck
+      if (document.getElementById('video-rest-overlay').style.display === 'flex') {
+          tm_animationFrame = requestAnimationFrame(loopTasbihMemanah);
+          return;
+      }
+
       let tPos = getTargetPos(tm_canvas.width, tm_canvas.height, tm_totalPausedTime, tm_paused, tm_targetX, tm_targetY);
       tm_targetX = tPos.x; tm_targetY = tPos.y;
 
