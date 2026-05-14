@@ -2520,7 +2520,7 @@ let justBecameDone = false; // KOD BARU: Track bila BARU sahaja jadi done
         }
       }
 
-      else if (learningMode === 2) { // KOD BARU: Rest Mode
+else if (learningMode === 2) { // Rest Mode
         mainRestCount--;
         if (mainRestCount <= 0) {
             if (mainRestPhase === 1) {
@@ -2531,7 +2531,11 @@ let justBecameDone = false; // KOD BARU: Track bila BARU sahaja jadi done
                     showToast("Fasa 2 bermula!");
                 });
             } else {
-                // Selesai fasa ke-2, beralih ke zikir/nota seterusnya
+                // KOD BARU: Fasa 2 habis → getaran panjang ketika tukar ke baris/perkataan baharu
+                triggerVibration([200, 100, 200, 100, 2000]);
+                isBlocked = true;
+                setTimeout(() => { isBlocked = false; }, 2600);
+
                 mainRestPhase = 1;
                 mainRestCount = mainRestMax;
                 isFlipped = false;
