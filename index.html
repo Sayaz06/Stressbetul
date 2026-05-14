@@ -1520,33 +1520,33 @@ function showVideoRest(callback) {
     // ==========================================
     // UTILITIES & VIBRATION HANDLER
     // ==========================================
-    function showSection(section) {
-      sectionLogin.classList.remove("active");
-      sectionHome.classList.remove("active");
-      sectionTasbih.classList.remove("active");
-      sectionHistory.classList.remove("active");
-      sectionNotes.classList.remove("active");
-      sectionSubjects.classList.remove("active");
-      sectionTopics.classList.remove("active");
-      sectionDrawer.classList.remove("active");
-      sectionRoutineTimes.classList.remove("active");
-      sectionRoutineDrawers.classList.remove("active");
-      sectionJogging.classList.remove("active"); 
-      sectionMemanah.classList.remove("active"); 
-      sectionPrompterEditor.classList.remove("active"); 
-      
-      section.classList.add("active");
-      
-      if(section.id === "section-tasbih" && isTasbihMemanahActive) {
-          setTimeout(() => {
-              tm_canvas.width = tm_canvas.parentElement.clientWidth;
-              tm_canvas.height = tm_canvas.parentElement.clientHeight;
-          }, 50);
-      }
-      
-      saveAppState(); 
-    }
-
+function showSection(section) {
+      sectionLogin.classList.remove("active");
+      sectionHome.classList.remove("active");
+      sectionTasbih.classList.remove("active");
+      sectionHistory.classList.remove("active");
+      sectionNotes.classList.remove("active");
+      sectionSubjects.classList.remove("active");
+      sectionTopics.classList.remove("active");
+      sectionDrawer.classList.remove("active");
+      sectionRoutineTimes.classList.remove("active");
+      sectionRoutineDrawers.classList.remove("active");
+      sectionJogging.classList.remove("active"); 
+      sectionMemanah.classList.remove("active"); 
+      sectionPrompterEditor.classList.remove("active"); 
+      sectionMylaw.classList.remove("active"); // KOD BARU
+      
+      section.classList.add("active");
+      
+      if(section.id === "section-tasbih" && isTasbihMemanahActive) {
+          setTimeout(() => {
+              tm_canvas.width = tm_canvas.parentElement.clientWidth;
+              tm_canvas.height = tm_canvas.parentElement.clientHeight;
+          }, 50);
+      }
+      
+      saveAppState(); 
+    }
     // TAMBAHAN BARU: Override showToast untuk sokong paparan berterusan masa upload
     window.toastTimeout = null;
     function showToast(message, duration = 3500) {
