@@ -659,6 +659,98 @@
       display: none; /* DITUKAR: Sembunyikan video Firebase asal */
     }
 
+/* ===== KOD BARU: OVERLAY PERATURAN (My Law) ===== */
+    #peraturan-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(2, 6, 23, 0.97);
+      z-index: 999999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(8px);
+    }
+    .peraturan-card {
+      width: 100%;
+      max-width: 480px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid var(--grad1);
+      border-radius: 18px;
+      padding: 24px 20px;
+      box-shadow: 0 18px 50px rgba(99, 102, 241, 0.4);
+      display: flex;
+      flex-direction: column;
+      max-height: 65vh;
+    }
+    .peraturan-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--grad1);
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .peraturan-subtitle {
+      font-size: 0.85rem;
+      color: var(--subtext);
+      text-align: center;
+      margin-bottom: 18px;
+    }
+    #peraturan-content {
+      flex: 1;
+      overflow-y: auto;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: var(--text);
+      padding: 14px;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 12px;
+      border: 1px solid var(--border-soft);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+      min-height: 100px;
+    }
+    #peraturan-content::-webkit-scrollbar {
+      width: 5px;
+    }
+    #peraturan-content::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.8);
+      border-radius: 10px;
+    }
+    #btn-peraturan-continue {
+      max-width: 480px;
+      width: 100%;
+      padding: 14px;
+      margin-top: 18px;
+    }
+
+    /* ===== KOD BARU: SECTION MY LAW ===== */
+    #my-law-textarea {
+      flex: 1;
+      width: 100%;
+      min-height: 300px;
+      resize: none;
+      border-radius: 12px;
+      border: 2px solid var(--grad1);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text);
+      padding: 14px;
+      font-size: 1rem;
+      line-height: 1.6;
+      outline: none;
+      box-shadow: inset 0 0 20px rgba(99, 102, 241, 0.1);
+    }
+    #my-law-textarea:focus {
+      border-color: var(--grad2);
+      box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3), inset 0 0 20px rgba(99, 102, 241, 0.1);
+    }
+
     .footer { 
       margin-top: auto; 
       padding-top: 10px; 
@@ -680,22 +772,27 @@
   </div>
 
   <input type="file" id="video-upload-input" accept="video/*" style="display: none;">
-<div id="video-rest-overlay">
-    <div id="rest-overlay-title" style="color:var(--grad1); font-size:1.4rem; font-weight:bold; margin-bottom:8px; text-align:center;">Fasa 1 Selesai! 🧠</div>
-    <div id="rest-overlay-sub" style="color:var(--subtext); font-size:0.9rem; margin-bottom:24px; text-align:center;">Tarik nafas, tenangkan minda. Biarkan memori diproses.</div>
-    
-    <div class="video-container" id="rest-video-container">
-      <video id="rest-video" src="" controls playsinline></video>
-      <iframe id="rest-youtube" src="" frameborder="0" allow="autoplay; fullscreen" style="width:100%; height:100%; display:block;"></iframe>
-    </div>
 
-    <div id="rest-mylaw-container" style="display:none; width: 100%; max-width: 480px; flex: 1; overflow-y: auto; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--grad2); border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-      <div style="color:var(--grad2); font-weight:bold; text-align:center; margin-bottom:15px; font-size:1.2rem;">Peringatan: My Law</div>
-      <div id="rest-mylaw-text" style="color:white; font-size:1.1rem; line-height:1.6; white-space:pre-wrap; text-align:center;">Sila set My Law dahulu.</div>
-    </div>
+  <div id="video-rest-overlay">
+    <div style="color:var(--grad1); font-size:1.4rem; font-weight:bold; margin-bottom:8px; text-align:center;">Fasa 1 Selesai! 🧠</div>
+    <div style="color:var(--subtext); font-size:0.9rem; margin-bottom:24px; text-align:center;">Tarik nafas, tenangkan minda. Biarkan memori diproses.</div>
+    <div class="video-container">
+      <video id="rest-video" src="" controls playsinline></video>
+      <iframe id="rest-youtube" src="" frameborder="0" allow="autoplay; fullscreen" style="width:100%; height:100%; display:block;"></iframe>
+    </div>
+    <button id="btn-sambung-fasa2" class="btn mt-16" style="max-width: 300px; padding: 14px;">Sambung Fasa 2</button>
+  </div>
 
-    <button id="btn-sambung-fasa2" class="btn mt-16" style="max-width: 300px; padding: 14px;">Lihat Peraturan</button>
-  </div>
+<!-- KOD BARU: Overlay Peraturan (My Law) -->
+  <div id="peraturan-overlay">
+    <div class="peraturan-card">
+      <div class="peraturan-title">📜 Peraturan Saya</div>
+      <div class="peraturan-subtitle">Ingat semula peraturan hidup anda</div>
+      <div id="peraturan-content"></div>
+    </div>
+    <button id="btn-peraturan-continue" class="btn">Sambung Fasa 2</button>
+  </div>
+
   <div class="app-shell">
     <div class="card">
 
@@ -725,39 +822,44 @@
           <button id="btn-logout" class="btn btn-secondary btn-sm">Logout</button>
         </div>
 <div class="stack mt-8">
-          <button id="btn-go-tasbih" class="btn">
-            <span>Tasbih Countdown</span>
-          </button>
-          <button id="btn-go-notes" class="btn btn-secondary">
-            <span>Note For Istighfar</span>
-          </button>
-          <button id="btn-go-prompter" class="btn btn-secondary" style="border-color: var(--grad1);">
-            <span>Teleprompter Kamera</span>
-          </button>
-          <button id="btn-go-mylaw" class="btn btn-secondary" style="border-color: var(--grad2); color: #fff;">
-            <span>My Law</span>
-          </button>
-        </div>
-<div class="footer mt-16">
-          Repo: <span class="small">Stressbetul / Istigfar</span>
-        </div>
-      </section>
+          <button id="btn-go-tasbih" class="btn">
+            <span>Tasbih Countdown</span>
+          </button>
+          <button id="btn-go-notes" class="btn btn-secondary">
+            <span>Note For Istighfar</span>
+          </button>
+          <button id="btn-go-prompter" class="btn btn-secondary" style="border-color: var(--grad1);">
+            <span>Teleprompter Kamera</span>
+          </button>
+          <button id="btn-go-my-law" class="btn btn-secondary" style="border-color: var(--grad2); color: var(--grad2);">
+            <span>📜 My Law</span>
+          </button>
+        </div>
+        <div class="footer mt-16">
+          Repo: <span class="small">Stressbetul / Istigfar</span>
+        </div>
+      </section>
 
-      <section id="section-mylaw" class="section">
-        <div class="topbar">
-          <button id="btn-back-home-mylaw" class="btn btn-secondary btn-sm">← Menu</button>
-          <div style="text-align: right;">
-            <div class="topbar-title">My Law</div>
-            <div class="topbar-sub">Peraturan Hidup Anda</div>
-          </div>
-        </div>
-        <div class="row mt-8">
-          <span class="chip" style="border-color: var(--grad1); color: var(--grad1);">Auto-save ke Firestore</span>
-        </div>
-        <textarea id="mylaw-textarea" class="drawer-notes mt-8" style="flex:1; font-size:1.15rem; padding:15px; border-color:var(--border-mid); color: #fff; line-height: 1.6;" placeholder="Tulis peraturan wajib hidup anda di sini..."></textarea>
-      </section>
+<!-- KOD BARU: Section My Law -->
+      <section id="section-my-law" class="section">
+        <div class="topbar">
+          <button id="btn-back-home-my-law" class="btn btn-secondary btn-sm">← Menu</button>
+          <div style="text-align: right;">
+            <div class="topbar-title" style="color: var(--grad2);">📜 My Law</div>
+            <div class="topbar-sub">Peraturan hidup anda</div>
+          </div>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--subtext); text-align: center; margin-bottom: 8px;">
+          Tulis peraturan hidup anda. Auto-save ke Firestore. Akan dipaparkan masa istirahat fasa.
+        </div>
+        <textarea id="my-law-textarea" placeholder="Tulis peraturan hidup anda di sini...&#10;&#10;Contoh:&#10;1. Jangan tinggalkan solat&#10;2. Jaga lidah dari kata-kata sia-sia&#10;3. Tidur sebelum jam 11 malam"></textarea>
+        <div class="row" style="margin-top: 10px; flex-shrink: 0;">
+          <span class="chip">Auto-save ke Firestore</span>
+          <span class="chip" id="my-law-save-indicator" style="border-color: var(--grad2); color: var(--grad2);">✓ Tersimpan</span>
+        </div>
+      </section>
 
-      <section id="section-prompter-editor" class="section">
+      <section id="section-prompter-editor" class="section">
         <div class="topbar">
           <button id="btn-back-home-prompter" class="btn btn-secondary btn-sm">← Menu</button>
           <div style="text-align: right;">
@@ -1126,20 +1228,15 @@
     const sectionJogging = document.getElementById("section-jogging"); 
     const sectionMemanah = document.getElementById("section-memanah");
     
-// DOM PROMPTER EDITOR & MY LAW
-    const sectionPrompterEditor = document.getElementById("section-prompter-editor");
-    const btnGoPrompter = document.getElementById("btn-go-prompter");
-    const btnBackHomePrompter = document.getElementById("btn-back-home-prompter");
-    const btnAddPrompterLaci = document.getElementById("btn-add-prompter-laci");
-    const prompterLaciList = document.getElementById("prompter-laci-list");
-    const btnStartPrompter = document.getElementById("btn-start-prompter");
-    
-    const sectionMyLaw = document.getElementById("section-mylaw");
-    const btnGoMyLaw = document.getElementById("btn-go-mylaw");
-    const btnBackHomeMyLaw = document.getElementById("btn-back-home-mylaw");
-    const mylawTextarea = document.getElementById("mylaw-textarea");
+    // DOM PROMPTER EDITOR
+    const sectionPrompterEditor = document.getElementById("section-prompter-editor");
+    const btnGoPrompter = document.getElementById("btn-go-prompter");
+    const btnBackHomePrompter = document.getElementById("btn-back-home-prompter");
+    const btnAddPrompterLaci = document.getElementById("btn-add-prompter-laci");
+    const prompterLaciList = document.getElementById("prompter-laci-list");
+    const btnStartPrompter = document.getElementById("btn-start-prompter");
 
-    const sectionRoutineTimes = document.getElementById("section-routine-times");
+    const sectionRoutineTimes = document.getElementById("section-routine-times");
     const sectionRoutineDrawers = document.getElementById("section-routine-drawers");
 
     const btnLoginGoogle = document.getElementById("btn-login-google");
@@ -1217,30 +1314,21 @@
     const btnAddJoggingAfter = document.getElementById("btn-add-jogging-after");
     
     // ==========================================
-    // SISTEM UPLOAD VIDEO REHAT & MY LAW
-    // ==========================================
-    const videoOverlay = document.getElementById('video-rest-overlay');
-    const restVideo = document.getElementById('rest-video');
-    const restYoutube = document.getElementById('rest-youtube'); 
-    const btnSambungFasa2 = document.getElementById('btn-sambung-fasa2');
-    const videoUploadInput = document.getElementById("video-upload-input");
-    const btnUploadVideos = document.querySelectorAll(".btn-upload-video"); 
-    
-    const uploadProgressContainer = document.getElementById("upload-progress-container");
-    const uploadProgressBar = document.getElementById("upload-progress-bar");
+    // SISTEM UPLOAD VIDEO REHAT (PELAN B: YOUTUBE)
+    // ==========================================
+    const videoOverlay = document.getElementById('video-rest-overlay');
+    const restVideo = document.getElementById('rest-video');
+    const restYoutube = document.getElementById('rest-youtube'); // KOD BARU
+    const btnSambungFasa2 = document.getElementById('btn-sambung-fasa2');
+    const videoUploadInput = document.getElementById("video-upload-input");
+    const btnUploadVideos = document.querySelectorAll(".btn-upload-video"); 
+    
+    const uploadProgressContainer = document.getElementById("upload-progress-container");
+    const uploadProgressBar = document.getElementById("upload-progress-bar");
 
-    // DOM MY LAW OVERLAY
-    const restVideoContainer = document.getElementById('rest-video-container');
-    const restMylawContainer = document.getElementById('rest-mylaw-container');
-    const restMylawText = document.getElementById('rest-mylaw-text');
-    const restOverlayTitle = document.getElementById('rest-overlay-title');
-    const restOverlaySub = document.getElementById('rest-overlay-sub');
-
-    let currentRestCallback = null;
-    let globalVideoRehatUrl = ""; 
-    let globalMyLawText = ""; // KOD BARU
-    let hasUploadedVideo = false;
-    let isShowingMylawInOverlay = false; // KOD BARU Tracker Overlay
+    let currentRestCallback = null;
+    let globalVideoRehatUrl = ""; 
+    let hasUploadedVideo = false; 
 
     function getYouTubeId(url) {
         let regex = /(youtu.*be.*)\/(watch\?v=|embed\/|v|shorts|)(.*?((?=[&#?])|$))/;
@@ -1345,78 +1433,31 @@
     });
 
 function showVideoRest(callback) {
-        isShowingMylawInOverlay = false;
-        restOverlayTitle.textContent = "Fasa 1 Selesai! 🧠";
-        restOverlaySub.textContent = "Tarik nafas, tenangkan minda. Biarkan memori diproses.";
-        
-        restVideoContainer.style.display = 'block';
-        restMylawContainer.style.display = 'none';
-        btnSambungFasa2.textContent = "Lihat Peraturan";
-        
-        restYoutube.src = globalVideoRehatUrl || "https://www.youtube.com/embed/dXZtogyYzyU?autoplay=1&rel=0&playsinline=1";
-        videoOverlay.style.display = 'flex';
-        currentRestCallback = callback;
-    }
+        // Assign semula src yang betul supaya ia dimainkan dari mula
+        restYoutube.src = globalVideoRehatUrl || "https://www.youtube.com/embed/dXZtogyYzyU?autoplay=1&rel=0&playsinline=1";
+        
+        videoOverlay.style.display = 'flex';
+        currentRestCallback = callback;
+        
+        // KOD BARU: Tukar text button kepada "Lihat Peraturan" (bukan terus "Sambung Fasa 2")
+        btnSambungFasa2.textContent = "Lihat Peraturan 📜";
+    }
 
-    function showMyLawOnlyRestMode(callback, btnText = "Sambung Laci Seterusnya") {
-        isShowingMylawInOverlay = true;
-        restOverlayTitle.textContent = "Peringatan Wajib ⚠️";
-        restOverlaySub.textContent = "Sila baca, hadam dan patuhi peraturan ini.";
-        
-        restVideoContainer.style.display = 'none';
-        restMylawContainer.style.display = 'block';
-        restMylawText.textContent = globalMyLawText.trim() === "" ? "Sila set My Law dahulu." : globalMyLawText;
-        
-        btnSambungFasa2.textContent = btnText;
-        restYoutube.src = "";
-        restVideo.pause();
-        videoOverlay.style.display = 'flex';
-        currentRestCallback = callback;
-    }
+    btnSambungFasa2.addEventListener('click', () => {
+        // KOD BARU: Langkah 1 - Sembunyikan video & henti audio
+        videoOverlay.style.display = 'none';
+        
+        // KOD PENTING: Bunuh (block) Audio YouTube dari terus berbunyi 100%
+        restYoutube.src = ""; 
 
-    btnSambungFasa2.addEventListener('click', () => {
-        if (!isShowingMylawInOverlay) {
-            // BERTUKAR DARI VIDEO KE MY LAW (STEP 2 DALAM REST)
-            isShowingMylawInOverlay = true;
-            restVideoContainer.style.display = 'none';
-            restMylawContainer.style.display = 'block';
-            restMylawText.textContent = globalMyLawText.trim() === "" ? "Sila set My Law dahulu." : globalMyLawText;
-            btnSambungFasa2.textContent = "Sambung Fasa 2";
-            restYoutube.src = "";
-            restVideo.pause();
-        } else {
-            // MY LAW SELESAI -> TUTUP OVERLAY -> SAMBUNG CALLBACK
-            videoOverlay.style.display = 'none';
-            isShowingMylawInOverlay = false;
-            if(currentRestCallback) currentRestCallback();
-        }
-    });
-
-    // AUTO-SAVE MY LAW BILA USER TAIP
-    mylawTextarea.addEventListener("input", (e) => {
-        globalMyLawText = e.target.value;
-        if (currentUser) {
-            const refSetting = doc(db, "users", currentUser.uid, "settings", "mylaw");
-            setDoc(refSetting, { text: globalMyLawText, updatedAt: Date.now() }, { merge: true });
-        }
-    });
-
-    const btnVideoJogging = document.getElementById("btn-video-jogging");
-    let isJoggingVideoRestON = true;
-    btnVideoJogging.addEventListener("click", () => {
-        isJoggingVideoRestON = !isJoggingVideoRestON;
-        btnVideoJogging.textContent = `Video Rehat: ${isJoggingVideoRestON ? 'ON' : 'OFF'}`;
-        btnVideoJogging.classList.toggle("btn-active", isJoggingVideoRestON);
+        restVideo.pause(); // Kod lama dibiarkan
+        
+        // KOD BARU: Langkah 2 - Tunjuk peraturan overlay sebelum jalankan callback
+        // Peraturan dulu → pengguna baca → tekan "Sambung Fasa 2" → baru callback dijalankan
+        const savedCallback = currentRestCallback;
+        currentRestCallback = null;
+        showPeraturanOverlay("Sambung Fasa 2", savedCallback);
     });
-
-    const btnVideoMemanah = document.getElementById("btn-video-memanah");
-    let isMemanahVideoRestON = true;
-    btnVideoMemanah.addEventListener("click", () => {
-        isMemanahVideoRestON = !isMemanahVideoRestON;
-        btnVideoMemanah.textContent = `Video Rehat: ${isMemanahVideoRestON ? 'ON' : 'OFF'}`;
-        btnVideoMemanah.classList.toggle("btn-active", isMemanahVideoRestON);
-    });
-
     // MUZIK GLOBAL
     const bgMusic = new Audio('backgroundmusic.mp3');
     bgMusic.loop = true;
@@ -1498,6 +1539,98 @@ function showVideoRest(callback) {
     let maxMemanahCount = 33;
     let memanahPhase = 1;
 
+// ==========================================
+    // KOD BARU: MY LAW + OVERLAY PERATURAN
+    // ==========================================
+    const sectionMyLaw = document.getElementById("section-my-law");
+    const btnGoMyLaw = document.getElementById("btn-go-my-law");
+    const btnBackHomeMyLaw = document.getElementById("btn-back-home-my-law");
+    const myLawTextarea = document.getElementById("my-law-textarea");
+    const myLawSaveIndicator = document.getElementById("my-law-save-indicator");
+
+    const peraturanOverlay = document.getElementById("peraturan-overlay");
+    const peraturanContent = document.getElementById("peraturan-content");
+    const btnPeraturanContinue = document.getElementById("btn-peraturan-continue");
+
+    let myLawText = "";
+    let myLawUnsub = null;
+    let myLawSaveTimer = null;
+    let peraturanCallback = null;
+
+    // SUBSCRIBE MY LAW DARI FIRESTORE
+    function subscribeMyLaw() {
+        if (!currentUser) return;
+        if (myLawUnsub) myLawUnsub();
+        const refLaw = doc(db, "users", currentUser.uid, "settings", "myLaw");
+        myLawUnsub = onSnapshot(refLaw, (snap) => {
+            if (snap.exists() && snap.data().text !== undefined) {
+                const cloudText = snap.data().text || "";
+                // Hanya update kalau user TIDAK sedang taip (elak gangguan)
+                if (myLawTextarea.value !== cloudText && document.activeElement !== myLawTextarea) {
+                    myLawTextarea.value = cloudText;
+                }
+                myLawText = cloudText;
+            } else {
+                myLawText = "";
+            }
+        });
+    }
+
+    // AUTO-SAVE MY LAW (DEBOUNCED 600ms)
+    myLawTextarea.addEventListener("input", (e) => {
+        const value = e.target.value;
+        myLawText = value;
+        
+        if (myLawSaveIndicator) {
+            myLawSaveIndicator.textContent = "⏳ Menyimpan...";
+            myLawSaveIndicator.style.color = "#fcd34d";
+            myLawSaveIndicator.style.borderColor = "#fcd34d";
+        }
+        
+        if (myLawSaveTimer) clearTimeout(myLawSaveTimer);
+        myLawSaveTimer = setTimeout(async () => {
+            if (!currentUser) return;
+            const refLaw = doc(db, "users", currentUser.uid, "settings", "myLaw");
+            await setDoc(refLaw, { text: value, updatedAt: Date.now() }, { merge: true });
+            
+            if (myLawSaveIndicator) {
+                myLawSaveIndicator.textContent = "✓ Tersimpan";
+                myLawSaveIndicator.style.color = "var(--grad2)";
+                myLawSaveIndicator.style.borderColor = "var(--grad2)";
+            }
+        }, 600);
+    });
+
+    // NAVIGATION MY LAW
+    btnGoMyLaw.addEventListener("click", () => showSection(sectionMyLaw));
+    btnBackHomeMyLaw.addEventListener("click", () => showSection(sectionHome));
+
+    // FUNGSI: TUNJUK OVERLAY PERATURAN
+    function showPeraturanOverlay(buttonText, callback) {
+        peraturanCallback = callback;
+        btnPeraturanContinue.textContent = buttonText;
+        
+        const lawText = (myLawText || "").trim();
+        if (lawText) {
+            peraturanContent.textContent = lawText;
+        } else {
+            peraturanContent.innerHTML = '<span style="color: var(--subtext); font-style: italic;">📌 Sila set "My Law" terlebih dahulu di Menu Utama untuk paparkan peraturan anda di sini.</span>';
+        }
+        
+        peraturanContent.scrollTop = 0;
+        peraturanOverlay.style.display = "flex";
+    }
+
+    // EVENT LISTENER UNTUK BUTTON CONTINUE
+    btnPeraturanContinue.addEventListener("click", () => {
+        peraturanOverlay.style.display = "none";
+        if (peraturanCallback) {
+            const cb = peraturanCallback;
+            peraturanCallback = null;
+            cb();
+        }
+    });
+
     // ==========================================
     // PERSISTENCE (STATE MEMORY) 
     // ==========================================
@@ -1521,32 +1654,32 @@ function showVideoRest(callback) {
     // UTILITIES & VIBRATION HANDLER
     // ==========================================
 function showSection(section) {
-      sectionLogin.classList.remove("active");
-      sectionHome.classList.remove("active");
-      sectionTasbih.classList.remove("active");
-      sectionHistory.classList.remove("active");
-      sectionNotes.classList.remove("active");
-      sectionSubjects.classList.remove("active");
-      sectionTopics.classList.remove("active");
-      sectionDrawer.classList.remove("active");
-      sectionRoutineTimes.classList.remove("active");
-      sectionRoutineDrawers.classList.remove("active");
-      sectionJogging.classList.remove("active"); 
-      sectionMemanah.classList.remove("active"); 
-      sectionPrompterEditor.classList.remove("active"); 
-      sectionMylaw.classList.remove("active"); // KOD BARU
-      
-      section.classList.add("active");
-      
-      if(section.id === "section-tasbih" && isTasbihMemanahActive) {
-          setTimeout(() => {
-              tm_canvas.width = tm_canvas.parentElement.clientWidth;
-              tm_canvas.height = tm_canvas.parentElement.clientHeight;
-          }, 50);
-      }
-      
-      saveAppState(); 
-    }
+      sectionLogin.classList.remove("active");
+      sectionHome.classList.remove("active");
+      sectionTasbih.classList.remove("active");
+      sectionHistory.classList.remove("active");
+      sectionNotes.classList.remove("active");
+      sectionSubjects.classList.remove("active");
+      sectionTopics.classList.remove("active");
+      sectionDrawer.classList.remove("active");
+      sectionRoutineTimes.classList.remove("active");
+      sectionRoutineDrawers.classList.remove("active");
+      sectionJogging.classList.remove("active"); 
+      sectionMemanah.classList.remove("active"); 
+      sectionPrompterEditor.classList.remove("active"); 
+      if (sectionMyLaw) sectionMyLaw.classList.remove("active"); // KOD BARU: Hapus active dari My Law
+      
+      section.classList.add("active");      
+      if(section.id === "section-tasbih" && isTasbihMemanahActive) {
+          setTimeout(() => {
+              tm_canvas.width = tm_canvas.parentElement.clientWidth;
+              tm_canvas.height = tm_canvas.parentElement.clientHeight;
+          }, 50);
+      }
+      
+      saveAppState(); 
+    }
+
     // TAMBAHAN BARU: Override showToast untuk sokong paparan berterusan masa upload
     window.toastTimeout = null;
     function showToast(message, duration = 3500) {
@@ -1672,25 +1805,13 @@ function showSection(section) {
       });
     }
 
-btnGoPrompter.addEventListener("click", () => {
-      showSection(sectionPrompterEditor);
-      renderPrompterEditor();
-    });
+    btnGoPrompter.addEventListener("click", () => {
+      showSection(sectionPrompterEditor);
+      renderPrompterEditor();
+    });
 
-    btnBackHomePrompter.addEventListener("click", () => showSection(sectionHome));
-    
-    btnGoMyLaw.addEventListener("click", () => {
-      showSection(sectionMyLaw);
-    });
-    btnBackHomeMyLaw.addEventListener("click", () => showSection(sectionHome));
-    
-    // AUTO-SAVE MY LAW
-    mylawTextarea.addEventListener("input", (e) => {
-      if(currentUser) {
-        updateDoc(doc(db, "users", currentUser.uid, "settings", "mylaw"), { text: e.target.value })
-          .catch(() => setDoc(doc(db, "users", currentUser.uid, "settings", "mylaw"), { text: e.target.value }));
-      }
-    });    
+    btnBackHomePrompter.addEventListener("click", () => showSection(sectionHome));
+    
     btnAddPrompterLaci.addEventListener("click", () => {
       prompterData.push("");
       savePrompterData();
@@ -1876,29 +1997,25 @@ btnGoPrompter.addEventListener("click", () => {
         }
       }
 
-// KOD BARU: Benarkan angka terus ke negatif (Hanya Istighfar Biasa, bukan Routine)
-      if (!routineMode) {
-        remaining -= 1;
-        if (remaining <= 0 && !done) {
-          done = true;
-          isSempadan = true; // Sempadan trigger tepat bila sampai 0
-        } else if (remaining < 0) {
-          done = true; // Kekalkan status done
-        }
-        didDecrement = true;
-        needFirebaseUpdate = true;
-      } else {
-        // Logik asal untuk Routine Mode
-        if (!done && remaining > 0) {
-          remaining -= 1;
-          done = remaining <= 0;
-          didDecrement = true;
-          needFirebaseUpdate = true;
-          if (done) isSempadan = true; 
-        } else if (!routineMode) {
-          didDecrement = true; 
-        }
-      }
+let justBecameDone = false; // KOD BARU: Track bila BARU sahaja jadi done
+
+      if (!done && remaining > 0) {
+        remaining -= 1;
+        done = remaining <= 0;
+        didDecrement = true;
+        needFirebaseUpdate = true;
+        if (done) {
+          isSempadan = true;
+          justBecameDone = true; // KOD BARU: Baru sahaja habis 10,000
+        }
+      } else if (!routineMode) {
+        // KOD BARU: Selepas done (remaining = 0), teruskan ke negatif tanpa limit
+        // Ini untuk zikir tambahan selain istighfar
+        remaining -= 1; // Turun ke -1, -2, -3... tanpa had
+        didDecrement = true;
+        needFirebaseUpdate = true;
+        // `done` kekal true — status sejarah tidak berubah
+      }
 
       if (didDecrement) {
         if (isSempadan) {
@@ -1945,7 +2062,8 @@ btnGoPrompter.addEventListener("click", () => {
       
       updateTasbihUI();
 
-      if (done && !routineMode && needFirebaseUpdate) {
+// KOD BARU: Hanya navigate ke History bila BARU sahaja done (bukan setiap kali negatif)
+      if (justBecameDone && !routineMode) {
         showSection(sectionHistory);
       }
     }
@@ -2364,31 +2482,21 @@ btnGoPrompter.addEventListener("click", () => {
           }
         }
 
-// KOD BARU: Matikan getaran jika learningMode === 2
-        if (learningMode !== 2) {
-            triggerVibration([200, 100, 200, 100, 2000]); 
-        }
-        isBlocked = true;
-        
-        comboStep = 0;
-        isFlipped = false;
-        currentRepeatCount = 33; 
-        mainRestCount = mainRestMax;
-        mainRestPhase = 1;
-        currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-        syncIndexToFirestore(currentFactIndex); 
-        triggerFadeAnimation(renderCurrentFact);
-
-        setTimeout(() => { 
-            // KOD BARU: Buka My Law lepas habis getaran (Selain Mode Rest)
-            if (learningMode !== 2) {
-                showMyLawOnlyRestMode(() => {
-                    isBlocked = false; // Unblock lepas user tutup My Law
-                }, "Sambung Laci Seterusnya");
-            } else {
-                isBlocked = false; 
-            }
-        }, 2600);
+        // KOD BARU: Matikan getaran jika learningMode === 2
+        if (learningMode !== 2) {
+            triggerVibration([200, 100, 200, 100, 2000]); 
+        }
+        isBlocked = true;
+        setTimeout(() => { isBlocked = false; }, 2600);
+        
+        comboStep = 0;
+        isFlipped = false;
+        currentRepeatCount = 33; 
+        mainRestCount = mainRestMax;
+        mainRestPhase = 1;
+        currentFactIndex = (currentFactIndex + 1) % allFacts.length;
+        syncIndexToFirestore(currentFactIndex); 
+        triggerFadeAnimation(renderCurrentFact);
         return;
       }
 
@@ -2411,6 +2519,7 @@ btnGoPrompter.addEventListener("click", () => {
            renderCurrentFact(); 
         }
       }
+
       else if (learningMode === 2) { // KOD BARU: Rest Mode
         mainRestCount--;
         if (mainRestCount <= 0) {
@@ -2434,6 +2543,7 @@ btnGoPrompter.addEventListener("click", () => {
             renderCurrentFact(); 
         }
       }
+
       else if (learningMode === 3) { // Combo
         if (comboStep === 0) {
           isFlipped = true;
@@ -2999,20 +3109,14 @@ btnGoPrompter.addEventListener("click", () => {
             }
         }
         
-        showSection(secToShow); 
-await ensureTodayTasbih();
-        subscribeHistory();
-        subscribeNotes();
-        subscribeAllHierarchyData();
-
-        // KOD BARU: Subscribe My Law dari Firestore
-        onSnapshot(doc(db, "users", currentUser.uid, "settings", "mylaw"), (snap) => {
-            if (snap.exists() && snap.data().text) {
-                globalMyLawText = snap.data().text;
-                mylawTextarea.value = globalMyLawText;
-            }
-        });
-      } else {
+showSection(secToShow); 
+        await ensureTodayTasbih();
+        subscribeHistory();
+        subscribeNotes();
+        subscribeAllHierarchyData();
+        subscribeMyLaw(); // KOD BARU: Subscribe My Law dari Firestore
+        subscribeToVideoRehat(); // KOD BARU: Subscribe video rehat (dah ada fungsi, tapi belum dipanggil)
+      } else {
         homeUserEmail.textContent = "";
         if (notesUnsub) notesUnsub();
         if (historyUnsub) historyUnsub();
