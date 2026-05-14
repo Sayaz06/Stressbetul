@@ -2034,7 +2034,7 @@ let justBecameDone = false; // KOD BARU: Track bila BARU sahaja jadi done
         currentTasbihData.remaining = remaining;
         currentTasbihData.done = done;
         
-        if (remaining % 10 === 0 || done) {
+        if (remaining % 10 === 0 || justBecameDone) {
           setDoc(currentTasbihDocRef, {
             ...currentTasbihData,
             updatedAt: Date.now()
@@ -2482,22 +2482,41 @@ let justBecameDone = false; // KOD BARU: Track bila BARU sahaja jadi done
           }
         }
 
-        // KOD BARU: Matikan getaran jika learningMode === 2
-        if (learningMode !== 2) {
-            triggerVibration([200, 100, 200, 100, 2000]); 
-        }
+// KOD BARU: SEMUA mode (termasuk rest) dapat getaran panjang ketika tukar laci
+        triggerVibration([200, 100, 200, 100, 2000]); 
         isBlocked = true;
-        setTimeout(() => { isBlocked = false; }, 2600);
-        
-        comboStep = 0;
-        isFlipped = false;
-        currentRepeatCount = 33; 
-        mainRestCount = mainRestMax;
-        mainRestPhase = 1;
-        currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-        syncIndexToFirestore(currentFactIndex); 
-        triggerFadeAnimation(renderCurrentFact);
+
+        if (learningMode === 2) {
+          // MODE REST: Getaran panjang, terus tukar laci selepas getaran (tanpa peraturan)
+          setTimeout(() => {
+            isBlocked = false;
+            comboStep = 0;
+            isFlipped = false;
+            currentRepeatCount = 33; 
+            mainRestCount = mainRestMax;
+            mainRestPhase = 1;
+            currentFactIndex = (currentFactIndex + 1) % allFacts.length;
+            syncIndexToFirestore(currentFactIndex); 
+            triggerFadeAnimation(renderCurrentFact);
+          }, 2600);
+        } else {
+          // KOD BARU: MODE SELAIN REST: Lepas getaran → tunjuk peraturan overlay
+          setTimeout(() => {
+            isBlocked = false;
+            showPeraturanOverlay("Sambung Laci Seterusnya", () => {
+              comboStep = 0;
+              isFlipped = false;
+              currentRepeatCount = 33; 
+              mainRestCount = mainRestMax;
+              mainRestPhase = 1;
+              currentFactIndex = (currentFactIndex + 1) % allFacts.length;
+              syncIndexToFirestore(currentFactIndex); 
+              triggerFadeAnimation(renderCurrentFact);
+            });
+          }, 2600);
+        }
         return;
+
       }
 
       if (learningMode === 0) { // Normal
@@ -2531,17 +2550,18 @@ else if (learningMode === 2) { // Rest Mode
                     showToast("Fasa 2 bermula!");
                 });
             } else {
-                // KOD BARU: Fasa 2 habis → getaran panjang ketika tukar ke baris/perkataan baharu
+                // BETUL: Getaran DULU, selepas 2600ms BARU perkataan baharu muncul
                 triggerVibration([200, 100, 200, 100, 2000]);
                 isBlocked = true;
-                setTimeout(() => { isBlocked = false; }, 2600);
-
-                mainRestPhase = 1;
-                mainRestCount = mainRestMax;
-                isFlipped = false;
-                currentFactIndex = (currentFactIndex + 1) % allFacts.length;
-                syncIndexToFirestore(currentFactIndex);
-                triggerFadeAnimation(renderCurrentFact);
+                setTimeout(() => {
+                    isBlocked = false;
+                    mainRestPhase = 1;
+                    mainRestCount = mainRestMax;
+                    isFlipped = false;
+                    currentFactIndex = (currentFactIndex + 1) % allFacts.length;
+                    syncIndexToFirestore(currentFactIndex);
+                    triggerFadeAnimation(renderCurrentFact);
+                }, 2600);
             }
         } else {
             renderCurrentFact(); 
