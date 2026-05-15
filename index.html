@@ -668,7 +668,7 @@
       width: 100vw;
       height: 100vh;
       background: rgba(2, 6, 23, 0.97);
-      z-index: 999999;
+      z-index: 9999999;
       flex-direction: column;
       align-items: center;
       justify-content: center;
@@ -885,7 +885,7 @@
             <button id="btn-back-home-from-tasbih" class="btn btn-secondary btn-sm">← Menu</button>
             <button id="btn-toggle-fact" class="btn btn-secondary btn-sm">Fakta: OFF</button>
             <button id="btn-toggle-rutin" class="btn btn-secondary btn-sm">Rutin: OFF</button>
-            <button id="btn-toggle-mode" class="btn btn-secondary btn-sm btn-active" style="display: none;">Mode: Repeat</button>
+            <button id="btn-toggle-mode" class="btn btn-secondary btn-sm btn-active" style="display: none;">Mode: Rest</button>
             
             <button id="btn-toggle-main-rest-max" class="btn btn-secondary btn-sm" style="display: none; border-color: var(--grad2);">Target: 33</button>
 
@@ -1340,9 +1340,8 @@
         if (!currentUser) return;
         const refSetting = doc(db, "users", currentUser.uid, "settings", "preferences");
         onSnapshot(refSetting, (snap) => {
-            if (snap.exists() && snap.data().videoRehatUrl) {
+if (snap.exists() && snap.data().videoRehatUrl) {
                 globalVideoRehatUrl = snap.data().videoRehatUrl;
-                restYoutube.src = globalVideoRehatUrl;
                 
                 hasUploadedVideo = true;
                 btnUploadVideos.forEach(btn => {
@@ -1351,7 +1350,7 @@
                     btn.style.color = "#34d399";
                 });
             } else {
-                restYoutube.src = "https://www.youtube.com/embed/dXZtogyYzyU?autoplay=1&rel=0&playsinline=1";
+                globalVideoRehatUrl = "https://www.youtube.com/embed/dXZtogyYzyU?autoplay=1&rel=0&playsinline=1";
                 
                 hasUploadedVideo = false;
                 btnUploadVideos.forEach(btn => {
@@ -1433,7 +1432,7 @@
     });
 
 function showVideoRest(callback) {
-        // Assign semula src yang betul supaya ia dimainkan dari mula
+        restYoutube.style.display = 'block';
         restYoutube.src = globalVideoRehatUrl || "https://www.youtube.com/embed/dXZtogyYzyU?autoplay=1&rel=0&playsinline=1";
         
         videoOverlay.style.display = 'flex';
@@ -1443,14 +1442,11 @@ function showVideoRest(callback) {
         btnSambungFasa2.textContent = "Lihat Peraturan 📜";
     }
 
-    btnSambungFasa2.addEventListener('click', () => {
-        // KOD BARU: Langkah 1 - Sembunyikan video & henti audio
+btnSambungFasa2.addEventListener('click', () => {
+        restYoutube.src = "";
+        restYoutube.style.display = 'none';
+        restVideo.pause();
         videoOverlay.style.display = 'none';
-        
-        // KOD PENTING: Bunuh (block) Audio YouTube dari terus berbunyi 100%
-        restYoutube.src = ""; 
-
-        restVideo.pause(); // Kod lama dibiarkan
         
         // KOD BARU: Langkah 2 - Tunjuk peraturan overlay sebelum jalankan callback
         // Peraturan dulu → pengguna baca → tekan "Sambung Fasa 2" → baru callback dijalankan
@@ -1495,7 +1491,7 @@ function showVideoRest(callback) {
     let factMode = false;
     let routineMode = false;
     
-    let learningMode = 1; 
+    let learningMode = 2; 
     const modeLabels = ["Mode: Normal", "Mode: Repeat", "Mode: Rest", "Mode: Combo", "Mode: Super"];
     let comboStep = 0; 
     let currentRepeatCount = 33; 
@@ -3225,14 +3221,12 @@ showSection(secToShow);
       btnToggleFact.textContent = `Fakta: ${factMode ? 'ON' : 'OFF'}`;
       btnToggleFact.classList.toggle("btn-active", factMode);
       
-      if (factMode) { 
+if (factMode) { 
         factDisplayBox.classList.add("show"); 
         btnToggleMode.style.display = "inline-flex";
-        learningMode = 1; btnToggleMode.textContent = "Mode: Repeat"; // ← TAMBAH
-        if(learningMode === 2) {
-            btnToggleMainRestMax.style.display = "inline-flex";
-        }
-        rebuildFacts(); 
+        learningMode = 2; btnToggleMode.textContent = "Mode: Rest";
+        btnToggleMainRestMax.style.display = "inline-flex";
+        rebuildFacts();
       } else { 
         factDisplayBox.classList.remove("show"); 
         btnToggleMode.style.display = "none";
@@ -3252,14 +3246,12 @@ showSection(secToShow);
       btnToggleRutin.textContent = `Rutin: ${routineMode ? 'ON' : 'OFF'}`;
       btnToggleRutin.classList.toggle("btn-active", routineMode);
 
-      if (routineMode) { 
+if (routineMode) { 
         factDisplayBox.classList.add("show"); 
         btnToggleMode.style.display = "inline-flex";
-        learningMode = 1; btnToggleMode.textContent = "Mode: Repeat"; // ← TAMBAH
-        if(learningMode === 2) {
-            btnToggleMainRestMax.style.display = "inline-flex";
-        }
-        rebuildRoutines(); 
+        learningMode = 2; btnToggleMode.textContent = "Mode: Rest";
+        btnToggleMainRestMax.style.display = "inline-flex";
+        rebuildRoutines();
       } else { 
         factDisplayBox.classList.remove("show"); 
         btnToggleMode.style.display = "none";
