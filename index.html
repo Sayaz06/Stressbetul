@@ -1945,15 +1945,26 @@ function showSection(section) {
       const { label } = formatDateLabel(now);
       tasbihDateLabel.textContent = label;
 
-      if (routineMode && allRoutines.length > 0) {
+if (routineMode && allRoutines.length > 0) {
         const curRtn = allRoutines[currentRoutineIndex];
         document.querySelector(".counter-label").textContent = curRtn.isTamat ? "Rutin Tamat" : "Target Mini Zikir";
         tasbihCountEl.textContent = currentRoutineTarget;
+        tasbihCountEl.style.fontSize = "";
+        tasbihCountEl.style.color = "";
         tasbihStatusEl.textContent = `Sapu/Enter (Baki Harian: ${remaining})`;
         tasbihStatusChip.textContent = `Mode Rutin Aktif`;
+      } else if (factMode) {
+        document.querySelector(".counter-label").textContent = "📚 Mode Fakta";
+        tasbihCountEl.textContent = "Mode Fakta tidak mengurangkan countdown tasbih harian";
+        tasbihCountEl.style.fontSize = "0.72rem";
+        tasbihCountEl.style.color = "var(--subtext)";
+        tasbihStatusEl.textContent = "Sapu / Tekan untuk cycle fakta";
+        tasbihStatusChip.textContent = "Mode: Fakta";
       } else {
         document.querySelector(".counter-label").textContent = "Baki hari ini";
         tasbihCountEl.textContent = remaining;
+        tasbihCountEl.style.fontSize = "";
+        tasbihCountEl.style.color = "";
         if (done) {
           tasbihStatusEl.textContent = "Done untuk hari ini";
           tasbihStatusChip.textContent = "Status: Done";
