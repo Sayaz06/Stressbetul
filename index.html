@@ -885,7 +885,7 @@
             <button id="btn-back-home-from-tasbih" class="btn btn-secondary btn-sm">← Menu</button>
             <button id="btn-toggle-fact" class="btn btn-secondary btn-sm">Fakta: OFF</button>
             <button id="btn-toggle-rutin" class="btn btn-secondary btn-sm">Rutin: OFF</button>
-            <button id="btn-toggle-mode" class="btn btn-secondary btn-sm btn-active" style="display: none;">Mode: Normal</button>
+            <button id="btn-toggle-mode" class="btn btn-secondary btn-sm btn-active" style="display: none;">Mode: Repeat</button>
             
             <button id="btn-toggle-main-rest-max" class="btn btn-secondary btn-sm" style="display: none; border-color: var(--grad2);">Target: 33</button>
 
@@ -1495,7 +1495,7 @@ function showVideoRest(callback) {
     let factMode = false;
     let routineMode = false;
     
-    let learningMode = 0; 
+    let learningMode = 1; 
     const modeLabels = ["Mode: Normal", "Mode: Repeat", "Mode: Rest", "Mode: Combo", "Mode: Super"];
     let comboStep = 0; 
     let currentRepeatCount = 33; 
@@ -3228,6 +3228,7 @@ showSection(secToShow);
       if (factMode) { 
         factDisplayBox.classList.add("show"); 
         btnToggleMode.style.display = "inline-flex";
+        learningMode = 1; btnToggleMode.textContent = "Mode: Repeat"; // ← TAMBAH
         if(learningMode === 2) {
             btnToggleMainRestMax.style.display = "inline-flex";
         }
@@ -3254,6 +3255,7 @@ showSection(secToShow);
       if (routineMode) { 
         factDisplayBox.classList.add("show"); 
         btnToggleMode.style.display = "inline-flex";
+        learningMode = 1; btnToggleMode.textContent = "Mode: Repeat"; // ← TAMBAH
         if(learningMode === 2) {
             btnToggleMainRestMax.style.display = "inline-flex";
         }
