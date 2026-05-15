@@ -1994,24 +1994,27 @@ function decrementTasbih() {
         }
       }
 
-let justBecameDone = false; // KOD BARU: Track bila BARU sahaja jadi done
+let justBecameDone = false;
 
-      if (!done && remaining > 0) {
-        remaining -= 1;
-        done = remaining <= 0;
-        didDecrement = true;
-        needFirebaseUpdate = true;
-        if (done) {
-          isSempadan = true;
-          justBecameDone = true; // KOD BARU: Baru sahaja habis 10,000
+      if (!factMode) {
+        // Mode normal & rutin: kurangkan remaining seperti biasa
+        if (!done && remaining > 0) {
+          remaining -= 1;
+          done = remaining <= 0;
+          didDecrement = true;
+          needFirebaseUpdate = true;
+          if (done) {
+            isSempadan = true;
+            justBecameDone = true;
+          }
+        } else if (!routineMode) {
+          remaining -= 1;
+          didDecrement = true;
+          needFirebaseUpdate = true;
         }
-      } else if (!routineMode) {
-        // KOD BARU: Selepas done (remaining = 0), teruskan ke negatif tanpa limit
-        // Ini untuk zikir tambahan selain istighfar
-        remaining -= 1; // Turun ke -1, -2, -3... tanpa had
+      } else {
+        // Mode fakta: hanya cycle fakta, TIDAK sentuh remaining langsung
         didDecrement = true;
-        needFirebaseUpdate = true;
-        // `done` kekal true — status sejarah tidak berubah
       }
 
       if (didDecrement) {
@@ -2249,23 +2252,34 @@ let justBecameDone = false; // KOD BARU: Track bila BARU sahaja jadi done
           historyList.innerHTML = `<div class="empty-state">Belum ada rekod tasbih.</div>`;
           return;
         }
-        snap.forEach(docSnap => {
+snap.forEach(docSnap => {
           const data = docSnap.data();
           const key = data.dateKey || "";
           const [y, m, d] = key.split("-");
           const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
           const { label, day } = formatDateLabel(dateObj);
           const statusDone = !!data.done;
-          const remaining = data.remaining ?? 0;
-          const statusLabel = statusDone ? "Done" : "False";
+          const remaining = data.remaining ?? 10000;
+          const statusLabel = statusDone ? "Done" : "Belum";
           const badgeClass = statusDone ? "badge-done" : "badge-false";
+
+          // Kiraan positif (harian) & negatif (tambahan)
+          const harianCapai = remaining <= 0 ? 10000 : (10000 - remaining);
+          const tambahanZikir = remaining < 0 ? Math.abs(remaining) : 0;
+
+          const tambahanHtml = tambahanZikir > 0
+            ? `<div class="list-sub" style="color:#34d399; font-weight:600;">➕ Tambahan: ${tambahanZikir.toLocaleString()} zikir</div>`
+            : '';
+
           const html = `
-            <div class="list-item">
-              <div class="list-main">
-                <div class="list-title">${day} (${statusLabel})</div>
-                <div class="list-sub">${label} • Baki: ${remaining}</div>
+            <div class="list-item" style="flex-direction:column; align-items:flex-start; gap:6px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+                <div class="list-title">${day}</div>
+                <span class="badge-status ${badgeClass}">${statusLabel}</span>
               </div>
-              <span class="badge-status ${badgeClass}">${statusLabel}</span>
+              <div class="list-sub">${label}</div>
+              <div class="list-sub">🎯 Harian: <strong style="color:${statusDone?'#bbf7d0':'#fca5a5'}">${harianCapai.toLocaleString()} / 10,000</strong></div>
+              ${tambahanHtml}
             </div>
           `;
           historyList.insertAdjacentHTML("beforeend", html);
