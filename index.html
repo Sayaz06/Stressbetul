@@ -1964,8 +1964,9 @@ function showSection(section) {
       }
     }
 
-    function decrementTasbih() {
+function decrementTasbih() {
       if (isBlocked) return; 
+      if (videoOverlay.style.display === 'flex' || peraturanOverlay.style.display === 'flex') return; // ← TAMBAH
 
       if (!currentUser || !currentTasbihDocRef || !currentTasbihData) return;
       
