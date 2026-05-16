@@ -3408,9 +3408,9 @@ if (routineMode) {
         return; 
       }
 
-      if (sectionTasbih.classList.contains('active')) {
+if (sectionTasbih.classList.contains('active')) {
         if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-        if (e.code === "NumpadEnter" || e.key === "Enter") {
+        if (e.code === "NumpadEnter" || e.key === "Enter" || e.key === "Control") {
           e.preventDefault();
           decrementTasbih();
         }
