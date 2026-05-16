@@ -941,8 +941,11 @@
           <div style="display: flex; gap: 6px; flex-wrap: wrap;">
             <button id="btn-back-home-from-tasbih" class="btn btn-secondary btn-sm">← Menu</button>
             <button id="btn-toggle-fact" class="btn btn-secondary btn-sm">Fakta: OFF</button>
-            <button id="btn-toggle-rutin" class="btn btn-secondary btn-sm">Rutin: OFF</button>
-            <button id="btn-toggle-mode" class="btn btn-secondary btn-sm btn-active" style="display: none;">Mode: Rest</button>
+<button id="btn-toggle-rutin" class="btn btn-secondary btn-sm">Rutin: OFF</button>
+<button id="btn-toggle-quran" class="btn btn-secondary btn-sm" style="border-color:#10b981;">📖 Quran: OFF</button>
+<button id="btn-toggle-doa" class="btn btn-secondary btn-sm" style="border-color:#f59e0b;">🤲 Doa: OFF</button>
+<button id="btn-toggle-hadis" class="btn btn-secondary btn-sm" style="border-color:#ec4899;">📚 Hadis: OFF</button>
+<button id="btn-toggle-mode" class="btn btn-secondary btn-sm btn-active" style="display: none;">Mode: Rest</button>
             
             <button id="btn-toggle-main-rest-max" class="btn btn-secondary btn-sm" style="display: none; border-color: var(--grad2);">Target: 33</button>
 
@@ -954,6 +957,9 @@
             <div style="display:flex; gap:6px;">
               <button id="btn-go-subjects" class="btn btn-secondary btn-sm">Laci Fakta</button>
               <button id="btn-go-routine-times" class="btn btn-secondary btn-sm" style="border-color:var(--grad1);">Laci Rutin</button>
+              <button id="btn-go-quran-times" class="btn btn-secondary btn-sm" style="border-color:#10b981;">📖 Laci Quran</button>
+              <button id="btn-go-doa-times" class="btn btn-secondary btn-sm" style="border-color:#f59e0b;">🤲 Laci Doa</button>
+              <button id="btn-go-hadis-times" class="btn btn-secondary btn-sm" style="border-color:#ec4899;">📚 Laci Hadis</button>
             </div>
             <div class="topbar-sub" id="tasbih-date-label" style="margin-top: 4px;"></div>
           </div>
@@ -1169,7 +1175,74 @@
         <div class="list mt-8" id="routine-drawers-list" style="padding: 10px;"></div>
       </section>
 
-      <section id="section-history" class="section">
+<!-- ══ AL-QURAN ══ -->
+      <section id="section-quran-times" class="section">
+        <div class="topbar">
+          <button id="btn-back-tasbih-quran" class="btn btn-secondary btn-sm">← Tasbih</button>
+          <div class="topbar-title" style="color:#34d399;">📖 Surah / Juzuk</div>
+        </div>
+        <div style="font-size:.75rem;color:var(--subtext);text-align:center;margin-bottom:8px;">Tanda (tick) SATU sahaja untuk aktifkan.</div>
+        <button id="btn-add-quran-time" class="btn btn-sm mt-8">Tambah Surah/Juzuk</button>
+        <div class="list mt-8" id="quran-times-list" style="padding:10px;"></div>
+      </section>
+
+      <section id="section-quran-drawers" class="section">
+        <div class="topbar">
+          <button id="btn-back-quran-drawer" class="btn btn-secondary btn-sm">← Surah/Juzuk</button>
+          <div style="text-align:right;">
+            <div class="topbar-title" style="color:#34d399;">📖 Laci Ayat</div>
+            <div class="topbar-sub" id="parent-quran-time-name" style="color:var(--grad2);font-weight:bold;"></div>
+          </div>
+        </div>
+        <button id="btn-add-quran-drawer" class="btn btn-sm mt-8">Tambah Laci Ayat</button>
+        <div class="list mt-8" id="quran-drawers-list" style="padding:10px;"></div>
+      </section>
+
+      <!-- ══ DOA ══ -->
+      <section id="section-doa-times" class="section">
+        <div class="topbar">
+          <button id="btn-back-tasbih-doa" class="btn btn-secondary btn-sm">← Tasbih</button>
+          <div class="topbar-title" style="color:#fcd34d;">🤲 Kategori Doa</div>
+        </div>
+        <div style="font-size:.75rem;color:var(--subtext);text-align:center;margin-bottom:8px;">Tanda (tick) SATU sahaja untuk aktifkan.</div>
+        <button id="btn-add-doa-time" class="btn btn-sm mt-8">Tambah Kategori</button>
+        <div class="list mt-8" id="doa-times-list" style="padding:10px;"></div>
+      </section>
+
+      <section id="section-doa-drawers" class="section">
+        <div class="topbar">
+          <button id="btn-back-doa-drawer" class="btn btn-secondary btn-sm">← Kategori</button>
+          <div style="text-align:right;">
+            <div class="topbar-title" style="color:#fcd34d;">🤲 Laci Doa</div>
+            <div class="topbar-sub" id="parent-doa-time-name" style="color:var(--grad2);font-weight:bold;"></div>
+          </div>
+        </div>
+        <button id="btn-add-doa-drawer" class="btn btn-sm mt-8">Tambah Laci Doa</button>
+        <div class="list mt-8" id="doa-drawers-list" style="padding:10px;"></div>
+      </section>
+
+      <!-- ══ HADIS ══ -->
+      <section id="section-hadis-times" class="section">
+        <div class="topbar">
+          <button id="btn-back-tasbih-hadis" class="btn btn-secondary btn-sm">← Tasbih</button>
+          <div class="topbar-title" style="color:#f9a8d4;">📚 Kitab / Bab</div>
+        </div>
+        <div style="font-size:.75rem;color:var(--subtext);text-align:center;margin-bottom:8px;">Tanda (tick) SATU sahaja untuk aktifkan.</div>
+        <button id="btn-add-hadis-time" class="btn btn-sm mt-8">Tambah Kitab/Bab</button>
+        <div class="list mt-8" id="hadis-times-list" style="padding:10px;"></div>
+      </section>
+
+      <section id="section-hadis-drawers" class="section">
+        <div class="topbar">
+          <button id="btn-back-hadis-drawer" class="btn btn-secondary btn-sm">← Kitab/Bab</button>
+          <div style="text-align:right;">
+            <div class="topbar-title" style="color:#f9a8d4;">📚 Laci Hadis</div>
+            <div class="topbar-sub" id="parent-hadis-time-name" style="color:var(--grad2);font-weight:bold;"></div>
+          </div>
+        </div>
+        <button id="btn-add-hadis-drawer" class="btn btn-sm mt-8">Tambah Laci Hadis</button>
+        <div class="list mt-8" id="hadis-drawers-list" style="padding:10px;"></div>
+      </section>
         <div class="topbar">
           <button id="btn-back-tasbih-from-history" class="btn btn-secondary btn-sm">← Tasbih</button>
           <div style="text-align:right;">
@@ -1597,6 +1670,51 @@ btnSambungFasa2.addEventListener('click', () => {
 
     let maxMemanahCount = 33;
     let memanahPhase = 1;
+// ── MODE TAMBAHAN (QURAN / DOA / HADIS) ──
+    let routineModeSource = 'rutin'; // 'rutin' | 'quran' | 'doa' | 'hadis'
+    let allQuranTimes = [], allQuranDrawers = [], currentQuranTimeId = null, activeGlobalQuranId = 'default';
+    let allDoaTimes = [], allDoaDrawers = [], currentDoaTimeId = null, activeGlobalDoaId = 'default';
+    let allHadisTimes = [], allHadisDrawers = [], currentHadisTimeId = null, activeGlobalHadisId = 'default';
+
+    function getModeLabel(src) {
+      return {rutin:'Rutin', quran:'📖 Quran', doa:'🤲 Doa', hadis:'📚 Hadis'}[src] || src;
+    }
+
+    function getRoutineSrc() {
+      switch(routineModeSource) {
+        case 'quran': return {times:allQuranTimes, drawers:allQuranDrawers, globalId:activeGlobalQuranId, coll:'quran'};
+        case 'doa':   return {times:allDoaTimes, drawers:allDoaDrawers, globalId:activeGlobalDoaId, coll:'doa'};
+        case 'hadis': return {times:allHadisTimes, drawers:allHadisDrawers, globalId:activeGlobalHadisId, coll:'hadis'};
+        default:      return {times:allRoutineTimes, drawers:allRoutineDrawers, globalId:activeGlobalRoutineId, coll:'routine'};
+      }
+    }
+
+    function activateRoutineMode(src) {
+      const wasActive = routineMode && routineModeSource === src;
+      // Reset semua
+      factMode = false; routineMode = false;
+      btnToggleFact.textContent="Fakta: OFF"; btnToggleFact.classList.remove("btn-active");
+      btnToggleRutin.textContent="Rutin: OFF"; btnToggleRutin.classList.remove("btn-active");
+      ['quran','doa','hadis'].forEach(s => {
+        const b = document.getElementById(`btn-toggle-${s}`);
+        if(b){b.textContent=`${getModeLabel(s)}: OFF`; b.classList.remove("btn-active");}
+      });
+      factDisplayBox.classList.remove("show");
+      btnToggleMode.style.display="none";
+      btnToggleMainRestMax.style.display="none";
+
+      if (!wasActive) {
+        routineMode = true; routineModeSource = src;
+        const b = document.getElementById(`btn-toggle-${src}`);
+        if(b){b.textContent=`${getModeLabel(src)}: ON`; b.classList.add("btn-active");}
+        factDisplayBox.classList.add("show");
+        btnToggleMode.style.display="inline-flex";
+        learningMode=2; btnToggleMode.textContent="Mode: Rest";
+        btnToggleMainRestMax.style.display="inline-flex";
+        rebuildRoutines();
+      }
+      updateTasbihUI();
+    }
 
 // ==========================================
     // KOD BARU: MY LAW + OVERLAY PERATURAN
@@ -1727,6 +1845,9 @@ function showSection(section) {
       sectionMemanah.classList.remove("active"); 
       sectionPrompterEditor.classList.remove("active"); 
       if (sectionMyLaw) sectionMyLaw.classList.remove("active"); // KOD BARU: Hapus active dari My Law
+  ['section-quran-times','section-quran-drawers','section-doa-times','section-doa-drawers','section-hadis-times','section-hadis-drawers'].forEach(id => {
+        const el = document.getElementById(id); if(el) el.classList.remove("active");
+      });
       if (sectionAmtAk) sectionAmtAk.classList.remove("active");
       section.classList.add("active");      
       if(section.id === "section-tasbih" && isTasbihMemanahActive) {
@@ -2565,10 +2686,13 @@ function getRemainingInLaci() {
         updateDoc(doc(db, "users", currentUser.uid, "topics", activeGlobalTopicId), {
           lastIndex: newIndex
         }).catch(err => console.log("Gagal sync index Fakta ke Firestore:", err));
-      } else if (routineMode && activeGlobalRoutineId !== 'default') {
-        updateDoc(doc(db, "users", currentUser.uid, "routine_times", activeGlobalRoutineId), {
-          lastIndex: newIndex
-        }).catch(err => console.log("Gagal sync index Rutin ke Firestore:", err));
+} else if (routineMode) {
+        const src = getRoutineSrc();
+        if (src.globalId !== 'default') {
+          updateDoc(doc(db, "users", currentUser.uid, `${src.coll}_times`, src.globalId), {
+            lastIndex: newIndex
+          }).catch(err => console.log("Gagal sync index Rutin ke Firestore:", err));
+        }
       }
     }
 
@@ -3127,13 +3251,17 @@ else if (learningMode === 2) { // Rest Mode
       });
     }
 
-    function rebuildRoutines() {
+function rebuildRoutines() {
       allRoutines = [];
-      const activeTime = allRoutineTimes.find(t => t.isActive);
+      const src = getRoutineSrc();
+      const activeTime = src.times.find(t => t.isActive);
       
       if (activeTime) {
-        activeGlobalRoutineId = activeTime.id;
-        const activeDrawers = allRoutineDrawers.filter(d => d.timeId === activeTime.id).sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, {numeric: true}));
+        if(routineModeSource==='quran') activeGlobalQuranId = activeTime.id;
+        else if(routineModeSource==='doa') activeGlobalDoaId = activeTime.id;
+        else if(routineModeSource==='hadis') activeGlobalHadisId = activeTime.id;
+        else activeGlobalRoutineId = activeTime.id;
+        const activeDrawers = src.drawers.filter(d => d.timeId === activeTime.id).sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, {numeric: true}));
         
         activeDrawers.forEach(data => {
           const tajukLaci = data.title || "Tiada Tajuk";
@@ -3246,6 +3374,7 @@ showSection(secToShow);
         subscribeAllHierarchyData();
         subscribeMyLaw(); // KOD BARU: Subscribe My Law dari Firestore
         subscribeToVideoRehat(); // KOD BARU: Subscribe video rehat (dah ada fungsi, tapi belum dipanggil)
+        subscribeNewModes();
       } else {
         homeUserEmail.textContent = "";
         if (notesUnsub) notesUnsub();
@@ -3390,12 +3519,16 @@ showSection(secToShow);
         });
     }
 
-    btnToggleFact.addEventListener("click", () => {
+btnToggleFact.addEventListener("click", () => {
       factMode = !factMode;
       if (factMode && routineMode) {
          routineMode = false; 
          btnToggleRutin.textContent = "Rutin: OFF";
          btnToggleRutin.classList.remove("btn-active");
+         ['quran','doa','hadis'].forEach(s => {
+           const b=document.getElementById(`btn-toggle-${s}`);
+           if(b){b.textContent=`${getModeLabel(s)}: OFF`;b.classList.remove("btn-active");}
+         });
       }
 
       btnToggleFact.textContent = `Fakta: ${factMode ? 'ON' : 'OFF'}`;
@@ -3415,30 +3548,7 @@ if (factMode) {
       updateTasbihUI();
     });
 
-    btnToggleRutin.addEventListener("click", () => {
-      routineMode = !routineMode;
-      if (routineMode && factMode) {
-         factMode = false; 
-         btnToggleFact.textContent = "Fakta: OFF";
-         btnToggleFact.classList.remove("btn-active");
-      }
-
-      btnToggleRutin.textContent = `Rutin: ${routineMode ? 'ON' : 'OFF'}`;
-      btnToggleRutin.classList.toggle("btn-active", routineMode);
-
-if (routineMode) { 
-        factDisplayBox.classList.add("show"); 
-        btnToggleMode.style.display = "inline-flex";
-        learningMode = 2; btnToggleMode.textContent = "Mode: Rest";
-        btnToggleMainRestMax.style.display = "inline-flex";
-        rebuildRoutines();
-      } else { 
-        factDisplayBox.classList.remove("show"); 
-        btnToggleMode.style.display = "none";
-        btnToggleMainRestMax.style.display = "none";
-      }
-      updateTasbihUI();
-    });
+btnToggleRutin.addEventListener("click", () => activateRoutineMode('rutin'));
 
     btnToggleMode.addEventListener("click", () => {
       learningMode = (learningMode + 1) % 5; 
@@ -4263,6 +4373,180 @@ if (result.score > 0) {
         amtStatus.textContent = '✅ Selesai — Pergi Solat!';
         amtStatus.style.color = '#fbbf24';
     });
+
+// ── TOGGLE QURAN / DOA / HADIS ──
+    document.getElementById('btn-toggle-quran').addEventListener('click', () => activateRoutineMode('quran'));
+    document.getElementById('btn-toggle-doa').addEventListener('click',   () => activateRoutineMode('doa'));
+    document.getElementById('btn-toggle-hadis').addEventListener('click', () => activateRoutineMode('hadis'));
+
+    // ── NAV QURAN ──
+    document.getElementById('btn-go-quran-times').addEventListener('click', () => {
+      showSection(document.getElementById('section-quran-times'));
+      renderGenericTimes('quran');
+    });
+    document.getElementById('btn-back-tasbih-quran').addEventListener('click', () => showSection(sectionTasbih));
+    document.getElementById('btn-back-quran-drawer').addEventListener('click', () => {
+      showSection(document.getElementById('section-quran-times')); renderGenericTimes('quran');
+    });
+    document.getElementById('btn-add-quran-time').addEventListener('click', () => {
+      if(currentUser) addDoc(collection(db,"users",currentUser.uid,"quran_times"),{name:"",isActive:false,createdAt:Date.now()});
+    });
+    document.getElementById('btn-add-quran-drawer').addEventListener('click', () => {
+      if(currentQuranTimeId) addDoc(collection(db,"users",currentUser.uid,"quran_drawers"),{title:"",zikir:"",target:"",maksud:"",timeId:currentQuranTimeId,createdAt:Date.now()});
+    });
+
+    // ── NAV DOA ──
+    document.getElementById('btn-go-doa-times').addEventListener('click', () => {
+      showSection(document.getElementById('section-doa-times'));
+      renderGenericTimes('doa');
+    });
+    document.getElementById('btn-back-tasbih-doa').addEventListener('click', () => showSection(sectionTasbih));
+    document.getElementById('btn-back-doa-drawer').addEventListener('click', () => {
+      showSection(document.getElementById('section-doa-times')); renderGenericTimes('doa');
+    });
+    document.getElementById('btn-add-doa-time').addEventListener('click', () => {
+      if(currentUser) addDoc(collection(db,"users",currentUser.uid,"doa_times"),{name:"",isActive:false,createdAt:Date.now()});
+    });
+    document.getElementById('btn-add-doa-drawer').addEventListener('click', () => {
+      if(currentDoaTimeId) addDoc(collection(db,"users",currentUser.uid,"doa_drawers"),{title:"",zikir:"",target:"",maksud:"",timeId:currentDoaTimeId,createdAt:Date.now()});
+    });
+
+    // ── NAV HADIS ──
+    document.getElementById('btn-go-hadis-times').addEventListener('click', () => {
+      showSection(document.getElementById('section-hadis-times'));
+      renderGenericTimes('hadis');
+    });
+    document.getElementById('btn-back-tasbih-hadis').addEventListener('click', () => showSection(sectionTasbih));
+    document.getElementById('btn-back-hadis-drawer').addEventListener('click', () => {
+      showSection(document.getElementById('section-hadis-times')); renderGenericTimes('hadis');
+    });
+    document.getElementById('btn-add-hadis-time').addEventListener('click', () => {
+      if(currentUser) addDoc(collection(db,"users",currentUser.uid,"hadis_times"),{name:"",isActive:false,createdAt:Date.now()});
+    });
+    document.getElementById('btn-add-hadis-drawer').addEventListener('click', () => {
+      if(currentHadisTimeId) addDoc(collection(db,"users",currentUser.uid,"hadis_drawers"),{title:"",zikir:"",target:"",maksud:"",timeId:currentHadisTimeId,createdAt:Date.now()});
+    });
+
+    // ── GENERIC RENDER FUNCTIONS ──
+    function renderGenericTimes(mode) {
+      const cfg = {
+        quran: {arr:allQuranTimes, listId:'quran-times-list', coll:'quran_times', drawersSection:'section-quran-drawers', setCurrent:(id)=>{currentQuranTimeId=id;}, parentEl:'parent-quran-time-name'},
+        doa:   {arr:allDoaTimes, listId:'doa-times-list', coll:'doa_times', drawersSection:'section-doa-drawers', setCurrent:(id)=>{currentDoaTimeId=id;}, parentEl:'parent-doa-time-name'},
+        hadis: {arr:allHadisTimes, listId:'hadis-times-list', coll:'hadis_times', drawersSection:'section-hadis-drawers', setCurrent:(id)=>{currentHadisTimeId=id;}, parentEl:'parent-hadis-time-name'},
+      }[mode];
+      if(!cfg) return;
+
+      const list = document.getElementById(cfg.listId);
+      list.innerHTML = "";
+      const sorted = [...cfg.arr].sort((a,b)=>(a.name||"").localeCompare(b.name||"",undefined,{numeric:true}));
+
+      if(!sorted.length){list.innerHTML='<div class="empty-state">Belum ada data. Tekan Tambah.</div>';return;}
+
+      sorted.forEach(data => {
+        const div = document.createElement("div");
+        div.className = "drawer-card";
+        div.style.cssText = "display:flex;gap:8px;align-items:center;";
+        div.innerHTML = `
+          <input type="checkbox" ${data.isActive?'checked':''} style="width:20px;height:20px;accent-color:var(--grad1);">
+          <input value="${data.name||''}" placeholder="Nama..." style="flex:1;border:none;background:transparent;color:white;border-bottom:1px solid var(--border-mid);outline:none;padding:4px;">
+          <button class="btn btn-secondary btn-sm">Buka</button>
+          <button class="btn btn-secondary btn-sm" style="color:var(--danger);border-color:var(--danger);">X</button>`;
+
+        div.querySelectorAll('input')[0].addEventListener("change", async (e) => {
+          if(e.target.checked) {
+            for(let t of cfg.arr.filter(t=>t.isActive&&t.id!==data.id))
+              await updateDoc(doc(db,"users",currentUser.uid,cfg.coll,t.id),{isActive:false});
+          }
+          await updateDoc(doc(db,"users",currentUser.uid,cfg.coll,data.id),{isActive:e.target.checked});
+        });
+        div.querySelectorAll('input')[1].addEventListener("change", e =>
+          updateDoc(doc(db,"users",currentUser.uid,cfg.coll,data.id),{name:e.target.value}));
+        div.querySelectorAll('button')[0].addEventListener("click", () => {
+          cfg.setCurrent(data.id);
+          document.getElementById(cfg.parentEl).textContent = data.name||'';
+          showSection(document.getElementById(cfg.drawersSection));
+          renderGenericDrawers(mode);
+        });
+        div.querySelectorAll('button')[1].addEventListener("click", () => {
+          if(confirm(`Padam "${data.name}"?`)) deleteDoc(doc(db,"users",currentUser.uid,cfg.coll,data.id));
+        });
+        list.appendChild(div);
+      });
+    }
+
+    function renderGenericDrawers(mode) {
+      const cfg = {
+        quran: {drawers:allQuranDrawers, timeId:()=>currentQuranTimeId, listId:'quran-drawers-list', coll:'quran_drawers'},
+        doa:   {drawers:allDoaDrawers, timeId:()=>currentDoaTimeId, listId:'doa-drawers-list', coll:'doa_drawers'},
+        hadis: {drawers:allHadisDrawers, timeId:()=>currentHadisTimeId, listId:'hadis-drawers-list', coll:'hadis_drawers'},
+      }[mode];
+      if(!cfg) return;
+
+      const list = document.getElementById(cfg.listId);
+      list.innerHTML = "";
+      const arabicSymbols = ['ّ','ٰ','ٓ','ْ','ۚ','ۖ','ۗ','ۛ','۞'];
+      const filtered = cfg.drawers.filter(d=>d.timeId===cfg.timeId())
+        .sort((a,b)=>(a.title||"").localeCompare(b.title||"",undefined,{numeric:true}));
+
+      if(!filtered.length){list.innerHTML='<div class="empty-state">Belum ada laci. Tekan Tambah.</div>';return;}
+
+      filtered.forEach(data => {
+        const div = document.createElement("div");
+        div.className = "drawer-card";
+        div.innerHTML = `
+          <input class="drawer-title" value="${data.title||''}" placeholder="Tajuk Laci" style="width:100%;margin-bottom:12px;font-size:1.05rem;">
+          <div style="font-size:.75rem;color:var(--grad1);margin-bottom:4px;font-weight:bold;">1. Teks (RTL / Arab)</div>
+          <div class="arabic-toolbar">${arabicSymbols.map(s=>`<button class="arabic-btn">${s}</button>`).join('')}</div>
+          <textarea class="drawer-input-box drawer-zikir" dir="rtl" style="text-align:right;font-size:1.15rem;min-height:70px;resize:none;">${data.zikir||''}</textarea>
+          <div style="font-size:.75rem;color:var(--grad1);margin-bottom:4px;font-weight:bold;">2. Target Mini</div>
+          <input type="number" class="drawer-input-box drawer-target" placeholder="Cth: 33" value="${data.target||''}" style="font-size:1rem;">
+          <div style="font-size:.75rem;color:var(--grad1);margin-bottom:4px;font-weight:bold;">3. Maksud / Huraian</div>
+          <textarea class="drawer-input-box drawer-maksud" style="font-size:.85rem;color:var(--subtext);min-height:60px;resize:none;">${data.maksud||''}</textarea>
+          <div style="text-align:right;margin-top:4px;">
+            <button class="btn btn-secondary btn-sm btn-del" style="color:var(--danger);border-color:var(--danger);">Padam</button>
+          </div>`;
+
+        div.querySelector('.drawer-title').addEventListener("change", e =>
+          updateDoc(doc(db,"users",currentUser.uid,cfg.coll,data.id),{title:e.target.value}));
+        const tz = div.querySelector('.drawer-zikir');
+        tz.addEventListener("change", e =>
+          updateDoc(doc(db,"users",currentUser.uid,cfg.coll,data.id),{zikir:e.target.value}));
+        div.querySelector('.drawer-target').addEventListener("change", e =>
+          updateDoc(doc(db,"users",currentUser.uid,cfg.coll,data.id),{target:e.target.value}));
+        div.querySelector('.drawer-maksud').addEventListener("change", e =>
+          updateDoc(doc(db,"users",currentUser.uid,cfg.coll,data.id),{maksud:e.target.value}));
+        div.querySelectorAll('.arabic-btn').forEach(btn => btn.addEventListener("click", () => {
+          const sym=btn.textContent, s=tz.selectionStart, e2=tz.selectionEnd, v=tz.value;
+          tz.value=v.substring(0,s)+sym+v.substring(e2);
+          tz.selectionStart=tz.selectionEnd=s+sym.length; tz.focus();
+          updateDoc(doc(db,"users",currentUser.uid,cfg.coll,data.id),{zikir:tz.value});
+        }));
+        div.querySelector('.btn-del').addEventListener("click", () => {
+          if(confirm("Padam laci ini?")) deleteDoc(doc(db,"users",currentUser.uid,cfg.coll,data.id));
+        });
+        list.appendChild(div);
+      });
+    }
+
+    // ── SUBSCRIBE COLLECTIONS BARU ──
+    function subscribeNewModes() {
+      if(!currentUser) return;
+      const modes = [
+        {coll:'quran_times', arr:(d)=>{allQuranTimes=d; if(document.getElementById('section-quran-times')?.classList.contains('active')) renderGenericTimes('quran'); rebuildIfActive('quran');} },
+        {coll:'quran_drawers', arr:(d)=>{allQuranDrawers=d; if(document.getElementById('section-quran-drawers')?.classList.contains('active')) renderGenericDrawers('quran'); rebuildIfActive('quran');} },
+        {coll:'doa_times', arr:(d)=>{allDoaTimes=d; if(document.getElementById('section-doa-times')?.classList.contains('active')) renderGenericTimes('doa'); rebuildIfActive('doa');} },
+        {coll:'doa_drawers', arr:(d)=>{allDoaDrawers=d; if(document.getElementById('section-doa-drawers')?.classList.contains('active')) renderGenericDrawers('doa'); rebuildIfActive('doa');} },
+        {coll:'hadis_times', arr:(d)=>{allHadisTimes=d; if(document.getElementById('section-hadis-times')?.classList.contains('active')) renderGenericTimes('hadis'); rebuildIfActive('hadis');} },
+        {coll:'hadis_drawers', arr:(d)=>{allHadisDrawers=d; if(document.getElementById('section-hadis-drawers')?.classList.contains('active')) renderGenericDrawers('hadis'); rebuildIfActive('hadis');} },
+      ];
+      modes.forEach(m => onSnapshot(query(collection(db,"users",currentUser.uid,m.coll)), snap => {
+        m.arr(snap.docs.map(d=>({id:d.id,...d.data()})));
+      }));
+    }
+
+    function rebuildIfActive(mode) {
+      if(routineMode && routineModeSource === mode) rebuildRoutines();
+    }
 
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => { 
