@@ -862,6 +862,9 @@
           <button id="btn-go-my-law" class="btn btn-secondary" style="border-color: var(--grad2); color: var(--grad2);">
             <span>📜 My Law</span>
           </button>
+<button id="btn-go-amt-ak" class="btn btn-secondary" style="border-color: #10b981; color: #34d399;">
+            <span>🎧 AMT-AK — Aktivasi Solat</span>
+          </button>
         </div>
         <div class="footer mt-16">
           Repo: <span class="small">Stressbetul / Istigfar</span>
@@ -887,6 +890,32 @@
         </div>
       </section>
 
+<section id="section-amt-ak" class="section">
+        <div class="topbar">
+          <button id="btn-back-home-amt-ak" class="btn btn-secondary btn-sm">← Menu</button>
+          <div style="text-align:right;">
+            <div class="topbar-title" style="color:#34d399;">🎧 AMT-AK</div>
+            <div class="topbar-sub">Modul Transisi Kognitif</div>
+          </div>
+        </div>
+
+        <div style="margin:auto 0; display:flex; flex-direction:column; gap:14px;">
+          <div style="background:radial-gradient(circle at top left,#020617 0,#030712 45%,#000 100%); border-radius:14px; border:1px solid #1f2937; padding:24px 20px; box-shadow:0 20px 35px rgba(0,0,0,.85);">
+            <div style="font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#e5e7eb; margin-bottom:8px;">AMT-AK 🎧</div>
+            <div style="height:1px; background:linear-gradient(to right,transparent,rgba(148,163,184,.4),transparent); margin-bottom:14px;"></div>
+            <div style="font-size:.72rem; color:#9ca3af; margin-bottom:4px;">Modul Transisi Kognitif: Durasi Audio ke Output Produktif</div>
+            <div style="font-size:.72rem; color:#9ca3af; margin-bottom:4px;">Input Audio Diskret: SuperSayaz.mp3</div>
+            <div style="font-size:.72rem; color:#9ca3af; margin-bottom:20px;" id="amt-status">Sistem Sedia (Inisialisasi)</div>
+
+            <button id="btn-amt-start" style="width:100%; border:none; border-radius:999px; padding:12px 14px; font-size:.88rem; cursor:pointer; color:#e5e7eb; background:linear-gradient(135deg,#6366f1,#8b5cf6); box-shadow:0 0 0 1px rgba(148,163,184,.18),0 10px 22px rgba(15,23,42,.9); margin-bottom:10px;">
+              MULA AKTIVASI STREAM
+            </button>
+            <button id="btn-amt-stop" style="width:100%; border-radius:999px; padding:12px 14px; font-size:.88rem; cursor:pointer; color:#e5e7eb; background:rgba(15,23,42,.7); border:1px solid #1f2937; box-shadow:none;">
+              HENTI INTERUPSI
+            </button>
+          </div>
+        </div>
+      </section>
       <section id="section-prompter-editor" class="section">
         <div class="topbar">
           <button id="btn-back-home-prompter" class="btn btn-secondary btn-sm">← Menu</button>
@@ -1698,7 +1727,7 @@ function showSection(section) {
       sectionMemanah.classList.remove("active"); 
       sectionPrompterEditor.classList.remove("active"); 
       if (sectionMyLaw) sectionMyLaw.classList.remove("active"); // KOD BARU: Hapus active dari My Law
-      
+      if (sectionAmtAk) sectionAmtAk.classList.remove("active");
       section.classList.add("active");      
       if(section.id === "section-tasbih" && isTasbihMemanahActive) {
           setTimeout(() => {
@@ -4202,7 +4231,39 @@ if (result.score > 0) {
       tmSt.ang = 0; tmSt.lastChange = 0; tmSt.combo = 0;
       document.getElementById('btn-tm-pattern').textContent = M_PATTERNS[tmSt.pat];
     });
-  
+
+// ── AMT-AK ──────────────────────────────────────────
+    const sectionAmtAk = document.getElementById("section-amt-ak");
+    const amtAudio = new Audio('SuperSayaz.mp3');
+    const amtStatus = document.getElementById('amt-status');
+
+    document.getElementById('btn-go-amt-ak').addEventListener('click', () => showSection(sectionAmtAk));
+    document.getElementById('btn-back-home-amt-ak').addEventListener('click', () => {
+        amtAudio.pause();
+        amtAudio.currentTime = 0;
+        amtStatus.textContent = 'Sistem Sedia (Inisialisasi)';
+        showSection(sectionHome);
+    });
+
+    document.getElementById('btn-amt-start').addEventListener('click', () => {
+        amtAudio.currentTime = 0;
+        amtAudio.play().catch(() => showToast('Sila berinteraksi dengan skrin dahulu.'));
+        amtStatus.textContent = '▶ Stream Aktif — Sedang Bermain...';
+        amtStatus.style.color = '#34d399';
+    });
+
+    document.getElementById('btn-amt-stop').addEventListener('click', () => {
+        amtAudio.pause();
+        amtAudio.currentTime = 0;
+        amtStatus.textContent = '⏹ Stream Dihenti';
+        amtStatus.style.color = '#9ca3af';
+    });
+
+    amtAudio.addEventListener('ended', () => {
+        amtStatus.textContent = '✅ Selesai — Pergi Solat!';
+        amtStatus.style.color = '#fbbf24';
+    });
+
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => { 
         navigator.serviceWorker.register("./service-worker.js").catch(console.error); 
