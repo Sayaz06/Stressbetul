@@ -918,6 +918,7 @@
             <button id="btn-toggle-main-rest-max" class="btn btn-secondary btn-sm" style="display: none; border-color: var(--grad2);">Target: 33</button>
 
             <button id="btn-toggle-tasbih-ui" class="btn btn-secondary btn-sm" style="border-color: var(--grad2);">UI: Bulatan</button>
+            <button id="btn-tm-pattern" class="btn btn-secondary btn-sm" style="display:none; border-color:#3b82f6;color:#60a5fa;">🌑 Bandul</button>
             <button id="btn-music-tasbih" class="btn btn-secondary btn-sm">Muzik: OFF 🎵</button>
           </div>
           <div style="text-align:right; display:flex; gap:6px; flex-direction:column; align-items:flex-end;">
@@ -1075,6 +1076,7 @@
             <button class="btn btn-secondary btn-sm btn-upload-video" style="border-color: #f59e0b; color: #fcd34d;">🎥 Set Link YouTube</button>
             <button id="btn-music-memanah" class="btn btn-secondary btn-sm">Muzik: OFF 🎵</button>
             <button id="btn-lock-memanah-scroll" class="btn btn-secondary btn-sm">Lock Scroll: OFF</button>
+            <button id="btn-memanah-pattern" class="btn btn-secondary btn-sm" style="border-color:#3b82f6;color:#60a5fa;">🌑 Bandul</button>
           </div>
         </div>
 
@@ -3625,6 +3627,22 @@ if (sectionTasbih.classList.contains('active')) {
     let isMemanahScrollLocked = false;
     let isMemanahNotaLocked = true; 
 
+// ── CORAK & COMBO ──
+const M_PATTERNS = ['🌑 Bandul','⚡ Zigzag','⭕ Bulatan','🎲 Rawak'];
+
+function getComboMsg(combo) {
+    if (combo >= 10) return {text:'🏆 Lagenda!', c:'rgba(245,158,11,ALPHA)'};
+    if (combo === 7)  return {text:'👑 Pakar!', c:'rgba(99,102,241,ALPHA)'};
+    if (combo === 5)  return {text:'🌟 Hebat Sekali!', c:'rgba(52,211,153,ALPHA)'};
+    if (combo === 4)  return {text:'💫 Luar Biasa!', c:'rgba(167,139,250,ALPHA)'};
+    if (combo === 3)  return {text:'🔥 Mantap!', c:'rgba(251,146,60,ALPHA)'};
+    if (combo === 2)  return {text:'⚡ Tepat!', c:'rgba(250,204,21,ALPHA)'};
+    return null;
+}
+
+let mSt  = {pat:0, x:0, y:0, vx:3.5, vy:2.5, ang:0, lastChange:0, combo:0};
+let tmSt = {pat:0, x:0, y:0, vx:3.5, vy:2.5, ang:0, lastChange:0, combo:0};
+
     btnToggleMemanahMax.addEventListener("click", () => {
         maxMemanahCount = maxMemanahCount === 33 ? 17 : 33;
         btnToggleMemanahMax.textContent = `Target: ${maxMemanahCount}`;
@@ -3704,11 +3722,14 @@ if (sectionTasbih.classList.contains('active')) {
 
       showSection(sectionMemanah);
 
-      memanahCanvas.width = memanahCanvas.parentElement.clientWidth;
+memanahCanvas.width = memanahCanvas.parentElement.clientWidth;
       memanahCanvas.height = memanahCanvas.parentElement.clientHeight;
       crosshairX = memanahCanvas.width / 2;
       crosshairY = memanahCanvas.height / 2;
       vx = 0; vy = 0;
+      mSt.x = memanahCanvas.width / 2; mSt.y = memanahCanvas.height / 2;
+      mSt.combo = 0;
+      document.getElementById('btn-memanah-pattern').textContent = M_PATTERNS[mSt.pat];
 
       setTimeout(() => { memanahScrollContainer.scrollTop = 50; }, 100);
 
@@ -3776,20 +3797,35 @@ if (sectionTasbih.classList.contains('active')) {
       });
     }
 
-    function getTargetPos(cvsWidth, cvsHeight, pausedTime, isPaused, curTX, curTY) {
+function getTargetPos(cvsWidth, cvsHeight, pausedTime, isPaused, curTX, curTY, st) {
       if (isPaused) return { x: curTX, y: curTY };
-      let swingSpeed = 1.6; 
-      let maxAngle = Math.PI / 2.5; 
-      let pivotX = cvsWidth / 2;
-      let pivotY = -20; 
-      let maxSwingPx = (cvsWidth / 2) - 50; 
-      let pendulumLength = Math.min(cvsHeight * 0.75, maxSwingPx / Math.sin(maxAngle));
-      let timeNow = (Date.now() - pausedTime) / 1000; 
-      let angle = Math.sin(timeNow * swingSpeed) * maxAngle;
-      return {
-          x: pivotX + Math.sin(angle) * pendulumLength,
-          y: pivotY + Math.cos(angle) * pendulumLength
-      };
+      const cx = cvsWidth / 2, cy = cvsHeight / 2, mg = 50;
+      const pat = st ? st.pat : 0;
+
+      if (pat === 1) { // Zigzag
+        st.x += st.vx; st.y += st.vy;
+        if (st.x < mg || st.x > cvsWidth - mg) st.vx *= -1;
+        if (st.y < mg || st.y > cvsHeight - mg) st.vy *= -1;
+        return { x: st.x, y: st.y };
+      }
+      if (pat === 2) { // Bulatan
+        st.ang += 0.025;
+        const r = Math.min(cx, cy) * 0.62;
+        return { x: cx + Math.cos(st.ang) * r, y: cy + Math.sin(st.ang) * r };
+      }
+      if (pat === 3) { // Rawak
+        if (!st.lastChange || Date.now() - st.lastChange > 1800) {
+          st.x = mg + Math.random() * (cvsWidth - mg * 2);
+          st.y = mg + Math.random() * (cvsHeight - mg * 2);
+          st.lastChange = Date.now();
+        }
+        return { x: st.x || cx, y: st.y || cy };
+      }
+      // Bandul (default)
+      const maxAngle = Math.PI / 2.5;
+      const pendLen = Math.min(cvsHeight * 0.75, (cx - mg) / Math.sin(maxAngle));
+      const angle = Math.sin(Date.now() / 1000 * 1.6) * maxAngle;
+      return { x: cx + Math.sin(angle) * pendLen, y: -20 + Math.cos(angle) * pendLen };
     }
 
     function loopMemanah() {
@@ -3799,7 +3835,7 @@ if (sectionTasbih.classList.contains('active')) {
           return;
       }
 
-      let tPos = getTargetPos(memanahCanvas.width, memanahCanvas.height, memanahTotalPausedTime, memanahPaused, targetX, targetY);
+      let tPos = getTargetPos(memanahCanvas.width, memanahCanvas.height, memanahTotalPausedTime, memanahPaused, targetX, targetY, mSt);
       targetX = tPos.x; targetY = tPos.y;
 
       if (isPulling && !arrowFlying && !memanahPaused) {
@@ -3845,12 +3881,16 @@ if (sectionTasbih.classList.contains('active')) {
       let result = getHitScore(hitX, hitY, targetX, targetY);
       memanahTotalScore += result.score;
 
-      if (result.score > 0) {
+if (result.score > 0) {
+        mSt.combo++;
         triggerVibration([100, 50, 100]);
         floatingTexts.push({ text: `+${result.score}`, x: targetX, y: targetY - 20, alpha: 1.0, color: result.color });
+        const cm = getComboMsg(mSt.combo);
+        if (cm) floatingTexts.push({ text: cm.text, x: targetX, y: targetY - 55, alpha: 1.0, color: cm.c });
       } else {
+        mSt.combo = 0;
         triggerVibration([50]); 
-        floatingTexts.push({ text: "Miss!", x: hitX, y: hitY - 20, alpha: 1.0, color: result.color });
+        floatingTexts.push({ text: "Miss! 💨", x: hitX, y: hitY - 20, alpha: 1.0, color: result.color });
       }
 
       decrementMemanahAction();
@@ -4003,19 +4043,23 @@ if (sectionTasbih.classList.contains('active')) {
         btnToggleTasbihUI.textContent = isTasbihMemanahActive ? "UI: Memanah 🏹" : "UI: Bulatan";
         btnToggleTasbihUI.classList.toggle('btn-active', isTasbihMemanahActive);
 
-        if (isTasbihMemanahActive) {
+if (isTasbihMemanahActive) {
             document.getElementById('tasbih-circle').style.display = 'none';
             tasbihMemanahContainer.style.display = 'block';
+            document.getElementById('btn-tm-pattern').style.display = 'inline-flex';
             
             cancelAnimationFrame(tm_animationFrame);
             tm_canvas.width = tm_canvas.parentElement.clientWidth;
             tm_canvas.height = tm_canvas.parentElement.clientHeight;
             tm_crossX = tm_canvas.width / 2;
             tm_crossY = tm_canvas.height / 2;
+            tmSt.x = tm_canvas.width / 2; tmSt.y = tm_canvas.height / 2;
+            tmSt.combo = 0;
             loopTasbihMemanah();
         } else {
             document.getElementById('tasbih-circle').style.display = 'flex';
             tasbihMemanahContainer.style.display = 'none';
+            document.getElementById('btn-tm-pattern').style.display = 'none';
             cancelAnimationFrame(tm_animationFrame);
         }
     });
@@ -4027,7 +4071,7 @@ if (sectionTasbih.classList.contains('active')) {
           return;
       }
 
-      let tPos = getTargetPos(tm_canvas.width, tm_canvas.height, tm_totalPausedTime, tm_paused, tm_targetX, tm_targetY);
+      let tPos = getTargetPos(tm_canvas.width, tm_canvas.height, tm_totalPausedTime, tm_paused, tm_targetX, tm_targetY, tmSt);
       tm_targetX = tPos.x; tm_targetY = tPos.y;
 
       if (tm_isPulling && !tm_arrowFlying && !tm_paused) {
@@ -4084,10 +4128,12 @@ if (sectionTasbih.classList.contains('active')) {
     function checkHitTasbihMemanah(hitX, hitY) {
       let result = getHitScore(hitX, hitY, tm_targetX, tm_targetY);
 
-      if (result.score > 0) {
-        // BERJAYA KENA TARGET!
+if (result.score > 0) {
+        tmSt.combo++;
         triggerVibration([100, 50, 100]);
         tm_floatingTexts.push({ text: `+${result.score}`, x: tm_targetX, y: tm_targetY - 20, alpha: 1.0, color: result.color });
+        const cm = getComboMsg(tmSt.combo);
+        if (cm) tm_floatingTexts.push({ text: cm.text, x: tm_targetX, y: tm_targetY - 55, alpha: 1.0, color: cm.c });
         
         tm_shotCount++;
         tm_totalPemarkahan += result.score;
@@ -4102,9 +4148,10 @@ if (sectionTasbih.classList.contains('active')) {
 
         // Panggil fungsi tasbih decrement asal
         decrementTasbih();
-      } else {
+} else {
+        tmSt.combo = 0;
         triggerVibration([50]); 
-        tm_floatingTexts.push({ text: "Miss!", x: hitX, y: hitY - 20, alpha: 1.0, color: result.color });
+        tm_floatingTexts.push({ text: "Miss! 💨", x: hitX, y: hitY - 20, alpha: 1.0, color: result.color });
       }
 
       setTimeout(() => {
@@ -4141,7 +4188,21 @@ if (sectionTasbih.classList.contains('active')) {
       }
     }, {passive: false});
 
+// ── PATTERN BUTTONS ──
+    document.getElementById('btn-memanah-pattern').addEventListener('click', () => {
+      mSt.pat = (mSt.pat + 1) % 4;
+      mSt.x = memanahCanvas.width / 2; mSt.y = memanahCanvas.height / 2;
+      mSt.ang = 0; mSt.lastChange = 0; mSt.combo = 0;
+      document.getElementById('btn-memanah-pattern').textContent = M_PATTERNS[mSt.pat];
+    });
 
+    document.getElementById('btn-tm-pattern').addEventListener('click', () => {
+      tmSt.pat = (tmSt.pat + 1) % 4;
+      tmSt.x = tm_canvas.width / 2; tmSt.y = tm_canvas.height / 2;
+      tmSt.ang = 0; tmSt.lastChange = 0; tmSt.combo = 0;
+      document.getElementById('btn-tm-pattern').textContent = M_PATTERNS[tmSt.pat];
+    });
+  
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => { 
         navigator.serviceWorker.register("./service-worker.js").catch(console.error); 
