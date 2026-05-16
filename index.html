@@ -2028,12 +2028,16 @@ let justBecameDone = false;
         didDecrement = true;
       }
 
-      if (didDecrement) {
+if (didDecrement) {
         if (isSempadan) {
-          // KOD BARU: Matikan getaran panjang jika kita dalam mode rest page utama (learningMode === 2)
           if (learningMode !== 2) {
               triggerVibration([200, 100, 200, 100, 2000]); 
           }
+          isBlocked = true;
+          setTimeout(() => { isBlocked = false; }, 2600);
+        } else if (!factMode && !routineMode && remaining % 50 === 0) {
+          // Getaran panjang bila capai gandaan 50 (9950, 9900... 50, 0, -50, -100...)
+          triggerVibration([200, 100, 200, 100, 2000]);
           isBlocked = true;
           setTimeout(() => { isBlocked = false; }, 2600);
         } else {
