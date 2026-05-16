@@ -2404,6 +2404,16 @@ snap.forEach(docSnap => {
     // ==========================================
     // FUNGSI RENDER CURRENT FACT / RUTIN (UNIFIED)
     // ==========================================
+function getRemainingInLaci() {
+      if (!allFacts[currentFactIndex] || allFacts[currentFactIndex].isTamat) return 0;
+      let count = 0;
+      for (let i = currentFactIndex; i < allFacts.length; i++) {
+        if (allFacts[i].isTamat) break;
+        count++;
+      }
+      return count;
+    }
+
     function renderCurrentFact() {
       const dataSource = routineMode ? allRoutines : allFacts;
       const currentIndex = routineMode ? currentRoutineIndex : currentFactIndex;
@@ -2466,8 +2476,15 @@ snap.forEach(docSnap => {
         factHintEl.textContent = routineMode ? "(Super Combo: Sapu/Enter audio & maksud)" : "(Super Combo: Sapu/Enter untuk Audio & Maksud)";
       } else if (learningMode === 3) { // Combo
         factHintEl.textContent = routineMode ? "(Combo: Sapu/Enter untuk Maksud)" : "(Combo: Sapu/Enter untuk Maksud)";
-      } else if (learningMode === 2) { // KOD BARU: Rest Mode Main Screen
-        factHintEl.textContent = `(Rest - Fasa ${mainRestPhase}: Baki ${mainRestCount} - Sapu/Enter)`;
+      } else if (learningMode === 2) { // Rest Mode
+        const barisLagi = getRemainingInLaci();
+        if (barisLagi > 0 && barisLagi <= 5) {
+          factHintEl.textContent = `⚠️ ${barisLagi} ayat lagi sebelum laci ini habis! Tambah helaian baharu supaya hafalan tidak berulang ke laci pertama.`;
+          factHintEl.style.color = barisLagi <= 2 ? '#f87171' : '#fbbf24';
+        } else {
+          factHintEl.textContent = `(Rest - Fasa ${mainRestPhase}: Baki ${mainRestCount} - Sapu/Enter)`;
+          factHintEl.style.color = '';
+        }
       } else if (learningMode === 1) { // Repeat
         factHintEl.textContent = routineMode ? "(Normal: Klik kotak untuk Maksud)" : `(Repeat: Baki ${currentRepeatCount} - Sapu/Enter)`;
       } else { // Normal
