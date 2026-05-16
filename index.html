@@ -793,6 +793,34 @@
     <button id="btn-peraturan-continue" class="btn">Sambung Fasa 2</button>
   </div>
 
+  <!-- MODAL JANA PUKAL -->
+<div id="jana-pukal-modal" style="display:none; position:fixed; inset:0; z-index:9999999; background:rgba(0,0,0,.8); align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(6px);">
+  <div style="background:#0a1628; border:1px solid #4b5563; border-radius:18px; padding:24px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,.9);">
+    <div style="font-size:1.1rem; font-weight:700; color:#8b5cf6; margin-bottom:4px;">🗂️ Jana Laci Pukal</div>
+    <div style="font-size:.75rem; color:#9ca3af; margin-bottom:18px;">Cipta banyak laci sekaligus mengikut urutan nombor</div>
+
+    <div style="font-size:.75rem; color:#8b5cf6; font-weight:700; margin-bottom:4px;">Nama Asas Tajuk</div>
+    <input id="bulk-prefix" placeholder="Cth: Al-Baqarah Ayat" style="width:100%; background:rgba(0,0,0,.3); border:1px solid #4b5563; border-radius:8px; color:#e5e7eb; padding:10px 12px; font-size:.9rem; outline:none; margin-bottom:12px;"/>
+
+    <div style="display:flex; gap:10px; margin-bottom:16px;">
+      <div style="flex:1;">
+        <div style="font-size:.75rem; color:#8b5cf6; font-weight:700; margin-bottom:4px;">Nombor Mula</div>
+        <input id="bulk-start" type="number" min="1" placeholder="1" style="width:100%; background:rgba(0,0,0,.3); border:1px solid #4b5563; border-radius:8px; color:#e5e7eb; padding:10px 12px; font-size:.9rem; outline:none;"/>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:.75rem; color:#8b5cf6; font-weight:700; margin-bottom:4px;">Nombor Tamat</div>
+        <input id="bulk-end" type="number" min="1" placeholder="200" style="width:100%; background:rgba(0,0,0,.3); border:1px solid #4b5563; border-radius:8px; color:#e5e7eb; padding:10px 12px; font-size:.9rem; outline:none;"/>
+      </div>
+    </div>
+
+    <div id="bulk-preview" style="font-size:.72rem; color:#9ca3af; margin-bottom:14px; font-style:italic;"></div>
+
+    <div style="display:flex; gap:8px;">
+      <button id="btn-bulk-generate" style="flex:1; padding:12px; border-radius:999px; background:linear-gradient(135deg,#7c3aed,#5b21b6); border:none; color:white; font-weight:700; font-size:.9rem; cursor:pointer;">⚡ Jana Sekarang</button>
+      <button id="btn-bulk-cancel" style="padding:12px 18px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid #4b5563; color:#e5e7eb; font-weight:600; font-size:.9rem; cursor:pointer;">Batal</button>
+    </div>
+  </div>
+</div>
   <div class="app-shell">
     <div class="card">
 
@@ -1103,7 +1131,10 @@
             <div class="topbar-sub" id="parent-routine-time-name" style="color:var(--grad2); font-weight:bold;"></div>
           </div>
         </div>
-        <button id="btn-add-routine-drawer" class="btn btn-sm mt-8">Tambah Laci Zikir</button>
+  <div style="display:flex; gap:8px; margin-top:8px;">
+          <button id="btn-add-routine-drawer" class="btn btn-sm" style="flex:1;">Tambah Laci Zikir</button>
+          <button id="btn-open-jana-pukal" class="btn btn-sm" style="flex:1; background:linear-gradient(135deg,#7c3aed,#5b21b6); border:none; box-shadow:0 6px 18px rgba(124,58,237,.3);">🗂️ Jana Pukal</button>
+        </div>
         <div class="list mt-8" id="routine-drawers-list" style="padding: 10px;"></div>
       </section>
 
@@ -1175,7 +1206,7 @@
       setPersistence,
       browserLocalPersistence
     } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-    import {
+import {
       getFirestore,
       doc,
       setDoc,
@@ -1186,7 +1217,8 @@
       deleteDoc,
       onSnapshot,
       query,
-      orderBy
+      orderBy,
+      writeBatch
     } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
     
     // IMPORT BARU: FIREBASE STORAGE (Masih dibiarkan mengikut arahan)
@@ -3243,6 +3275,76 @@ showSection(secToShow);
       }
     });
 
+// ── JANA PUKAL ─────────────────────────────────────────
+    const janaPukalModal = document.getElementById('jana-pukal-modal');
+    const bulkPrefix = document.getElementById('bulk-prefix');
+    const bulkStart = document.getElementById('bulk-start');
+    const bulkEnd = document.getElementById('bulk-end');
+    const bulkPreview = document.getElementById('bulk-preview');
+
+    document.getElementById('btn-open-jana-pukal').addEventListener('click', () => {
+      if (!currentRoutineTimeId) { showToast('Sila buka waktu rutin dahulu.'); return; }
+      bulkPrefix.value = ''; bulkStart.value = ''; bulkEnd.value = '';
+      bulkPreview.textContent = '';
+      janaPukalModal.style.display = 'flex';
+      setTimeout(() => bulkPrefix.focus(), 80);
+    });
+
+    function updateBulkPreview() {
+      const prefix = bulkPrefix.value.trim();
+      const start = parseInt(bulkStart.value);
+      const end = parseInt(bulkEnd.value);
+      if (!prefix || isNaN(start) || isNaN(end) || start > end) { bulkPreview.textContent = ''; return; }
+      const total = end - start + 1;
+      if (total > 500) { bulkPreview.textContent = '⚠️ Maksimum 500 laci sekaligus.'; bulkPreview.style.color = '#f87171'; return; }
+      bulkPreview.style.color = '#9ca3af';
+      bulkPreview.textContent = `Contoh: "${prefix} ${start}", "${prefix} ${start+1}" ... "${prefix} ${end}" → ${total} laci`;
+    }
+
+    bulkPrefix.addEventListener('input', updateBulkPreview);
+    bulkStart.addEventListener('input', updateBulkPreview);
+    bulkEnd.addEventListener('input', updateBulkPreview);
+
+    document.getElementById('btn-bulk-cancel').addEventListener('click', () => {
+      janaPukalModal.style.display = 'none';
+    });
+
+    document.getElementById('btn-bulk-generate').addEventListener('click', async () => {
+      const prefix = bulkPrefix.value.trim();
+      const start = parseInt(bulkStart.value);
+      const end = parseInt(bulkEnd.value);
+
+      if (!prefix) { showToast('⚠️ Sila masukkan nama asas tajuk.'); return; }
+      if (isNaN(start) || isNaN(end) || start > end) { showToast('⚠️ Nombor tidak sah.'); return; }
+      const total = end - start + 1;
+      if (total > 500) { showToast('⚠️ Maksimum 500 laci sekaligus.'); return; }
+
+      janaPukalModal.style.display = 'none';
+      showToast(`⏳ Menjana ${total} laci...`, 0);
+
+      try {
+        const CHUNK = 499;
+        let i = start;
+        while (i <= end) {
+          const batch = writeBatch(db);
+          const batchEnd = Math.min(i + CHUNK - 1, end);
+          for (let j = i; j <= batchEnd; j++) {
+            const ref = doc(collection(db, "users", currentUser.uid, "routine_drawers"));
+            batch.set(ref, {
+              title: `${prefix} ${j}`,
+              zikir: "", target: "", maksud: "",
+              timeId: currentRoutineTimeId,
+              createdAt: Date.now() + (j - start)
+            });
+          }
+          await batch.commit();
+          i = batchEnd + 1;
+        }
+        showToast(`✅ ${total} laci berjaya dijana!`);
+      } catch(e) {
+        showToast('❌ Gagal jana laci: ' + e.message);
+      }
+    });
 
 // ==========================================
     // LOGIK TOGGLE BUTTONS (FAKTA, RUTIN & 5 MODE)
