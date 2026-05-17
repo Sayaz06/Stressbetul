@@ -1194,8 +1194,10 @@
             <div class="topbar-sub" id="parent-quran-time-name" style="color:var(--grad2);font-weight:bold;"></div>
           </div>
         </div>
-        <button id="btn-add-quran-drawer" class="btn btn-sm mt-8">Tambah Laci Ayat</button>
-        <div class="list mt-8" id="quran-drawers-list" style="padding:10px;"></div>
+<div style="display:flex; gap:8px; margin-top:8px;">
+          <button id="btn-add-quran-drawer" class="btn btn-sm" style="flex:1;">Tambah Laci Ayat</button>
+          <button class="btn btn-sm btn-open-jana-pukal-generic" data-mode="quran" style="flex:1; background:linear-gradient(135deg,#7c3aed,#5b21b6); border:none; box-shadow:0 6px 18px rgba(124,58,237,.3);">🗂️ Jana Pukal</button>
+        </div>        <div class="list mt-8" id="quran-drawers-list" style="padding:10px;"></div>
       </section>
 
       <!-- ══ DOA ══ -->
@@ -1217,7 +1219,10 @@
             <div class="topbar-sub" id="parent-doa-time-name" style="color:var(--grad2);font-weight:bold;"></div>
           </div>
         </div>
-        <button id="btn-add-doa-drawer" class="btn btn-sm mt-8">Tambah Laci Doa</button>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+          <button id="btn-add-doa-drawer" class="btn btn-sm" style="flex:1;">Tambah Laci Doa</button>
+          <button class="btn btn-sm btn-open-jana-pukal-generic" data-mode="doa" style="flex:1; background:linear-gradient(135deg,#7c3aed,#5b21b6); border:none; box-shadow:0 6px 18px rgba(124,58,237,.3);">🗂️ Jana Pukal</button>
+        </div>
         <div class="list mt-8" id="doa-drawers-list" style="padding:10px;"></div>
       </section>
 
@@ -1240,7 +1245,10 @@
             <div class="topbar-sub" id="parent-hadis-time-name" style="color:var(--grad2);font-weight:bold;"></div>
           </div>
         </div>
-        <button id="btn-add-hadis-drawer" class="btn btn-sm mt-8">Tambah Laci Hadis</button>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+          <button id="btn-add-hadis-drawer" class="btn btn-sm" style="flex:1;">Tambah Laci Hadis</button>
+          <button class="btn btn-sm btn-open-jana-pukal-generic" data-mode="hadis" style="flex:1; background:linear-gradient(135deg,#7c3aed,#5b21b6); border:none; box-shadow:0 6px 18px rgba(124,58,237,.3);">🗂️ Jana Pukal</button>
+        </div>
         <div class="list mt-8" id="hadis-drawers-list" style="padding:10px;"></div>
 </section>
 
@@ -3444,12 +3452,30 @@ showSection(secToShow);
     const bulkEnd = document.getElementById('bulk-end');
     const bulkPreview = document.getElementById('bulk-preview');
 
+let janaPukalConfig = { coll: 'routine_drawers', timeId: null };
+
     document.getElementById('btn-open-jana-pukal').addEventListener('click', () => {
       if (!currentRoutineTimeId) { showToast('Sila buka waktu rutin dahulu.'); return; }
+      janaPukalConfig = { coll: 'routine_drawers', timeId: currentRoutineTimeId };
       bulkPrefix.value = ''; bulkStart.value = ''; bulkEnd.value = '';
       bulkPreview.textContent = '';
       janaPukalModal.style.display = 'flex';
       setTimeout(() => bulkPrefix.focus(), 80);
+    });
+
+    document.querySelectorAll('.btn-open-jana-pukal-generic').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.getAttribute('data-mode');
+        const timeIdMap = { quran: currentQuranTimeId, doa: currentDoaTimeId, hadis: currentHadisTimeId };
+        const collMap = { quran: 'quran_drawers', doa: 'doa_drawers', hadis: 'hadis_drawers' };
+        const timeId = timeIdMap[mode];
+        if (!timeId) { showToast('Sila buka kategori dahulu.'); return; }
+        janaPukalConfig = { coll: collMap[mode], timeId };
+        bulkPrefix.value = ''; bulkStart.value = ''; bulkEnd.value = '';
+        bulkPreview.textContent = '';
+        janaPukalModal.style.display = 'flex';
+        setTimeout(() => bulkPrefix.focus(), 80);
+      });
     });
 
     function updateBulkPreview() {
@@ -3491,13 +3517,13 @@ showSection(secToShow);
           const batch = writeBatch(db);
           const batchEnd = Math.min(i + CHUNK - 1, end);
           for (let j = i; j <= batchEnd; j++) {
-            const ref = doc(collection(db, "users", currentUser.uid, "routine_drawers"));
-            batch.set(ref, {
-              title: `${prefix} ${j}`,
-              zikir: "", target: "", maksud: "",
-              timeId: currentRoutineTimeId,
-              createdAt: Date.now() + (j - start)
-            });
+const ref = doc(collection(db, "users", currentUser.uid, janaPukalConfig.coll));
+              batch.set(ref, {
+                title: `${prefix} ${j}`,
+                zikir: "", target: "", maksud: "",
+                timeId: janaPukalConfig.timeId,
+                createdAt: Date.now() + (j - start)
+              });
           }
           await batch.commit();
           i = batchEnd + 1;
