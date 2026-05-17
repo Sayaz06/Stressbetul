@@ -990,8 +990,9 @@
           * Kemajuan disimpan ke awan setiap 10 zikir.
         </div>
 
-        <div id="fact-display-box">
+<div id="fact-display-box">
           <button id="btn-speak" class="btn-speak" style="display: none;" aria-label="Bunyikan Suara">🔊</button>
+          <button id="btn-copy-fact" class="btn-speak" style="display: none; left: 8px; right: auto;" aria-label="Salin Teks">📋</button>
           <div id="fact-title" class="fact-title-label"></div>
           <div id="fact-content" class="fact-content-text">Sedia untuk mula...</div>
           <div id="fact-hint" class="fact-hint">(Tekan/Klik kotak ini untuk terjemahan)</div>
@@ -2621,6 +2622,7 @@ function getRemainingInLaci() {
         factContentEl.textContent = routineMode ? "Tiada rutin aktif. Sila tick SATU waktu." : "Tiada topik aktif. Sila tick SATU topik.";
         factHintEl.style.display = 'none';
         btnSpeak.style.display = 'none';
+        btnCopyFact.style.display = 'none';
         return;
       }
 
@@ -2633,6 +2635,7 @@ function getRemainingInLaci() {
         factContentEl.innerHTML = `<span style="color: #fca5a5; font-weight: bold;">${data.text}</span>`;
         factHintEl.style.display = 'none';
         btnSpeak.style.display = 'none';
+        btnCopyFact.style.display = 'none';
         return;
       }
 
@@ -2666,8 +2669,9 @@ function getRemainingInLaci() {
         }
       }
 
-      factHintEl.style.display = 'block';
+factHintEl.style.display = 'block';
       btnSpeak.style.display = 'flex';
+      btnCopyFact.style.display = 'flex';
       
       // DITUKAR: Teks hint untuk 5 Mode Pembelajaran
       if (learningMode === 4) { // Super
@@ -3635,6 +3639,17 @@ btnToggleRutin.addEventListener("click", () => activateRoutineMode('rutin'));
       triggerFlipAnimation(renderCurrentFact);
     });
 
+const btnCopyFact = document.getElementById('btn-copy-fact');
+    btnCopyFact.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const textToCopy = factContentEl.innerText || factContentEl.textContent || '';
+      if (!textToCopy.trim()) return;
+      navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+        btnCopyFact.textContent = '✅';
+        setTimeout(() => { btnCopyFact.textContent = '📋'; }, 1500);
+      }).catch(() => showToast('Gagal salin. Cuba lagi.'));
+    });
+    
     btnSpeak.addEventListener('click', (e) => {
       e.stopPropagation(); 
       const dataSource = routineMode ? allRoutines : allFacts;
