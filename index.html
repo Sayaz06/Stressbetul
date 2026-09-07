@@ -17110,8 +17110,12 @@ input.addEventListener('change', (e) => {
 
     async function kemaskiniIsLastPerkataan(jenisId) {
       if (!currentUser || !jenisId) return;
-      const sorted = allBahasaPerkataan
-        .filter(p => p.jenisId === jenisId)
+      const snap = await getDocs(query(
+        collection(db, 'users', currentUser.uid, 'bahasa_perkataan'),
+        where('jenisId', '==', jenisId)
+      ));
+      const sorted = snap.docs
+        .map(d => { const x = d.data(); x.id = d.id; return x; })
         .sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { numeric: true }));
       if (!sorted.length) return;
       const lastId = sorted[sorted.length - 1].id;
@@ -17120,7 +17124,6 @@ input.addEventListener('change', (e) => {
         batch.update(doc(db, 'users', currentUser.uid, 'bahasa_perkataan', p.id), {
           isLastPerkataan: p.id === lastId
         });
-        p.isLastPerkataan = p.id === lastId;
       });
       await batch.commit().catch(function() {});
     }
