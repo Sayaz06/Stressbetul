@@ -2088,29 +2088,32 @@ body.dark-mode {
             <div class="topbar-sub" id="parent-perkataan-jenis-name" style="color:#06b6d4; font-weight:bold;"></div>
           </div>
         </div>
-        <div style="display:flex;gap:8px;margin-top:8px;">
-          <button id="btn-add-perkataan" class="btn btn-sm" style="flex:1;border-color:#06b6d4;">+ Tambah Perkataan</button>
-          <button id="btn-open-jana-tips-pukal" class="btn btn-sm" style="flex:1;background:linear-gradient(135deg,#0891b2,#0e7490);border:none;color:white;">📝 Jana Tips Pukal</button>
-        </div>
-  <button id="btn-duplikasi-info-perkataan" class="btn btn-sm mt-8" style="width:100%;background:linear-gradient(135deg,#0891b2,#0e7490);border:none;color:white;">👻 Ghost Button</button>
-        <!-- PANEL DUPLIKASI PERKATAAN -->
-        <div id="panel-duplikasi-perkataan" style="display:none;margin-top:8px;background:rgba(8,145,178,0.08);border:1px solid rgba(8,145,178,0.25);border-radius:12px;padding:12px;">
-          <div style="font-size:0.75rem;font-weight:700;color:#22d3ee;margin-bottom:8px;">📋 Pilih Perkataan untuk Dipindah</div>
-          <div id="duplikasi-perkataan-checkbox-list" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;margin-bottom:10px;"></div>
-          <div style="font-size:0.72rem;color:#22d3ee;font-weight:700;margin-bottom:6px;">📁 Pindah ke Jenis Kata:</div>
-          <select id="duplikasi-perkataan-jenis-select" style="width:100%;background:rgba(30,41,59,0.8);color:var(--text);border:1px solid rgba(8,145,178,0.4);border-radius:8px;padding:7px 10px;font-size:0.75rem;margin-bottom:10px;"></select>
-          <div style="display:flex;gap:6px;">
-            <button id="btn-duplikasi-perkataan-pilih-semua" class="btn btn-secondary btn-sm" style="flex:1;border-color:#22d3ee;color:#22d3ee;">Pilih Semua</button>
-            <button id="btn-duplikasi-perkataan-confirm" class="btn btn-sm" style="flex:2;background:linear-gradient(135deg,#0891b2,#0e7490);border:none;color:white;">✅ Duplikasi</button>
-            <button id="btn-duplikasi-perkataan-cancel" class="btn btn-secondary btn-sm" style="flex:1;">Batal</button>
+        <button id="btn-add-perkataan" class="btn btn-sm mt-8" style="width:100%;border-color:#06b6d4;">+ Tambah Perkataan</button>
+        <button id="btn-open-jana-tips-pukal" class="btn btn-sm mt-8" style="width:100%;background:linear-gradient(135deg,#0891b2,#0e7490);border:none;color:white;">📝 Import from Pengajar Sebutan For Jana Tips Pukal (Step 3)</button>
+        <button id="btn-export-format-ai" class="btn btn-sm mt-8" style="width:100%;background:linear-gradient(135deg,#7c3aed,#5b21b6);border:none;color:white;">📤 Export To Pengajar Sebutan AI (Step 2)</button>
+
+        <!-- Butang Lain-lain -->
+        <button id="btn-lain-lain-perkataan" class="btn btn-secondary btn-sm mt-8" style="width:100%;border-color:#475569;color:#94a3b8;">⋯ Lain-lain</button>
+        <div id="panel-lain-lain-perkataan" style="display:none;flex-direction:column;gap:8px;margin-top:8px;">
+          <button id="btn-duplikasi-info-perkataan" class="btn btn-sm" style="width:100%;background:linear-gradient(135deg,#0891b2,#0e7490);border:none;color:white;">👻 Ghost Button</button>
+          <!-- PANEL DUPLIKASI PERKATAAN -->
+          <div id="panel-duplikasi-perkataan" style="display:none;margin-top:8px;background:rgba(8,145,178,0.08);border:1px solid rgba(8,145,178,0.25);border-radius:12px;padding:12px;">
+            <div style="font-size:0.75rem;font-weight:700;color:#22d3ee;margin-bottom:8px;">📋 Pilih Perkataan untuk Dipindah</div>
+            <div id="duplikasi-perkataan-checkbox-list" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;margin-bottom:10px;"></div>
+            <div style="font-size:0.72rem;color:#22d3ee;font-weight:700;margin-bottom:6px;">📁 Pindah ke Jenis Kata:</div>
+            <select id="duplikasi-perkataan-jenis-select" style="width:100%;background:rgba(30,41,59,0.8);color:var(--text);border:1px solid rgba(8,145,178,0.4);border-radius:8px;padding:7px 10px;font-size:0.75rem;margin-bottom:10px;"></select>
+            <div style="display:flex;gap:6px;">
+              <button id="btn-duplikasi-perkataan-pilih-semua" class="btn btn-secondary btn-sm" style="flex:1;border-color:#22d3ee;color:#22d3ee;">Pilih Semua</button>
+              <button id="btn-duplikasi-perkataan-confirm" class="btn btn-sm" style="flex:2;background:linear-gradient(135deg,#0891b2,#0e7490);border:none;color:white;">✅ Duplikasi</button>
+              <button id="btn-duplikasi-perkataan-cancel" class="btn btn-secondary btn-sm" style="flex:1;">Batal</button>
+            </div>
           </div>
+          <div style="display:flex;gap:6px;">
+            <button id="btn-export-pdf-flashcard-portrait" data-orient="portrait" class="btn btn-sm" style="flex:1;background:linear-gradient(135deg,#0e7490,#0c6b80);border:none;color:white;">🖨️ Portrait 2×3</button>
+            <button id="btn-export-pdf-flashcard" data-orient="landscape" class="btn btn-sm" style="flex:1;background:linear-gradient(135deg,#0891b2,#0e7490);border:none;color:white;">⭐ Landscape 3×2</button>
+          </div>
+          <button id="btn-export-pdf-bahasa-kindle" class="btn btn-sm" style="width:100%;background:linear-gradient(135deg,#7c3aed,#5b21b6);border:none;color:white;">📖 Export Kindle PDF (Kad + Tips seli)</button>
         </div>
-        <button id="btn-export-format-ai" class="btn btn-sm mt-8" style="width:100%;background:linear-gradient(135deg,#7c3aed,#5b21b6);border:none;color:white;">📤 Export Format AI (Sayaz)</button>
-        <div style="display:flex;gap:6px;margin-top:8px;">
-          <button id="btn-export-pdf-flashcard-portrait" data-orient="portrait" class="btn btn-sm" style="flex:1;background:linear-gradient(135deg,#0e7490,#0c6b80);border:none;color:white;">🖨️ Portrait 2×3</button>
-          <button id="btn-export-pdf-flashcard" data-orient="landscape" class="btn btn-sm" style="flex:1;background:linear-gradient(135deg,#0891b2,#0e7490);border:none;color:white;">⭐ Landscape 3×2</button>
-        </div>
-        <button id="btn-export-pdf-bahasa-kindle" class="btn btn-sm mt-8" style="width:100%;background:linear-gradient(135deg,#7c3aed,#5b21b6);border:none;color:white;">📖 Export Kindle PDF (Kad + Tips seli)</button>
 
         <!-- ======== MESIN IMEJ (xAI Imagine) — page Perkataan ======== -->
         <div id="mesin-imej-panel" style="margin-top:10px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.35);border-radius:14px;padding:12px;">
@@ -16761,15 +16764,34 @@ function renderPerkataan() {
         const btnJanaPukal = document.createElement('button');
         btnJanaPukal.id = 'btn-open-jana-pukal-bahasa';
         btnJanaPukal.className = 'btn btn-sm';
-        btnJanaPukal.style.cssText = 'width:100%;margin-bottom:8px;background:linear-gradient(135deg,#0891b2,#0e7490);border:none;box-shadow:0 6px 18px rgba(8,145,178,.3);';
-        btnJanaPukal.textContent = '🗂️ Jana Pukal Bahasa';
+        btnJanaPukal.style.cssText = 'width:100%;margin-top:8px;background:linear-gradient(135deg,#0891b2,#0e7490);border:none;box-shadow:0 6px 18px rgba(8,145,178,.3);';
+        btnJanaPukal.textContent = '🗂️ Jana Pukal Bahasa (Step 1)';
         btnJanaPukal.addEventListener('click', () => {
           document.getElementById('jana-bahasa-input').value = '';
           document.getElementById('jana-bahasa-preview').textContent = '';
           document.getElementById('jana-pukal-bahasa-modal').style.display = 'flex';
           setTimeout(() => document.getElementById('jana-bahasa-input').focus(), 80);
         });
-        list.insertBefore(btnJanaPukal, list.firstChild);
+        const addBtn = document.getElementById('btn-add-perkataan');
+        if (addBtn && addBtn.parentNode) {
+          addBtn.parentNode.insertBefore(btnJanaPukal, addBtn.nextSibling);
+        } else {
+          list.insertBefore(btnJanaPukal, list.firstChild);
+        }
+      }
+
+      // Butang Lain-lain
+      if (!document.getElementById('btn-lain-lain-perkataan-listener-set')) {
+        const btnLain = document.getElementById('btn-lain-lain-perkataan');
+        if (btnLain) {
+          btnLain.setAttribute('id-listener', 'btn-lain-lain-perkataan-listener-set');
+          btnLain.addEventListener('click', function() {
+            const panel = document.getElementById('panel-lain-lain-perkataan');
+            const buka = panel.style.display === 'none' || panel.style.display === '';
+            panel.style.display = buka ? 'flex' : 'none';
+            this.textContent = buka ? '✕ Tutup Lain-lain' : '⋯ Lain-lain';
+          });
+        }
       }
     
       sorted.forEach(data => {
