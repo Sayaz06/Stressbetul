@@ -2089,8 +2089,8 @@ body.dark-mode {
           </div>
         </div>
         <button id="btn-add-perkataan" class="btn btn-sm mt-8" style="width:100%;border-color:#06b6d4;">+ Tambah Perkataan</button>
-        <button id="btn-open-jana-tips-pukal" class="btn btn-sm mt-8" style="width:100%;background:linear-gradient(135deg,#0891b2,#0e7490);border:none;color:white;">📝 Import from Pengajar Sebutan For Jana Tips Pukal (Step 3)</button>
         <button id="btn-export-format-ai" class="btn btn-sm mt-8" style="width:100%;background:linear-gradient(135deg,#7c3aed,#5b21b6);border:none;color:white;">📤 Export To Pengajar Sebutan AI (Step 2)</button>
+        <button id="btn-open-jana-tips-pukal" class="btn btn-sm mt-8" style="width:100%;background:linear-gradient(135deg,#0891b2,#0e7490);border:none;color:white;">📝 Import from Pengajar Sebutan For Jana Tips Pukal (Step 3)</button>
 
         <!-- Butang Lain-lain -->
         <button id="btn-lain-lain-perkataan" class="btn btn-secondary btn-sm mt-8" style="width:100%;border-color:#475569;color:#94a3b8;">⋯ Lain-lain</button>
@@ -2113,16 +2113,17 @@ body.dark-mode {
             <button id="btn-export-pdf-flashcard" data-orient="landscape" class="btn btn-sm" style="flex:1;background:linear-gradient(135deg,#0891b2,#0e7490);border:none;color:white;">⭐ Landscape 3×2</button>
           </div>
           <button id="btn-export-pdf-bahasa-kindle" class="btn btn-sm" style="width:100%;background:linear-gradient(135deg,#7c3aed,#5b21b6);border:none;color:white;">📖 Export Kindle PDF (Kad + Tips seli)</button>
-          <!-- DIAGNOSTIC FIREBASE -->
-          <button id="btn-toggle-diagnostic" class="btn btn-sm" style="width:100%;background:linear-gradient(135deg,#1e3a5f,#1e293b);border:1px solid #334155;color:#94a3b8;">🔍 Diagnostic Firebase</button>
-          <div id="panel-diagnostic" style="display:none;margin-top:8px;background:rgba(15,23,42,0.95);border:1px solid #334155;border-radius:12px;padding:14px;font-family:monospace;font-size:0.78rem;">
-            <div id="diag-status" style="color:#fbbf24;margin-bottom:10px;">Tekan Semak untuk mula...</div>
-            <div style="display:flex;gap:6px;margin-bottom:10px;">
-              <button id="btn-diag-semak" class="btn btn-sm" style="flex:1;background:#1d4ed8;border:none;color:white;">🔄 Semak</button>
-              <button id="btn-diag-padam-yatim" class="btn btn-sm" style="flex:1;background:#dc2626;border:none;color:white;display:none;">🗑️ Padam Yatim</button>
-            </div>
-            <div id="diag-result"></div>
+        </div>
+
+        <!-- DIAGNOSTIC FIREBASE — di bawah panel Lain-lain -->
+        <button id="btn-toggle-diagnostic" class="btn btn-sm mt-8" style="width:100%;background:linear-gradient(135deg,#1e3a5f,#1e293b);border:1px solid #334155;color:#94a3b8;">🔍 Diagnostic Firebase</button>
+        <div id="panel-diagnostic" style="display:none;margin-top:8px;background:rgba(15,23,42,0.95);border:1px solid #334155;border-radius:12px;padding:14px;font-family:monospace;font-size:0.78rem;">
+          <div id="diag-status" style="color:#fbbf24;margin-bottom:10px;">Tekan Semak untuk mula...</div>
+          <div style="display:flex;gap:6px;margin-bottom:10px;">
+            <button id="btn-diag-semak" class="btn btn-sm" style="flex:1;background:#1d4ed8;border:none;color:white;">🔄 Semak</button>
+            <button id="btn-diag-padam-yatim" class="btn btn-sm" style="flex:1;background:#dc2626;border:none;color:white;display:none;">🗑️ Padam Yatim</button>
           </div>
+          <div id="diag-result"></div>
         </div>
 
         <!-- ======== MESIN IMEJ (xAI Imagine) — page Perkataan ======== -->
@@ -16757,6 +16758,33 @@ function renderPerkataan() {
         return;
       }
 
+// Kira status tips untuk jenis kata semasa
+      function kiraTipsStatus() {
+        const perkataanDlmJenis = allBahasaPerkataan.filter(p => p.jenisId === currentJenisKataId);
+        let jumlahLaci = 0, jumlahLaciAdaTips = 0;
+        perkataanDlmJenis.forEach(p => {
+          const drawers = allBahasaDrawers.filter(d => d.perkataanId === p.id);
+          jumlahLaci += drawers.length;
+          drawers.forEach(d => {
+            if ((d.tips && d.tips.trim()) || (d.tipsFasa0 && d.tipsFasa0.trim())) jumlahLaciAdaTips++;
+          });
+        });
+        return { semua: jumlahLaci, adaTips: jumlahLaciAdaTips, lengkap: jumlahLaci > 0 && jumlahLaciAdaTips >= jumlahLaci };
+      }
+
+      // Kemaskini tanda ✅ pada butang
+      function kemaskiniBadgeTips() {
+        const status = kiraTipsStatus();
+        const labelBadge = status.lengkap ? ' ✅' : ` (${status.adaTips}/${status.semua})`;
+        const btnJanaPukal = document.getElementById('btn-open-jana-pukal-bahasa');
+        const btnExport = document.getElementById('btn-export-format-ai');
+        const btnImport = document.getElementById('btn-open-jana-tips-pukal');
+        if (btnJanaPukal) btnJanaPukal.textContent = '🗂️ Jana Pukal Bahasa (Step 1)' + labelBadge;
+        if (btnExport) btnExport.textContent = '📤 Export To Pengajar Sebutan AI (Step 2)' + labelBadge;
+        if (btnImport) btnImport.textContent = '📝 Import from Pengajar Sebutan For Jana Tips Pukal (Step 3)' + (status.lengkap ? ' ✅' : '');
+      }
+      window._kemaskiniBadgeTips = kemaskiniBadgeTips;
+
 // Button Jana Pukal Bahasa
       const existingJanaPukalBtn = document.getElementById('btn-open-jana-pukal-bahasa');
       if (!existingJanaPukalBtn) {
@@ -16778,6 +16806,7 @@ function renderPerkataan() {
           list.insertBefore(btnJanaPukal, list.firstChild);
         }
       }
+      kemaskiniBadgeTips();
 
       // Butang Lain-lain
       if (!document.getElementById('btn-lain-lain-perkataan-listener-set')) {
