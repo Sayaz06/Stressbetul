@@ -2113,6 +2113,16 @@ body.dark-mode {
             <button id="btn-export-pdf-flashcard" data-orient="landscape" class="btn btn-sm" style="flex:1;background:linear-gradient(135deg,#0891b2,#0e7490);border:none;color:white;">⭐ Landscape 3×2</button>
           </div>
           <button id="btn-export-pdf-bahasa-kindle" class="btn btn-sm" style="width:100%;background:linear-gradient(135deg,#7c3aed,#5b21b6);border:none;color:white;">📖 Export Kindle PDF (Kad + Tips seli)</button>
+          <!-- DIAGNOSTIC FIREBASE -->
+          <button id="btn-toggle-diagnostic" class="btn btn-sm" style="width:100%;background:linear-gradient(135deg,#1e3a5f,#1e293b);border:1px solid #334155;color:#94a3b8;">🔍 Diagnostic Firebase</button>
+          <div id="panel-diagnostic" style="display:none;margin-top:8px;background:rgba(15,23,42,0.95);border:1px solid #334155;border-radius:12px;padding:14px;font-family:monospace;font-size:0.78rem;">
+            <div id="diag-status" style="color:#fbbf24;margin-bottom:10px;">Tekan Semak untuk mula...</div>
+            <div style="display:flex;gap:6px;margin-bottom:10px;">
+              <button id="btn-diag-semak" class="btn btn-sm" style="flex:1;background:#1d4ed8;border:none;color:white;">🔄 Semak</button>
+              <button id="btn-diag-padam-yatim" class="btn btn-sm" style="flex:1;background:#dc2626;border:none;color:white;display:none;">🗑️ Padam Yatim</button>
+            </div>
+            <div id="diag-result"></div>
+          </div>
         </div>
 
         <!-- ======== MESIN IMEJ (xAI Imagine) — page Perkataan ======== -->
@@ -2198,17 +2208,6 @@ body.dark-mode {
         </div>
 
           <div class="list mt-8" id="perkataan-list" style="padding: 10px;"></div>
-
-        <!-- PANEL DIAGNOSTIC FIREBASE -->
-        <button id="btn-toggle-diagnostic" class="btn btn-sm mt-8" style="width:100%;background:linear-gradient(135deg,#1e3a5f,#1e293b);border:1px solid #334155;color:#94a3b8;">🔍 Diagnostic Firebase</button>
-        <div id="panel-diagnostic" style="display:none;margin-top:8px;background:rgba(15,23,42,0.95);border:1px solid #334155;border-radius:12px;padding:14px;font-family:monospace;font-size:0.78rem;">
-          <div id="diag-status" style="color:#fbbf24;margin-bottom:10px;">Tekan Semak untuk mula...</div>
-          <div style="display:flex;gap:6px;margin-bottom:10px;">
-            <button id="btn-diag-semak" class="btn btn-sm" style="flex:1;background:#1d4ed8;border:none;color:white;">🔄 Semak</button>
-            <button id="btn-diag-padam-yatim" class="btn btn-sm" style="flex:1;background:#dc2626;border:none;color:white;display:none;">🗑️ Padam Yatim</button>
-          </div>
-          <div id="diag-result"></div>
-        </div>
       </section>
   
       <section id="section-amt-ak" class="section">
