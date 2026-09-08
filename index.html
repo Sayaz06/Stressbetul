@@ -2092,6 +2092,9 @@ body.dark-mode {
         <button id="btn-export-format-ai" class="btn btn-sm mt-8" style="width:100%;background:linear-gradient(135deg,#7c3aed,#5b21b6);border:none;color:white;">📤 Export To Pengajar Sebutan AI (Step 2)</button>
         <button id="btn-open-jana-tips-pukal" class="btn btn-sm mt-8" style="width:100%;background:linear-gradient(135deg,#0891b2,#0e7490);border:none;color:white;">📝 Import from Pengajar Sebutan For Jana Tips Pukal (Step 3)</button>
 
+        <!-- Status Gambar G1 -->
+        <div id="status-gambar-g1" class="mt-8" style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:0.78rem;text-align:center;">🖼️ Sedang semak gambar...</div>
+
         <!-- Butang Lain-lain -->
         <button id="btn-lain-lain-perkataan" class="btn btn-secondary btn-sm mt-8" style="width:100%;border-color:#475569;color:#94a3b8;">⋯ Lain-lain</button>
         <div id="panel-lain-lain-perkataan" style="display:none;flex-direction:column;gap:8px;margin-top:8px;">
@@ -16784,6 +16787,35 @@ function renderPerkataan() {
         if (btnImport) btnImport.textContent = '📝 Import from Pengajar Sebutan For Jana Tips Pukal (Step 3)' + (status.lengkap ? ' ✅' : '');
       }
       window._kemaskiniBadgeTips = kemaskiniBadgeTips;
+
+      // Kemaskini status gambar G1
+      function kemaskiniStatusGambar() {
+        const el = document.getElementById('status-gambar-g1');
+        if (!el) return;
+        const perkataanDlmJenis = allBahasaPerkataan.filter(p => p.jenisId === currentJenisKataId);
+        let jumlah = 0, adaGambar = 0;
+        perkataanDlmJenis.forEach(p => {
+          const drawers = allBahasaDrawers.filter(d => d.perkataanId === p.id);
+          drawers.forEach(d => {
+            jumlah++;
+            if (d.imageUrl && d.imageUrl.trim()) adaGambar++;
+          });
+        });
+        if (jumlah === 0) {
+          el.textContent = '🖼️ Tiada laci';
+          el.style.color = '#64748b';
+          el.style.borderColor = '#334155';
+        } else if (adaGambar >= jumlah) {
+          el.textContent = '🖼️ Semua laci sudah mempunyai gambar ✅';
+          el.style.color = '#4ade80';
+          el.style.borderColor = '#16a34a';
+        } else {
+          el.textContent = `🖼️ Gambar G1: ${adaGambar}/${jumlah} laci`;
+          el.style.color = '#94a3b8';
+          el.style.borderColor = '#334155';
+        }
+      }
+      kemaskiniStatusGambar();
 
 // Button Jana Pukal Bahasa
       const existingJanaPukalBtn = document.getElementById('btn-open-jana-pukal-bahasa');
