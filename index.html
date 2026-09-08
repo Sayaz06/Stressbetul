@@ -2195,6 +2195,17 @@ body.dark-mode {
         </div>
 
           <div class="list mt-8" id="perkataan-list" style="padding: 10px;"></div>
+
+        <!-- PANEL DIAGNOSTIC FIREBASE -->
+        <button id="btn-toggle-diagnostic" class="btn btn-sm mt-8" style="width:100%;background:linear-gradient(135deg,#1e3a5f,#1e293b);border:1px solid #334155;color:#94a3b8;">🔍 Diagnostic Firebase</button>
+        <div id="panel-diagnostic" style="display:none;margin-top:8px;background:rgba(15,23,42,0.95);border:1px solid #334155;border-radius:12px;padding:14px;font-family:monospace;font-size:0.78rem;">
+          <div id="diag-status" style="color:#fbbf24;margin-bottom:10px;">Tekan Semak untuk mula...</div>
+          <div style="display:flex;gap:6px;margin-bottom:10px;">
+            <button id="btn-diag-semak" class="btn btn-sm" style="flex:1;background:#1d4ed8;border:none;color:white;">🔄 Semak</button>
+            <button id="btn-diag-padam-yatim" class="btn btn-sm" style="flex:1;background:#dc2626;border:none;color:white;display:none;">🗑️ Padam Yatim</button>
+          </div>
+          <div id="diag-result"></div>
+        </div>
       </section>
   
       <section id="section-amt-ak" class="section">
@@ -17127,6 +17138,152 @@ input.addEventListener('change', (e) => {
       });
       await batch.commit().catch(function() {});
     }
+
+    // ── DIAGNOSTIC FIREBASE ──
+    (function() {
+      var _yatimIds = [];
+
+      function diagSetStatus(msg) {
+        const el = document.getElementById('diag-status');
+        if (el) el.innerHTML = msg;
+      }
+
+      function diagSetResult(html) {
+        const el = document.getElementById('diag-result');
+        if (el) el.innerHTML = html;
+      }
+
+      async function jalanDiagnostic() {
+        if (!currentUser) { diagSetStatus('<span style="color:#f87171">Belum log in</span>'); return; }
+        diagSetStatus('<span style="color:#fbbf24">⏳ Sedang fetch data...</span>');
+        diagSetResult('');
+        document.getElementById('btn-diag-padam-yatim').style.display = 'none';
+        _yatimIds = [];
+        const uid = currentUser.uid;
+        try {
+          const [snapP, snapT, snapJ, snapBJ] = await Promise.all([
+            getDocs(collection(db, 'users', uid, 'bahasa_perkataan')),
+            getDocs(collection(db, 'users', uid, 'topics')),
+            getDocs(collection(db, 'users', uid, 'jenis_kata')),
+            getDoc(doc(db, 'users', uid, 'kindle_settings', 'bahasa_jenis'))
+          ]);
+          const perkataan = snapP.docs.map(d => { const x=d.data(); x.id=d.id; return x; });
+          const topics    = snapT.docs.map(d => { const x=d.data(); x.id=d.id; return x; });
+          const jenisKata = snapJ.docs.map(d => { const x=d.data(); x.id=d.id; return x; });
+          const bahasaJenis = snapBJ.exists() ? snapBJ.data() : null;
+          const jenisIds  = jenisKata.map(j => j.id);
+          let html = '';
+          let adaMasalah = false;
+
+          // 1. isActive
+          const pAktif = perkataan.filter(p => p.isActive);
+          const tAktif = topics.filter(t => t.isActive);
+          html += '<div style="color:#34d399;font-weight:bold;margin-bottom:6px;">1️⃣ isActive</div>';
+          html += renderDiagAktif('bahasa_perkataan', pAktif, perkataan.length);
+          html += renderDiagAktif('topics', tAktif, topics.length);
+          if (pAktif.length > 1 || tAktif.length > 1) adaMasalah = true;
+
+          // 2. Perkataan yatim
+          const yatim = perkataan.filter(p => p.jenisId && !jenisIds.includes(p.jenisId));
+          _yatimIds = yatim.map(p => p.id);
+          html += '<div style="color:#34d399;font-weight:bold;margin:10px 0 6px;">2️⃣ Perkataan Yatim</div>';
+          if (!yatim.length) {
+            html += '<div style="color:#4ade80;">✅ Tiada yatim</div>';
+          } else {
+            adaMasalah = true;
+            html += '<div style="color:#f87171;background:#2a1a1a;padding:8px;border-radius:6px;border-left:3px solid #dc2626;">';
+            html += '⚠️ ' + yatim.length + ' perkataan yatim:<br>';
+            yatim.forEach(p => { html += '<span style="color:#aaa">• ' + (p.name||'(kosong)') + '</span><br>'; });
+            html += '</div>';
+            document.getElementById('btn-diag-padam-yatim').style.display = 'block';
+          }
+
+          // 3. isLastPerkataan
+          html += '<div style="color:#34d399;font-weight:bold;margin:10px 0 6px;">3️⃣ isLastPerkataan</div>';
+          let isLastOk = true;
+          jenisKata.forEach(j => {
+            const pDlm = perkataan.filter(p => p.jenisId === j.id)
+              .sort((a,b) => (a.name||'').localeCompare(b.name||'', undefined, {numeric:true}));
+            if (!pDlm.length) return;
+            const lastId = pDlm[pDlm.length-1].id;
+            const salah = pDlm.filter(p => p.isLastPerkataan && p.id !== lastId);
+            const tiada = !pDlm[pDlm.length-1].isLastPerkataan;
+            if (salah.length || tiada) {
+              isLastOk = false; adaMasalah = true;
+              html += '<div style="color:#f87171;background:#2a1a1a;padding:6px 8px;border-radius:6px;border-left:3px solid #dc2626;margin-bottom:4px;">';
+              html += '⚠️ <b>' + (j.name||'(tanpa nama)') + '</b> — ' + (tiada ? 'tiada flag' : 'flag salah');
+              html += ' <button onclick="fixDiagIsLast(\'' + j.id + '\')" style="background:#d97706;border:none;color:white;padding:2px 8px;border-radius:4px;cursor:pointer;margin-left:6px;font-size:0.75rem;">Fix</button></div>';
+            }
+          });
+          if (isLastOk) html += '<div style="color:#4ade80;">✅ Semua betul</div>';
+
+          // 4. kindle_settings/bahasa_jenis
+          html += '<div style="color:#34d399;font-weight:bold;margin:10px 0 6px;">4️⃣ kindle_settings/bahasa_jenis</div>';
+          if (!bahasaJenis) {
+            html += '<div style="color:#aaa;">Doc tidak wujud</div>';
+          } else {
+            const sah = !bahasaJenis.jenisBerikutId || jenisIds.includes(bahasaJenis.jenisBerikutId);
+            html += '<div style="padding:6px 8px;background:#1e293b;border-radius:6px;color:' + (sah ? '#4ade80' : '#f87171') + ';">';
+            html += 'aktif: ' + bahasaJenis.aktif + ' | jenisBerikutId: ' + (bahasaJenis.jenisBerikutId||'null');
+            if (!sah) { html += ' ⚠️ ID tidak wujud!'; adaMasalah = true; }
+            html += '</div>';
+          }
+
+          diagSetResult(html);
+          diagSetStatus(adaMasalah
+            ? '<span style="color:#f87171">⚠️ Ada masalah — semak di atas</span>'
+            : '<span style="color:#4ade80">✅ Semua ok</span>');
+        } catch(e) {
+          diagSetStatus('<span style="color:#f87171">❌ Error: ' + e.message + '</span>');
+        }
+      }
+
+      function renderDiagAktif(nama, aktif, jumlah) {
+        const warn = aktif.length > 1;
+        let html = '<div style="padding:6px 8px;background:#1e293b;border-radius:6px;border-left:3px solid ' + (warn ? '#dc2626' : '#16a34a') + ';margin-bottom:4px;">';
+        html += '<b>' + nama + '</b>: ' + aktif.length + ' aktif / ' + jumlah;
+        if (warn) html += ' <span style="color:#f87171">⚠️ LEBIH DARI SATU!</span>';
+        aktif.forEach(d => { html += '<br><span style="color:#94a3b8">→ ' + (d.name||'(tanpa nama)') + ' | lastDrawerId: ' + (d.lastDrawerId||'null') + '</span>'; });
+        html += '</div>';
+        return html;
+      }
+
+      window.fixDiagIsLast = async function(jenisId) {
+        if (!currentUser) return;
+        try {
+          await kemaskiniIsLastPerkataan(jenisId);
+          showToast('✅ isLastPerkataan dikemas kini');
+          jalanDiagnostic();
+        } catch(e) { showToast('❌ Gagal: ' + e.message); }
+      };
+
+      setTimeout(function() {
+        const btnToggle = document.getElementById('btn-toggle-diagnostic');
+        const panel = document.getElementById('panel-diagnostic');
+        const btnSemak = document.getElementById('btn-diag-semak');
+        const btnPadam = document.getElementById('btn-diag-padam-yatim');
+        if (btnToggle) btnToggle.addEventListener('click', () => {
+          const buka = panel.style.display === 'none';
+          panel.style.display = buka ? 'block' : 'none';
+          if (buka) jalanDiagnostic();
+        });
+        if (btnSemak) btnSemak.addEventListener('click', jalanDiagnostic);
+        if (btnPadam) btnPadam.addEventListener('click', async () => {
+          if (!_yatimIds.length) return;
+          if (!confirm('Padam ' + _yatimIds.length + ' perkataan yatim? Tidak boleh diundo.')) return;
+          diagSetStatus('<span style="color:#fbbf24">⏳ Sedang padam...</span>');
+          try {
+            const b = writeBatch(db);
+            _yatimIds.forEach(id => { b.delete(doc(db, 'users', currentUser.uid, 'bahasa_perkataan', id)); });
+            await b.commit();
+            showToast('✅ ' + _yatimIds.length + ' perkataan yatim dipadam');
+            _yatimIds = [];
+            document.getElementById('btn-diag-padam-yatim').style.display = 'none';
+            jalanDiagnostic();
+          } catch(e) { diagSetStatus('<span style="color:#f87171">❌ ' + e.message + '</span>'); }
+        });
+      }, 500);
+    })();
 
     async function lompatKePerkataanSeterusnyaBahasa() {
       if (!bahasaMode || !currentUser) return false;
